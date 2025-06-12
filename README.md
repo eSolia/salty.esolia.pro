@@ -97,10 +97,73 @@ To decrypt a Salty-encrypted message:
 3. Click "Go" (or "実行") to decrypt the message. 
 4. The original plaintext will be displayed.
 
-## Important Security Note
+### How to Use the `/api/encrypt` API Endpoint
+This API endpoint in `server.ts` allows you to programmatically encrypt data by sending a payload and a key to the server. It's distinct from the client-side encryption that happens directly in your browser when you use the web UI.
+
+This API endpoint is useful if you need to integrate Salty's encryption capabilities into other backend systems or services, rather than solely relying on the browser UI.
+
+1. Endpoint URL:
+   * Method: POST
+   * URL: <https://your-deno-deploy-url.deno.dev/api/encrypt>
+      * Replace <https://your-deno-deploy-url.deno.dev> with the actual URL of your deployed Salty application.
+2. Request Headers:
+   * `Content-Type: application/json`
+      * This header is mandatory because the API expects the request body to be in JSON format.
+   * `X-API-Key: YOUR_API_KEY`
+      * This header is mandatory for authentication if you have set the `API_KEY` environment variable in your Deno Deploy project. Replace `YOUR_API_KEY` with the actual API key you configured.
+      * If you have not set the `API_KEY` environment variable, then this header is not required, but be aware that the endpoint will not be authenticated. This is generally only recommended for local development or highly controlled environments.
+
+You can generate a `base64` API key this way: 
+
+```bash
+openssl rand -base64 32
+```
+
+3. Request Body (JSON):
+The request body must be a JSON object containing two properties:
+* `payload`: The plaintext string you want to encrypt.
+* `key`: The passphrase (string) that will be used to derive the cryptographic key.
+
+Example request body: 
+
+```json
+{
+  "payload": "My secret message.",
+  "key": "MyStrongPassphrase123!"
+}
+```
+
+4. Responses
+* Success (Status 200 OK):
+   * The response will be the basE91 encoded ciphertext as plain text. This is the "compressed version" of the encrypted output you see on the web UI.
+* Error Responses:
+   * 400 Bad Request: If Content-Type is not application/json, or if payload or key are missing/invalid in the JSON body.
+   * 401 Unauthorized: If the X-API-Key header is missing or incorrect (and API_KEY is set in your environment variables).
+   * 405 Method Not Allowed: If you use a method other than POST.
+   * 500 Internal Server Error: For any server-side errors during processing.
+
+5. Testing
+Example `curl` command:
+
+```bash
+curl -X POST \
+     -H "Content-Type: application/json" \
+     -H "X-API-Key: YOUR_ACTUAL_API_KEY" \
+     -d '{"payload": "This is a test message.", "key": "supersecretkey"}' \
+     https://your-deno-deploy-url.deno.dev/api/encrypt
+```
+
+## Important Security Notes
+### General
 * Key Management: The security of your encrypted messages relies entirely on the strength and secrecy of your key. Choose a strong, unique key and never share it insecurely.
 * Salt: The `SALT_HEX` environment variable is essential for key derivation. It should be a truly random, unique value generated once per deployment. Do not reuse salts across different deployments or applications.
 * Client-Side Processing: All encryption/decryption happens directly in your browser. The server only serves the application files and does not handle your plaintext or keys (unless you use the `/api/encrypt` endpoint, which is not actively used by the client-side UI for crypto operations in this setup, but exists for potential server-side use cases if implemented).
+
+### API
+* HTTPS is Crucial: Always ensure your API calls are made over HTTPS to prevent eavesdropping on your `payload`, `key`, and `X-API-Key`. Deno Deploy automatically enforces HTTPS.
+* API Key Security: Treat your `API_KEY` environment variable as a sensitive secret. Never expose it in client-side code (e.g., JavaScript in your HTML). It should only be used from secure server-side applications or environments.
+* Key Derivation: The server-side encryption also uses the `SALT_HEX` environment variable for key derivation, just like the client-side. Ensure this `SALT_HEX` is truly random and kept secret in your Deno Deploy environment variables.
+
 
 ## Contributing
 Salty is an open-source project. Feel free to contribute by opening issues, suggesting features, or submitting pull requests on the GitHub repository.
