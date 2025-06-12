@@ -166,7 +166,7 @@
 
 <script type="module">
   // Import cryptographic functions from salty.ts
-  import { salty_key, salty_encrypt, salty_decrypt, hexToUint8Array } from '/salty.ts'; // Corrected import path
+  import { salty_key, salty_encrypt, salty_decrypt, hexToUint8Array } from '/salty.ts';
 
   // This will be replaced by the server upon serving the HTML file.
   const INJECTED_SALT_HEX = 'SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER';
@@ -213,6 +213,7 @@
     textarea.style.position = 'fixed'; // Avoid scrolling to bottom
     textarea.style.opacity = '0';
     document.body.appendChild(textarea);
+    textarea.focus(); // Added this line
     textarea.select();
     try {
       const successful = document.execCommand('copy');
