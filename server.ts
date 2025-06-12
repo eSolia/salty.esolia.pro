@@ -368,7 +368,7 @@ const HTML_TEMPLATE_JP = `<!DOCTYPE html>
       html += `<h3 class="text-2xl font-semibold text-blue-700 mb-4">共有可能暗号テキスト</h3>`;
       html += `<div class="relative bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
                   <p class="output uncompressed break-all text-gray-800">${escapeHtml(content.encryptedFormatted)}</p>
-                  <button onclick="copyToClipboard('${escapeHtml(content.encryptedFormatted).replace(/'/g, "\\'")}')"
+                  <button onclick="copyToClipboard(${JSON.stringify(content.encryptedFormatted)})"
                           class="absolute top-2 right-2 bg-blue-200 text-blue-800 px-3 py-1 rounded-md text-xs hover:bg-blue-300 transition">
                     コピー
                   </button>
@@ -377,7 +377,7 @@ const HTML_TEMPLATE_JP = `<!DOCTYPE html>
       html += `<h3 class="text-2xl font-semibold text-blue-700 mb-4">共有可能暗号テキスト（圧縮版）</h3>`;
       html += `<div class="relative bg-blue-50 p-4 rounded-lg border border-blue-200">
                   <p class="output breakable compressed text-gray-800">${escapeHtml(content.encryptedCompressed)}</p>
-                  <button onclick="copyToClipboard('${escapeHtml(content.encryptedCompressed).replace(/'/g, "\\'")}')"
+                  <button onclick="copyToClipboard(${JSON.stringify(content.encryptedCompressed)})"
                           class="absolute top-2 right-2 bg-blue-200 text-blue-800 px-3 py-1 rounded-md text-xs hover:bg-blue-300 transition">
                     コピー
                   </button>
@@ -389,7 +389,7 @@ const HTML_TEMPLATE_JP = `<!DOCTYPE html>
       html += `<h3 class="text-2xl font-semibold text-blue-700 mb-4">復号の結果</h3>`;
       html += `<div class="relative bg-green-50 p-4 rounded-lg border border-green-200">
                   <p class="output decrypted break-all text-gray-800">${escapeHtml(content.decrypted)}</p>
-                  <button onclick="copyToClipboard('${escapeHtml(content.decrypted).replace(/'/g, "\\'")}')"
+                  <button onclick="copyToClipboard(${JSON.stringify(content.decrypted)})"
                           class="absolute top-2 right-2 bg-green-200 text-green-800 px-3 py-1 rounded-md text-xs hover:bg-green-300 transition">
                     コピー
                   </button>
@@ -410,9 +410,10 @@ const HTML_TEMPLATE_JP = `<!DOCTYPE html>
       '<': '&lt;',
       '>': '&gt;',
       '"': '&quot;',
-      "'": '&#039;'
+      "'": '&#039;',
+      '`': '&#96;' // Escape backtick for safety in template literals
     };
-    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    return text.replace(/[&<>"'`]/g, function(m) { return map[m]; });
   }
 
   saltyForm.addEventListener('submit', async (event) => {
@@ -804,11 +805,11 @@ const HTML_TEMPLATE_EN = `<!DOCTYPE html>
     saltyResultDiv.classList.remove('hidden');
 
     if (type === 'plaintext') {
-      html += `<p class="text-sm text-gray-500 mb-2"><span class="font-bold text-green-600">Auto-detected: unencrypted plaintext</span></p>`;
-      html += `<h3 class="text-2xl font-semibold text-blue-700 mb-4">Shareable cipher</h3>`;
+      html += `<p class="text-sm text-gray-500 mb-2"><span class="font-bold text-green-600">自動検出: プレーンテキスト</span></p>`;
+      html += `<h3 class="text-2xl font-semibold text-blue-700 mb-4">共有可能暗号テキスト</h3>`;
       html += `<div class="relative bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
                   <p class="output uncompressed break-all text-gray-800">${escapeHtml(content.encryptedFormatted)}</p>
-                  <button onclick="copyToClipboard('${escapeHtml(content.encryptedFormatted).replace(/'/g, "\\'")}')"
+                  <button onclick="copyToClipboard(${JSON.stringify(content.encryptedFormatted)})"
                           class="absolute top-2 right-2 bg-blue-200 text-blue-800 px-3 py-1 rounded-md text-xs hover:bg-blue-300 transition">
                     Copy
                   </button>
@@ -817,7 +818,7 @@ const HTML_TEMPLATE_EN = `<!DOCTYPE html>
       html += `<h3 class="text-2xl font-semibold text-blue-700 mb-4">Compressed version</h3>`;
       html += `<div class="relative bg-blue-50 p-4 rounded-lg border border-blue-200">
                   <p class="output breakable compressed text-gray-800">${escapeHtml(content.encryptedCompressed)}</p>
-                  <button onclick="copyToClipboard('${escapeHtml(content.encryptedCompressed).replace(/'/g, "\\'")}')"
+                  <button onclick="copyToClipboard(${JSON.stringify(content.encryptedCompressed)})"
                           class="absolute top-2 right-2 bg-blue-200 text-blue-800 px-3 py-1 rounded-md text-xs hover:bg-blue-300 transition">
                     Copy
                   </button>
@@ -829,7 +830,7 @@ const HTML_TEMPLATE_EN = `<!DOCTYPE html>
       html += `<h3 class="text-2xl font-semibold text-blue-700 mb-4">Decrypted Result</h3>`;
       html += `<div class="relative bg-green-50 p-4 rounded-lg border border-green-200">
                   <p class="output decrypted break-all text-gray-800">${escapeHtml(content.decrypted)}</p>
-                  <button onclick="copyToClipboard('${escapeHtml(content.decrypted).replace(/'/g, "\\'")}')"
+                  <button onclick="copyToClipboard(${JSON.stringify(content.decrypted)})"
                           class="absolute top-2 right-2 bg-green-200 text-green-800 px-3 py-1 rounded-md text-xs hover:bg-green-300 transition">
                     Copy
                   </button>
@@ -850,9 +851,10 @@ const HTML_TEMPLATE_EN = `<!DOCTYPE html>
       '<': '&lt;',
       '>': '&gt;',
       '"': '&quot;',
-      "'": '&#039;'
+      "'": '&#039;',
+      '`': '&#96;' // Escape backtick for safety in template literals
     };
-    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    return text.replace(/[&<>"'`]/g, function(m) { return map[m]; });
   }
 
   saltyForm.addEventListener('submit', async (event) => {
@@ -922,8 +924,7 @@ const HTML_TEMPLATE_EN = `<!DOCTYPE html>
 </script>
 
 </body>
-</html>
-`;
+</html>`;
 
 const HTML_TEMPLATE_EN = `<!DOCTYPE html>
 <html lang="en">
@@ -1245,11 +1246,11 @@ const HTML_TEMPLATE_EN = `<!DOCTYPE html>
     saltyResultDiv.classList.remove('hidden');
 
     if (type === 'plaintext') {
-      html += `<p class="text-sm text-gray-500 mb-2"><span class="font-bold text-green-600">Auto-detected: unencrypted plaintext</span></p>`;
-      html += `<h3 class="text-2xl font-semibold text-blue-700 mb-4">Shareable cipher</h3>`;
+      html += `<p class="text-sm text-gray-500 mb-2"><span class="font-bold text-green-600">自動検出: プレーンテキスト</span></p>`;
+      html += `<h3 class="text-2xl font-semibold text-blue-700 mb-4">共有可能暗号テキスト</h3>`;
       html += `<div class="relative bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
                   <p class="output uncompressed break-all text-gray-800">${escapeHtml(content.encryptedFormatted)}</p>
-                  <button onclick="copyToClipboard('${escapeHtml(content.encryptedFormatted).replace(/'/g, "\\'")}')"
+                  <button onclick="copyToClipboard(${JSON.stringify(content.encryptedFormatted)})"
                           class="absolute top-2 right-2 bg-blue-200 text-blue-800 px-3 py-1 rounded-md text-xs hover:bg-blue-300 transition">
                     Copy
                   </button>
@@ -1258,7 +1259,7 @@ const HTML_TEMPLATE_EN = `<!DOCTYPE html>
       html += `<h3 class="text-2xl font-semibold text-blue-700 mb-4">Compressed version</h3>`;
       html += `<div class="relative bg-blue-50 p-4 rounded-lg border border-blue-200">
                   <p class="output breakable compressed text-gray-800">${escapeHtml(content.encryptedCompressed)}</p>
-                  <button onclick="copyToClipboard('${escapeHtml(content.encryptedCompressed).replace(/'/g, "\\'")}')"
+                  <button onclick="copyToClipboard(${JSON.stringify(content.encryptedCompressed)})"
                           class="absolute top-2 right-2 bg-blue-200 text-blue-800 px-3 py-1 rounded-md text-xs hover:bg-blue-300 transition">
                     Copy
                   </button>
@@ -1270,7 +1271,7 @@ const HTML_TEMPLATE_EN = `<!DOCTYPE html>
       html += `<h3 class="text-2xl font-semibold text-blue-700 mb-4">Decrypted Result</h3>`;
       html += `<div class="relative bg-green-50 p-4 rounded-lg border border-green-200">
                   <p class="output decrypted break-all text-gray-800">${escapeHtml(content.decrypted)}</p>
-                  <button onclick="copyToClipboard('${escapeHtml(content.decrypted).replace(/'/g, "\\'")}')"
+                  <button onclick="copyToClipboard(${JSON.stringify(content.decrypted)})"
                           class="absolute top-2 right-2 bg-green-200 text-green-800 px-3 py-1 rounded-md text-xs hover:bg-green-300 transition">
                     Copy
                   </button>
@@ -1291,9 +1292,10 @@ const HTML_TEMPLATE_EN = `<!DOCTYPE html>
       '<': '&lt;',
       '>': '&gt;',
       '"': '&quot;',
-      "'": '&#039;'
+      "'": '&#039;',
+      '`': '&#96;' // Escape backtick for safety in template literals
     };
-    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    return text.replace(/[&<>"'`]/g, function(m) { return map[m]; });
   }
 
   saltyForm.addEventListener('submit', async (event) => {
@@ -1394,7 +1396,7 @@ serve(async (req: Request) => {
 
   // Serve the English UI
   if (pathname === '/en/' || pathname === '/en') { // Handle both /en/ and /en
-    const responseHtml = injectSaltIntoHtml(HTML_TEMPLATE_EN, SALT_HEX); // Corrected typo here
+    const responseHtml = injectSaltIntoHtml(HTML_TEMPLATE_EN, SALT_HEX);
     return new Response(responseHtml, {
       headers: { 'Content-Type': 'text/html; charset=utf-8' },
     });
