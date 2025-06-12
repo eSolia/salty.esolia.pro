@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>Salty: Portable NaCl-powered text encryption</title>
+<title>Salty: Browser-Native Secure Text Encryption</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta property="og:title" content="Salty: Portable NaCl-powered text encryption">
+<meta property="og:title" content="Salty: Browser-Native Secure Text Encryption">
 <meta property="og:url" content="https://salty.esolia.pro/">
-<meta property="og:description" content="Portable NaCl-powered text encryption">
+<meta property="og:description" content="Salty: Browser-Native Secure Text Encryption">
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://kit.fontawesome.com/a2929890a6.js" crossorigin="anonymous"></script>
+<script src="https://kit.fontawesome.com/99c1e8e2fb.js" crossorigin="anonymous"></script>
 <!-- Fathom - beautiful, simple website analytics -->
 <script src="https://cdn.usefathom.com/script.js" data-site="SIBMOOOY" defer></script>
 <!-- / Fathom -->
@@ -92,8 +92,8 @@
   <div class="modal-content">
     <span class="close-button">&times;</span>
     <h1 class="text-3xl font-bold mb-4">Salty</h1>
-    <p class="italic mb-4">Portable NaCl-powered encryption</p>
-    <p class="mb-4">Salty makes it easy to send strongly-encrypted messages with a shared key. It uses <a href="https://nacl.cr.yp.to" target="_blank" class="text-blue-600 hover:underline">NaCl</a> for encryption and <a href="http://base91.sourceforge.net" target="_blank" class="text-blue-600 hover:underline">basE91</a> for portability.</p>
+    <p class="italic mb-4">Browser-Native Secure Text Encryption</p>
+    <p class="mb-4">Salty makes it easy to send strongly-encrypted messages with a shared key. It provides encryption capabilities via the browser's Web Crypto API and uses <a href="http://base91.sourceforge.net" target="_blank" class="text-blue-600 hover:underline">basE91</a> for portability.</p>
     <p class="mb-4">With Salty, you can encrypt a message as long as 185 characters and the resulting cipher will still fit in a tweet (~277 characters), making it ideal for encrypting tweets or other length-restricted communication. You can use it anywhere, though, with text of any length.</p>
     <h2 class="text-2xl font-semibold mb-3">Coded by Neatnik</h2>
     <p class="mb-4">Salty is an open source application written by Neatnik, and <a href="http://github.com/neatnik/salty" target="_blank" class="text-blue-600 hover:underline">available on GitHub</a>.</p>
@@ -296,7 +296,7 @@
     const key = keyInput.value;
 
     if (!payload || !key) {
-      displayResult('error', 'Please enter both payload and key.');
+      displayResult('error', 'ペイロードとキーの両方を入力してください。');
       return;
     }
 
@@ -317,7 +317,7 @@
         if (decrypted !== null) {
           displayResult('encrypted', { decrypted: decrypted });
         } else {
-          displayResult('error', 'Decryption of encrypted text failed. The key might be wrong or the text corrupted.');
+          displayResult('error', '暗号化されたテキストの復号に失敗しました。キーが間違っているか、テキストが破損している可能性があります。');
         }
       } else {
         const encrypted = await salty_encrypt(payload, cryptoKey);
@@ -333,11 +333,11 @@
       }
     } catch (e) {
       console.error("Operation failed:", e);
-      displayResult('error', 'An error occurred: ' + (e.message || 'Unknown error'));
+      displayResult('error', 'エラーが発生しました: ' + (e.message || '不明なエラー'));
     }
   });
 
-  // Handle the "More About Salty" button click to open modal
+  // Handle the "About Salty" button click to open modal
   aboutSaltyBtn.addEventListener('click', () => {
     helpModal.classList.remove('hidden');
   });
