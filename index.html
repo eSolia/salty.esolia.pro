@@ -201,7 +201,7 @@
    * Reads the text from a data attribute on the clicked element.
    * @param {Event} event The click event.
    */
-  function copyToClipboard(event) {
+  window.copyToClipboard = function(event) { // Attached to window object
     const textToCopy = event.currentTarget.dataset.textToCopy;
     if (!textToCopy) {
         showMessageBox('コピーするテキストがありません。', true);
@@ -213,7 +213,7 @@
     textarea.style.position = 'fixed'; // Avoid scrolling to bottom
     textarea.style.opacity = '0';
     document.body.appendChild(textarea);
-    textarea.focus(); // Added this line
+    textarea.focus();
     textarea.select();
     try {
       const successful = document.execCommand('copy');
@@ -226,7 +226,7 @@
       showMessageBox('クリップボードへのコピーに失敗しました。', true);
     }
     document.body.removeChild(textarea);
-  }
+  };
 
   // Function to format and display output
   function displayResult(type, content) {
@@ -239,7 +239,7 @@
       html += `<h3 class="text-2xl font-semibold text-blue-700 mb-4">共有可能暗号テキスト</h3>`;
       html += `<div class="relative bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
                   <p class="output uncompressed break-all text-gray-800">${escapeHtml(content.encryptedFormatted)}</p>
-                  <button onclick="copyToClipboard(event)" data-text-to-copy="${escapeHtml(content.encryptedFormatted)}"
+                  <button onclick="window.copyToClipboard(event)" data-text-to-copy="${escapeHtml(content.encryptedFormatted)}"
                           class="absolute top-2 right-2 bg-blue-200 text-blue-800 px-3 py-1 rounded-md text-xs hover:bg-blue-300 transition">
                     コピー
                   </button>
@@ -248,7 +248,7 @@
       html += `<h3 class="text-2xl font-semibold text-blue-700 mb-4">共有可能暗号テキスト（圧縮版）</h3>`;
       html += `<div class="relative bg-blue-50 p-4 rounded-lg border border-blue-200">
                   <p class="output breakable compressed text-gray-800">${escapeHtml(content.encryptedCompressed)}</p>
-                  <button onclick="copyToClipboard(event)" data-text-to-copy="${escapeHtml(content.encryptedCompressed)}"
+                  <button onclick="window.copyToClipboard(event)" data-text-to-copy="${escapeHtml(content.encryptedCompressed)}"
                           class="absolute top-2 right-2 bg-blue-200 text-blue-800 px-3 py-1 rounded-md text-xs hover:bg-blue-300 transition">
                     コピー
                   </button>
@@ -260,7 +260,7 @@
       html += `<h3 class="text-2xl font-semibold text-blue-700 mb-4">復号の結果</h3>`;
       html += `<div class="relative bg-green-50 p-4 rounded-lg border border-green-200">
                   <p class="output decrypted break-all text-gray-800">${escapeHtml(content.decrypted)}</p>
-                  <button onclick="copyToClipboard(event)" data-text-to-copy="${escapeHtml(content.decrypted)}"
+                  <button onclick="window.copyToClipboard(event)" data-text-to-copy="${escapeHtml(content.decrypted)}"
                           class="absolute top-2 right-2 bg-green-200 text-green-800 px-3 py-1 rounded-md text-xs hover:bg-green-300 transition">
                     コピー
                   </button>
