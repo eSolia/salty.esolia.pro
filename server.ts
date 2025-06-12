@@ -44,7 +44,7 @@ const SALT_PLACEHOLDER = 'SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER';
 
 /**
  * Reads an HTML file and injects the SALT_HEX into it.
- * @param {string} filePath The path to the HTML file.
+ * @param {string} filePath The path to the HTML file relative to currentDir.
  * @returns {Promise<string>} The HTML content with the salt injected.
  */
 async function getHtmlContent(filePath: string): Promise<string> {
@@ -59,6 +59,25 @@ async function getHtmlContent(filePath: string): Promise<string> {
     throw new Error('Failed to load HTML content.');
   }
   return htmlContent;
+}
+
+/**
+ * Reads a static file (like salty.ts or style.css) from disk.
+ * @param {string} filePath The path to the file relative to currentDir.
+ * @param {string} contentType The Content-Type header for the response.
+ * @returns {Promise<Response>} The Response object for the static file.
+ */
+async function getStaticFile(filePath: string, contentType: string): Promise<Response> {
+  const fullPath = join(currentDir, filePath);
+  try {
+    const fileContent = await Deno.readTextFile(fullPath);
+    return new Response(fileContent, {
+      headers: { 'Content-Type': contentType + '; charset=utf-8' },
+    });
+  } catch (error) {
+    console.error(`Error reading static file ${fullPath}:`, error);
+    return new Response('Not Found', { status: 404 });
+  }
 }
 
 // --- Request Handler ---
@@ -127,24 +146,26 @@ serve(async (req: Request) => {
       });
     }
 
-    // Serve static files like salty.ts and style.css
+    // Serve salty.ts module
     if (pathname === '/salty.ts') {
-        const saltyJsContent = await Deno.readTextFile(join(currentDir, 'salty.ts'));
-        return new Response(saltyJsContent, {
-            headers: { 'Content-Type': 'application/typescript; charset=utf-8' },
-        });
+        return await getStaticFile('salty.ts', 'application/typescript');
     }
 
+    // Serve style.css (if you have one, otherwise it's 204 No Content)
     if (pathname === '/style.css') {
-        // In a real application, you'd serve style.css from disk or a build step.
-        // For this simplified example, we'll return a minimal CSS or 404.
-        // Since Tailwind is used via CDN, this file might be empty or a placeholder.
-        return new Response('', { headers: { 'Content-Type': 'text/css' } });
+        // If style.css exists and contains content, return it.
+        // Otherwise, return 204 No Content if it's intentionally empty
+        // or a placeholder because Tailwind is loaded via CDN.
+        // For this scenario, assuming it might be empty or missing.
+        // If it's truly empty by design, 204 is appropriate.
+        return new Response(null, { status: 204, headers: { 'Content-Type': 'text/css' } });
+        // Alternatively, if you plan to add custom CSS later:
+        // return await getStaticFile('style.css', 'text/css');
     }
 
     // Handle favicon.ico (common request)
     if (pathname === '/favicon.ico') {
-      return new Response('', { status: 204 }); // No content for now
+      return new Response(null, { status: 204 }); // No content for favicon
     }
 
     // Catch-all for unknown routes
