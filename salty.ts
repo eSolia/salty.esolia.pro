@@ -16,11 +16,12 @@ const b91_enctab = [
   'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
   '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '#', '$',
   '%', '&', '(', ')', '*', '+', ',', '.', '/', ':', ';', '<', '=',
-  '>', '?', '@', '[', ']', '^', '_', '\x60', '{', '|', '}', '~', '"' // Changed: Replaced String.fromCharCode(96) with '\x60'
+  '>', '?', '@', '[', ']', '^', '_', '\x60', '{', '|', '}', '~', '"'
 ];
 
 // Global constant for basE91 decoding table (derived from encoding table)
-const b91_dectab: { [key: string]: number } = {};
+// Removed TypeScript type annotation to ensure pure JavaScript compatibility for browsers.
+const b91_dectab = {};
 b91_enctab.forEach((char, index) => {
   b91_dectab[char] = index;
 });
