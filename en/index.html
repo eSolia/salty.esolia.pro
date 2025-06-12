@@ -93,11 +93,11 @@
     <span class="close-button">&times;</span>
     <h1 class="text-3xl font-bold mb-4">Salty</h1>
     <p class="italic mb-4">Browser-Native Secure Text Encryption</p>
-    <p class="mb-4">Salty makes it easy to send strongly-encrypted messages with a shared key. It provides encryption capabilities via the browser's Web Crypto API and uses <a href="http://base91.sourceforge.net" target="_blank" class="text-blue-600 hover:underline">basE91</a> for portability.</p>
+    <p class="mb-4">Salty makes it easy to send strongly-encrypted messages with a shared key. It provides encryption capabilities via the browser's Web Crypto API and uses <a href="http://base91.sourceforge.net" target="_blank" class="text-sky-600 hover:underline">basE91</a> for portability.</p>
     <p class="mb-4">With Salty, you can encrypt a message as long as 185 characters and the resulting cipher will still fit in a tweet (~277 characters), making it ideal for encrypting tweets or other length-restricted communication. You can use it anywhere, though, with text of any length.</p>
     <h2 class="text-2xl font-semibold mb-3">Coded by Neatnik</h2>
-    <p class="mb-4">Salty is an open source application written by Neatnik, and <a href="http://github.com/neatnik/salty" target="_blank" class="text-blue-600 hover:underline">available on GitHub</a>.</p>
-    <p>Detailed information can be found in the project’s <a href="https://github.com/neatnik/salty/blob/master/README.md" target="_blank" class="text-blue-600 hover:underline">README</a> file.</p>
+    <p class="mb-4">Salty is an open source application written by Neatnik, and <a href="http://github.com/neatnik/salty" target="_blank" class="text-sky-600 hover:underline">available on GitHub</a>.</p>
+    <p>Detailed information can be found in the project’s <a href="https://github.com/neatnik/salty/blob/master/README.md" target="_blank" class="text-sky-600 hover:underline">README</a> file.</p>
   </div>
 </div>
 
@@ -118,7 +118,7 @@
 </header>
 
 <main class="container mx-auto p-6 flex-grow">
-  <h1 class="text-4xl font-extrabold text-center text-blue-700 mb-8 mt-4">Salty Secure Text Encryption</h1>
+  <h1 class="text-4xl font-extrabold text-center text-sky-700 mb-8 mt-4">Salty Secure Text Encryption</h1>
 
   <p class="text-center text-lg mb-8 leading-relaxed">
     Enter a payload and provide a key below. Your payload can be unencrypted text, or a Salty-encrypted cipher (detected automatically).
@@ -239,20 +239,20 @@
 
     if (type === 'plaintext') {
       html += `<p class="text-sm text-gray-500 mb-2"><span class="font-bold text-green-600">Auto-detected: unencrypted plaintext</span></p>`;
-      html += `<h3 class="text-2xl font-semibold text-blue-700 mb-4">Shareable cipher</h3>`;
+      html += `<h3 class="text-2xl font-semibold text-sky-700 mb-4">Shareable cipher</h3>`;
       html += `<div class="relative bg-amber-50 p-4 rounded-lg border border-blue-200 mb-4">
                   <p class="output uncompressed break-all text-gray-800">${escapeHtml(content.encryptedFormatted)}</p>
                   <button onclick="window.copyToClipboard(event)" data-text-to-copy="${escapeHtml(content.encryptedFormatted)}"
-                          class="absolute top-2 right-2 bg-amber-200 text-blue-800 px-3 py-1 rounded-md text-xs hover:bg-amber-300 transition">
+                          class="absolute top-2 right-2 bg-amber-200 text-sky-800 px-3 py-1 rounded-md text-xs hover:bg-amber-300 transition">
                     Copy
                   </button>
                </div>`;
 
-      html += `<h3 class="text-2xl font-semibold text-blue-700 mb-4">Compressed version</h3>`;
+      html += `<h3 class="text-2xl font-semibold text-sky-700 mb-4">Compressed version</h3>`;
       html += `<div class="relative bg-amber-50 p-4 rounded-lg border border-blue-200">
                   <p class="output breakable compressed text-gray-800">${escapeHtml(content.encryptedCompressed)}</p>
                   <button onclick="window.copyToClipboard(event)" data-text-to-copy="${escapeHtml(content.encryptedCompressed)}"
-                          class="absolute top-2 right-2 bg-amber-200 text-blue-800 px-3 py-1 rounded-md text-xs hover:bg-amber-300 transition">
+                          class="absolute top-2 right-2 bg-amber-200 text-sky-800 px-3 py-1 rounded-md text-xs hover:bg-amber-300 transition">
                     Copy
                   </button>
                </div>
@@ -260,7 +260,7 @@
 
     } else if (type === 'encrypted') {
       html += `<p class="text-sm text-gray-500 mb-2"><span class="font-bold text-purple-600">Auto-detected: Salty cipher</span></p>`;
-      html += `<h3 class="text-2xl font-semibold text-blue-700 mb-4">Decrypted Result</h3>`;
+      html += `<h3 class="text-2xl font-semibold text-sky-700 mb-4">Decrypted Result</h3>`;
       html += `<div class="relative bg-green-50 p-4 rounded-lg border border-green-200">
                   <p class="output decrypted break-all text-gray-800">${escapeHtml(content.decrypted)}</p>
                   <button onclick="window.copyToClipboard(event)" data-text-to-copy="${escapeHtml(content.decrypted)}"
