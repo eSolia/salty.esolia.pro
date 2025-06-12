@@ -146,21 +146,17 @@ serve(async (req: Request) => {
       });
     }
 
-    // Serve salty.ts module
+    // Serve salty.ts module with correct MIME type
     if (pathname === '/salty.ts') {
-        return await getStaticFile('salty.ts', 'application/typescript');
+        // Serve as JavaScript module, as Deno Deploy transpiles it.
+        return await getStaticFile('salty.ts', 'application/javascript');
     }
 
     // Serve style.css (if you have one, otherwise it's 204 No Content)
     if (pathname === '/style.css') {
-        // If style.css exists and contains content, return it.
-        // Otherwise, return 204 No Content if it's intentionally empty
-        // or a placeholder because Tailwind is loaded via CDN.
-        // For this scenario, assuming it might be empty or missing.
-        // If it's truly empty by design, 204 is appropriate.
+        // Assuming style.css is empty or handled by CDN (Tailwind).
+        // Returning 204 No Content for a response with no body.
         return new Response(null, { status: 204, headers: { 'Content-Type': 'text/css' } });
-        // Alternatively, if you plan to add custom CSS later:
-        // return await getStaticFile('style.css', 'text/css');
     }
 
     // Handle favicon.ico (common request)
