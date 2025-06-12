@@ -4,6 +4,7 @@
  * This file sets up a Deno HTTP server to serve:
  * 1. The web UI (Japanese and English versions) by reading HTML files.
  * 2. The API endpoint for encryption/decryption requests.
+ * 3. Static assets like JavaScript modules, CSS, and images.
  *
  * It retrieves the SALT_HEX and the API_KEY from Deno Deploy environment variables
  * to ensure secure and consistent operation.
@@ -14,7 +15,7 @@
  */
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { dirname, fromFileUrl, join } from "https://deno.land/std@0.224.0/path/mod.ts";
+import { dirname, fromFileUrl, join, extname } from "https://deno.land/std@0.224.0/path/mod.ts";
 
 // Import cryptographic functions from salty.ts (used only by the API endpoint now)
 import { salty_key, salty_encrypt, salty_decrypt, hexToUint8Array } from "./salty.ts";
@@ -62,21 +63,55 @@ async function getHtmlContent(filePath: string): Promise<string> {
 }
 
 /**
- * Reads a static file (like salty.ts or style.css) from disk.
- * @param {string} filePath The path to the file relative to currentDir.
- * @param {string} contentType The Content-Type header for the response.
+ * Maps file extensions to MIME types.
+ */
+const MIME_TYPES: { [key: string]: string } = {
+  '.html': 'text/html',
+  '.css': 'text/css',
+  '.js': 'application/javascript',
+  '.ts': 'application/javascript', // Deno Deploy transpiles TS to JS
+  '.json': 'application/json',
+  '.ico': 'image/x-icon',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+};
+
+/**
+ * Serves a static file (text or binary) from disk.
+ * @param {string} requestPath The requested path (e.g., "/img/logo.png").
  * @returns {Promise<Response>} The Response object for the static file.
  */
-async function getStaticFile(filePath: string, contentType: string): Promise<Response> {
-  const fullPath = join(currentDir, filePath);
+async function serveStaticFile(requestPath: string): Promise<Response> {
+  // Map request path to file system path. Remove leading slash for join.
+  const filePath = join(currentDir, requestPath.substring(1));
+  const fileExtension = extname(filePath).toLowerCase();
+  const contentType = MIME_TYPES[fileExtension] || 'application/octet-stream'; // Default to binary stream
+
   try {
-    const fileContent = await Deno.readTextFile(fullPath);
+    let fileContent: string | Uint8Array;
+    if (contentType.startsWith('text/') || contentType.includes('javascript') || contentType.includes('json') || contentType.includes('xml')) {
+      fileContent = await Deno.readTextFile(filePath);
+    } else {
+      fileContent = await Deno.readFile(filePath); // Use readFile for binary data (images)
+    }
+
+    // For empty CSS or favicon, return 204 No Content as before
+    if ((requestPath === '/style.css' || requestPath === '/favicon.ico') && fileContent.byteLength === 0) {
+      return new Response(null, { status: 204, headers: { 'Content-Type': contentType + '; charset=utf-8' } });
+    }
+
     return new Response(fileContent, {
       headers: { 'Content-Type': contentType + '; charset=utf-8' },
     });
   } catch (error) {
-    console.error(`Error reading static file ${fullPath}:`, error);
-    return new Response('Not Found', { status: 404 });
+    if (error instanceof Deno.errors.NotFound) {
+      return new Response('Not Found', { status: 404 });
+    }
+    console.error(`Error serving static file ${filePath}:`, error);
+    return new Response('Internal Server Error', { status: 500 });
   }
 }
 
@@ -146,22 +181,24 @@ serve(async (req: Request) => {
       });
     }
 
-    // Serve salty.ts module with correct MIME type
+    // Serve salty.ts module
     if (pathname === '/salty.ts') {
-        // Serve as JavaScript module. Deno Deploy transpiles TS to JS.
-        return await getStaticFile('salty.ts', 'text/javascript'); // Changed to text/javascript
+        return await serveStaticFile('/salty.ts');
     }
 
-    // Serve style.css (if you have one, otherwise it's 204 No Content)
+    // Serve style.css
     if (pathname === '/style.css') {
-        // Assuming style.css is empty or handled by CDN (Tailwind).
-        // Returning 204 No Content for a response with no body.
-        return new Response(null, { status: 204, headers: { 'Content-Type': 'text/css' } });
+        return await serveStaticFile('/style.css');
     }
 
-    // Handle favicon.ico (common request)
+    // Handle favicon.ico
     if (pathname === '/favicon.ico') {
-      return new Response(null, { status: 204 }); // No content for favicon
+      return await serveStaticFile('/favicon.ico');
+    }
+
+    // NEW: Serve images from /img directory
+    if (pathname.startsWith('/img/')) {
+        return await serveStaticFile(pathname);
     }
 
     // Catch-all for unknown routes
