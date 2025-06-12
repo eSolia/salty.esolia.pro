@@ -16,7 +16,7 @@ const b91_enctab = [
   'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
   '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '#', '$',
   '%', '&', '(', ')', '*', '+', ',', '.', '/', ':', ';', '<', '=',
-  '>', '?', '@', '[', ']', '^', '_', String.fromCharCode(96), '{', '|', '}', '~', '"'
+  '>', '?', '@', '[', ']', '^', '_', '\x60', '{', '|', '}', '~', '"' // Changed: Replaced String.fromCharCode(96) with '\x60'
 ];
 
 // Global constant for basE91 decoding table (derived from encoding table)
@@ -80,7 +80,7 @@ export function base91_decode(d: string): Uint8Array | null {
 /**
  * Encodes a Uint8Array into a basE91 string.
  * Based on the original basE91 implementation logic.
- * @param {Uint8Array} d The Uint8Array to encode.
+ * @param {Uint8Array} d The Uint8Array to encode.\
  * @returns {string} The basE91 encoded string.
  */
 export function base91_encode(d: Uint8Array): string {

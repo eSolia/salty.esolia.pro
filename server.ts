@@ -148,8 +148,8 @@ serve(async (req: Request) => {
 
     // Serve salty.ts module with correct MIME type
     if (pathname === '/salty.ts') {
-        // Serve as JavaScript module, as Deno Deploy transpiles it.
-        return await getStaticFile('salty.ts', 'application/javascript');
+        // Serve as JavaScript module. Deno Deploy transpiles TS to JS.
+        return await getStaticFile('salty.ts', 'text/javascript'); // Changed to text/javascript
     }
 
     // Serve style.css (if you have one, otherwise it's 204 No Content)
