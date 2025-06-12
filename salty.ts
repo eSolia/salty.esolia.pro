@@ -20,7 +20,6 @@ const b91_enctab = [
 ];
 
 // Global constant for basE91 decoding table (derived from encoding table)
-// Removed TypeScript type annotation to ensure pure JavaScript compatibility for browsers.
 const b91_dectab = {};
 b91_enctab.forEach((char, index) => {
   b91_dectab[char] = index;
@@ -31,11 +30,11 @@ b91_enctab.forEach((char, index) => {
  * @param {string} hexString The hexadecimal string to convert.
  * @returns {Uint8Array} The resulting Uint8Array.
  */
-export function hexToUint8Array(hexString: string): Uint8Array {
+export function hexToUint8Array(hexString) { // Removed type annotations
   // Ensure the hex string has an even length by padding with a leading zero if necessary.
   const normalizedHexString = hexString.length % 2 !== 0 ? '0' + hexString : hexString;
   // Match every two characters and parse them as hexadecimal bytes.
-  return Uint8Array.from(normalizedHexString.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)));
+  return Uint8Array.from(normalizedHexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
 }
 
 /**
@@ -44,10 +43,10 @@ export function hexToUint8Array(hexString: string): Uint8Array {
  * @param {string} d The basE91 encoded string.
  * @returns {Uint8Array | null} The decoded Uint8Array, or null if decoding fails.
  */
-export function base91_decode(d: string): Uint8Array | null {
+export function base91_decode(d) { // Removed type annotations
   let n = 0; // bit shift counter
   let b = 0; // bit buffer
-  let o: number[] = []; // output byte array
+  let o = []; // output byte array
   let v = -1; // current value (from character pair)
   const l = d.length;
 
@@ -84,7 +83,7 @@ export function base91_decode(d: string): Uint8Array | null {
  * @param {Uint8Array} d The Uint8Array to encode.\
  * @returns {string} The basE91 encoded string.
  */
-export function base91_encode(d: Uint8Array): string {
+export function base91_encode(d) { // Removed type annotations
   let n = 0; // bit shift counter
   let b = 0; // bit buffer
   let o = ''; // output string
@@ -122,7 +121,7 @@ export function base91_encode(d: Uint8Array): string {
  * @param {string} saltHex The hexadecimal string representation of the salt.
  * @returns {Promise<CryptoKey>} The derived CryptoKey.
  */
-export async function salty_key(key: string, saltHex: string): Promise<CryptoKey> {
+export async function salty_key(key, saltHex) { // Removed type annotations
   const enc = new TextEncoder();
   const password = enc.encode(key);
   const salt = hexToUint8Array(saltHex); // Convert hex salt to Uint8Array
@@ -163,7 +162,7 @@ export async function salty_key(key: string, saltHex: string): Promise<CryptoKey
  * @param {CryptoKey} cryptoKey The CryptoKey derived from the passphrase.
  * @returns {Promise<string>} The basE91 encoded ciphertext.
  */
-export async function salty_encrypt(message: string, cryptoKey: CryptoKey): Promise<string> {
+export async function salty_encrypt(message, cryptoKey) { // Removed type annotations
   const enc = new TextEncoder();
   const data = enc.encode(message); // Encode message to Uint8Array
 
@@ -196,7 +195,7 @@ export async function salty_encrypt(message: string, cryptoKey: CryptoKey): Prom
  * @param {CryptoKey} cryptoKey The CryptoKey derived from the passphrase.
  * @returns {Promise<string | null>} The decrypted plaintext message, or null if decryption fails.
  */
-export async function salty_decrypt(encrypted: string, cryptoKey: CryptoKey): Promise<string | null> {
+export async function salty_decrypt(encrypted, cryptoKey) { // Removed type annotations
   const decoded = base91_decode(encrypted); // Decode from basE91
 
   // Check minimum length: IV (12 bytes) + GCM Tag (16 bytes)
