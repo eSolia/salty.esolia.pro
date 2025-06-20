@@ -3,7 +3,7 @@
  *
  * This file sets up a Deno HTTP server to serve:
  * 1. The web UI (Japanese and English versions) by reading HTML files.
- * 2. The API endpoint for encryption/decryption requests.
+ * 2. API endpoints for encryption and decryption requests.
  * 3. Static assets like JavaScript modules, CSS, and images.
  *
  * It retrieves the SALT_HEX and the API_KEY from Deno Deploy environment variables
@@ -17,7 +17,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { dirname, fromFileUrl, join, extname } from "https://deno.land/std@0.224.0/path/mod.ts";
 
-// Import cryptographic functions from salty.ts (used only by the API endpoint now)
+// Import cryptographic functions from salty.ts
 import { salty_key, salty_encrypt, salty_decrypt, hexToUint8Array } from "./salty.ts";
 
 // Determine the base directory of the script for reading static files
@@ -37,7 +37,7 @@ if (!SALT_HEX) {
 // In production on Deno Deploy, this *must* be set for API access.
 const API_KEY = Deno.env.get('API_KEY');
 if (!API_KEY) {
-  console.warn("WARNING: Environment variable 'API_KEY' is not set. API endpoint will not be authenticated.");
+  console.warn("WARNING: Environment variable 'API_KEY' is not set. API endpoints will not be authenticated.");
 }
 
 // Define a placeholder that will be replaced in the HTML template when served
@@ -119,9 +119,9 @@ async function serveStaticFile(requestPath: string): Promise<Response> {
 console.log(`Salty server listening on http://localhost:8000/`);
 console.log(`SALT_HEX from environment: ${SALT_HEX}`);
 if (API_KEY) {
-  console.log("API_KEY is set. API endpoint is authenticated.");
+  console.log("API_KEY is set. API endpoints are authenticated.");
 } else {
-  console.log("API_KEY is NOT set. API endpoint is NOT authenticated.");
+  console.log("API_KEY is NOT set. API endpoints are NOT authenticated.");
 }
 
 serve(async (req: Request) => {
@@ -145,7 +145,7 @@ serve(async (req: Request) => {
       });
     }
 
-    // Handle the API endpoint
+    // Handle the API endpoint for Encryption
     if (pathname === '/api/encrypt') {
       if (req.method !== 'POST') {
         return new Response('Method Not Allowed', { status: 405 });
@@ -181,6 +181,60 @@ serve(async (req: Request) => {
       });
     }
 
+    // Handle the API endpoint for Decryption (NEW)
+    if (pathname === '/api/decrypt') {
+      if (req.method !== 'POST') {
+        return new Response('Method Not Allowed', { status: 405 });
+      }
+
+      // API Key Authentication (same as encrypt)
+      if (API_KEY) {
+        const receivedApiKey = req.headers.get('X-API-Key');
+        if (!receivedApiKey || receivedApiKey !== API_KEY) {
+          return new Response('Unauthorized: Invalid or missing API key', { status: 401 });
+        }
+      } else {
+        console.warn("API_KEY environment variable not set. API endpoint is not authenticated (for local testing).");
+      }
+
+      // Expecting application/json for payload and key
+      if (!req.headers.get('content-type')?.includes('application/json')) {
+        return new Response('Content-Type must be application/json', { status: 400 });
+      }
+
+      const { payload, key } = await req.json();
+
+      if (typeof payload !== 'string' || typeof key !== 'string') {
+        return new Response('Missing or invalid payload or key parameters.', { status: 400 });
+      }
+
+      try {
+        // Use the securely loaded SALT_HEX for API decryption
+        const cryptoKey = await salty_key(key, SALT_HEX);
+
+        // Clean the payload for decryption (remove headers/spaces if present)
+        let cleanedPayload = payload
+            .replace(/-- BEGIN SALTY ENCRYPTED MESSAGE --/g, '')
+            .replace(/-- END SALTY ENCRYPTED MESSAGE --/g, '')
+            .replace(/\n|\r| /g, '');
+
+        const decryptedText = await salty_decrypt(cleanedPayload, cryptoKey);
+
+        if (decryptedText === null) {
+          // Decryption failed (e.g., wrong key, corrupted data)
+          return new Response('Decryption failed: Invalid key or corrupted ciphertext.', { status: 400 });
+        }
+
+        return new Response(decryptedText, {
+          headers: { 'Content-Type': 'text/plain' },
+        });
+
+      } catch (e) {
+        console.error("API Decryption error:", e);
+        return new Response(`Internal Server Error during decryption: ${e.message}`, { status: 500 });
+      }
+    }
+
     // Serve salty.ts module
     if (pathname === '/salty.ts') {
         return await serveStaticFile('/salty.ts');
@@ -196,7 +250,7 @@ serve(async (req: Request) => {
       return await serveStaticFile('/favicon.ico');
     }
 
-    // NEW: Serve images from /img directory
+    // Serve images from /img directory
     if (pathname.startsWith('/img/')) {
         return await serveStaticFile(pathname);
     }
