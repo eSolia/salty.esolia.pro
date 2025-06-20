@@ -3,10 +3,10 @@
 Salty (<https://salty.esolia.pro>) is a simple, web-based application designed for secure text encryption and decryption using a shared key. It leverages the browser's built-in Web Crypto API for robust cryptographic operations, ensuring that sensitive data is processed client-side. The application also employs basE91 encoding for portability, making the encrypted output suitable for various communication channels, including those with length limitations.
 
 ## Features
-* Browser-Native Encryption: Utilizes the Web Crypto API for strong, client-side encryption (AES-GCM) and key derivation (PBKDF2).
+* Browser-Native Encryption: Utilizes the Web Crypto API for strong, client-side encryption (`AES-GCM`) and key derivation (`PBKDF2`).
 * Shared Key Security: Securely encrypt and decrypt messages using a shared passphrase.
 * Automatic Detection: Intelligently detects whether the input payload is plaintext (to be encrypted) or a Salty-encrypted cipher (to be decrypted).
-* basE91 Encoding: Encrypted output is encoded using basE91, providing a compact and portable format.
+* `basE91` Encoding: Encrypted output is encoded using `basE91`, providing a compact and portable format.
 * Clipboard Integration: Easy one-click copying of encrypted or decrypted text to the clipboard.
 * Responsive UI: Designed with Tailwind CSS for a clean and adaptive user experience across devices.
 * Multi-language Support: Available in English and Japanese.
@@ -15,7 +15,7 @@ Salty (<https://salty.esolia.pro>) is a simple, web-based application designed f
 * Deno: Powers the server-side backend for serving static files and handling API requests (though core crypto is client-side).
 * TypeScript: Used for type-safe JavaScript development.
 * Web Crypto API: The browser's native cryptographic interface for secure operations.
-* basE91: An efficient binary-to-text encoding scheme.
+* `basE91`: An efficient binary-to-text encoding scheme.
 * HTML, CSS (Tailwind CSS): For structuring and styling the user interface.
 
 ## Getting Started
@@ -25,7 +25,7 @@ Salty (<https://salty.esolia.pro>) is a simple, web-based application designed f
 * A Deno Deploy account (for production deployment).
 * A `SALT_HEX` environment variable set in your Deno Deploy project or local environment. This is a crucial cryptographic salt (a hex representation of 16 cryptographically secure random bytes).
 
-To generate a SALT_HEX (example using Deno):
+To generate a `SALT_HEX` (example using Deno):
 
 ```ts
 deno run -A -r https://deno.land/std@0.224.0/crypto/mod.ts -c crypto.getRandomValues --length 16 --format hex
@@ -53,7 +53,7 @@ Then, set this generated hex string as `SALT_HEX` in your Deno Deploy project se
 
 ### Local Development
 1. Clone the repository (or copy the files):
-Ensure you have server.ts, salty.ts, index.html, and en/index.html in your project directory.
+Ensure you have `server.ts`, `salty.ts`, `index.html`, and en/index.html in your project directory.
 
 2. Set `SALT_HEX` environment variable:
 For local testing, you can set it directly in your shell:
@@ -97,14 +97,14 @@ To decrypt a Salty-encrypted message:
 3. Click "Go" (or "実行") to decrypt the message. 
 4. The original plaintext will be displayed.
 
-### How to Use the `/api/encrypt` API Endpoint
-This API endpoint in `server.ts` allows you to programmatically encrypt data by sending a payload and a key to the server. It's distinct from the client-side encryption that happens directly in your browser when you use the web UI.
+### How to Use the `/api/encrypt` and `/api/decrypt` API Endpoints
+These API endpoints in `server.ts` allow you to programmatically encrypt and decrypt data by sending a payload and a key to the server. It's distinct from the client-side encryption that happens directly in your browser when you use the web UI.
 
-This API endpoint is useful if you need to integrate Salty's encryption capabilities into other backend systems or services, rather than solely relying on the browser UI.
+This API is useful if you need to integrate Salty's encryption capabilities into other backend systems or services, rather than solely relying on the browser UI.
 
 1. Endpoint URL:
    * Method: POST
-   * URL: <https://your-deno-deploy-url.deno.dev/api/encrypt>
+   * URL: <https://your-deno-deploy-url.deno.dev/api/encrypt> (or `/api/decrypt`)
       * Replace <https://your-deno-deploy-url.deno.dev> with the actual URL of your deployed Salty application.
 2. Request Headers:
    * `Content-Type: application/json`
@@ -121,21 +121,30 @@ openssl rand -base64 32
 
 3. Request Body (JSON):
 The request body must be a JSON object containing two properties:
-* `payload`: The plaintext string you want to encrypt.
-* `key`: The passphrase (string) that will be used to derive the cryptographic key.
+* `payload`: The plaintext string you want to encrypt, or the `basE91`-encoded ciphertext to decrypt.
+* `key`: The passphrase (string) that will be used to derive the cryptographic key, or that was used to encrypt the cleartext.
 
-Example request body: 
+Example request body when encrypting: 
 
 ```json
 {
-  "payload": "My secret message.",
-  "key": "MyStrongPassphrase123!"
+  "payload": "My super secret message",
+  "key": "123"
+}
+```
+
+... and when decrypting: 
+
+```json
+{
+  "payload": "v^0{<^0w@S...q+gGNeXSyM+>)7TIbq$s^B",
+  "key": "123"
 }
 ```
 
 4. Responses
 * Success (Status 200 OK):
-   * The response will be the basE91 encoded ciphertext as plain text. This is the "compressed version" of the encrypted output you see on the web UI.
+   * The response will be the `basE91` encoded ciphertext as plain text. This is the "compressed version" of the encrypted output you see on the web UI.
 * Error Responses:
    * 400 Bad Request: If Content-Type is not application/json, or if payload or key are missing/invalid in the JSON body.
    * 401 Unauthorized: If the X-API-Key header is missing or incorrect (and API_KEY is set in your environment variables).
@@ -143,14 +152,24 @@ Example request body:
    * 500 Internal Server Error: For any server-side errors during processing.
 
 5. Testing
-Example `curl` command:
+Example `curl` commands for encrypt:
 
 ```bash
 curl -X POST \
      -H "Content-Type: application/json" \
      -H "X-API-Key: YOUR_ACTUAL_API_KEY" \
-     -d '{"payload": "This is a test message.", "key": "supersecretkey"}' \
+     -d '{"payload": "My super secret message", "key": "123"}' \
      https://your-deno-deploy-url.deno.dev/api/encrypt
+```
+
+... and decrypt:
+
+```bash
+curl -X POST \
+     -H "Content-Type: application/json" \
+     -H "X-API-Key: YOUR_ACTUAL_API_KEY" \
+     -d '{"payload": "v^0{<^0w@Sj%q...GNeXSyM+>)7TIbq$s^B", "key": "123"}' \
+     https://your-deno-deploy-url.deno.dev/api/decrypt
 ```
 
 ## Important Security Notes
