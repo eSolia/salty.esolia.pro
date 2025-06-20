@@ -299,25 +299,28 @@
     }
 
     try {
-      // Use the injected salt for client-side operations
       const cryptoKey = await salty_key(key, INJECTED_SALT_HEX);
 
-      // Check if payload is already an encrypted Salty message
-      const isEncryptedSalty = payload.includes('-- BEGIN SALTY ENCRYPTED MESSAGE --');
+      // Step 1: Clean the input by removing potential Salty headers and spaces
+      let cleanedPayload = payload
+        .replace(/-- BEGIN SALTY ENCRYPTED MESSAGE --/g, '')
+        .replace(/-- END SALTY ENCRYPTED MESSAGE --/g, '')
+        .replace(/\n|\r| /g, '');
 
-      if (isEncryptedSalty) {
-        let cleanedPayload = payload
-          .replace(/-- BEGIN SALTY ENCRYPTED MESSAGE --/g, '')
-          .replace(/-- END SALTY ENCRYPTED MESSAGE --/g, '')
-          .replace(/\n|\r| /g, '');
+      let decryptedText = null;
+      try {
+        decryptedText = await salty_decrypt(cleanedPayload, cryptoKey);
+      } catch (e) {
+        console.warn("Decryption attempt threw an error (likely invalid ciphertext format for Web Crypto API):", e);
+        // If salty_decrypt throws, it's definitely not valid ciphertext for the key, proceed to encrypt.
+      }
 
-        const decrypted = await salty_decrypt(cleanedPayload, cryptoKey);
-        if (decrypted !== null) {
-          displayResult('encrypted', { decrypted: decrypted });
-        } else {
-          displayResult('error', '暗号化されたテキストの復号に失敗しました。キーが間違っているか、テキストが破損している可能性があります。');
-        }
+      if (decryptedText !== null && decryptedText !== '') { // Also check for non-empty decrypted text
+        // If decryption was successful and returned non-empty text, display it as decrypted.
+        displayResult('encrypted', { decrypted: decryptedText });
       } else {
+        // If decryption failed or returned null/empty, assume it was plaintext and encrypt it.
+        // Use the original payload for encryption, not the cleaned one.
         const encrypted = await salty_encrypt(payload, cryptoKey);
 
         const encryptedFormatted = '-- BEGIN SALTY ENCRYPTED MESSAGE --\n' +
@@ -330,7 +333,7 @@
         });
       }
     } catch (e) {
-      console.error("Operation failed:", e);
+      console.error("Overall operation failed:", e);
       displayResult('error', 'エラーが発生しました: ' + (e.message || '不明なエラー'));
     }
   });
