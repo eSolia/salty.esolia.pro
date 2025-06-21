@@ -288,6 +288,13 @@
     return text.replace(/[&<>"'`]/g, function(m) { return map[m]; });
   }
 
+  // Function to get query parameter by name
+  function getQueryParam(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+  }
+
+  // Event listener for form submission
   saltyForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const payload = payloadInput.value;
@@ -352,6 +359,16 @@
   window.addEventListener('click', (event) => {
     if (event.target === helpModal) {
       helpModal.classList.add('hidden');
+    }
+  });
+
+  // NEW: Check for URL parameters on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    const urlPayload = getQueryParam('payload');
+    if (urlPayload) {
+      payloadInput.value = decodeURIComponent(urlPayload);
+      // Optionally, you might want to automatically submit the form if a key is also provided
+      // For now, we'll just populate the payload.
     }
   });
 
