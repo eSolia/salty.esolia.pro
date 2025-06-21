@@ -97,9 +97,8 @@
     <p class="italic mb-4">ブラウザネイティブな安全なテキスト暗号化</p>
     <p class="mb-4">Saltyは、共有キーで強力に暗号化されたメッセージを簡単に送信できるようにします。ブラウザのWeb Crypto API（Web暗号化API）を介して暗号化機能を提供し、<a href="http://base91.sourceforge.net" target="_blank" class="text-sky-600 hover:underline">basE91</a>を使用して移植性を高めています。</p>
     <p class="mb-4">Saltyを使えば、最大185文字のメッセージを暗号化でき、結果として得られる暗号文はツイート（約277文字）に収まるため、ツイートや文字数制限のある他の通信の暗号化に最適です。ただし、任意の長さのテキストでもどこでも使用できます。</p>
-    <h2 class="text-2xl font-semibold mb-3">Neatnikによるコーディング</h2>
-    <p class="mb-4">SaltyはNeatnikによって書かれたオープンソースアプリケーションであり、<a href="http://github.com/neatnik/salty" target="_blank" class="text-sky-600 hover:underline">GitHubで入手可能</a>です。</p>
-    <p>詳細情報は、プロジェクトの<a href="https://github.com/neatnik/salty/blob/master/README.md" target="_blank" class="text-sky-600 hover:underline">README</a>ファイルに記載されています。</p>
+    <h2 class="text-2xl font-semibold mb-3">謝辞</h2>
+    <p class="mb-4">Saltyは最新のTypeScript言語にて再開発されましたが、<a href="http://github.com/neatnik/salty" target="_blank" class="text-sky-600 hover:underline">NeatnikのPHP版Salty</a>に影響を受けています。</p>
   </div>
 </div>
 
@@ -288,6 +287,13 @@
     return text.replace(/[&<>"'`]/g, function(m) { return map[m]; });
   }
 
+  // Function to get query parameter by name
+  function getQueryParam(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+  }
+
+  // Event listener for form submission
   saltyForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const payload = payloadInput.value;
@@ -352,6 +358,16 @@
   window.addEventListener('click', (event) => {
     if (event.target === helpModal) {
       helpModal.classList.add('hidden');
+    }
+  });
+
+  // NEW: Check for URL parameters on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    const urlPayload = getQueryParam('payload');
+    if (urlPayload) {
+      payloadInput.value = decodeURIComponent(urlPayload);
+      // Optionally, you might want to automatically submit the form if a key is also provided
+      // For now, we'll just populate the payload.
     }
   });
 
