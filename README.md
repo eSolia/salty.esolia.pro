@@ -18,6 +18,39 @@ Salty (<https://salty.esolia.pro>) is a simple, web-based application designed f
 * `basE91`: An efficient binary-to-text encoding scheme.
 * HTML, CSS (Tailwind CSS): For structuring and styling the user interface.
 
+## Security Confirmation
+
+### Encryption & Key Derivation
+
+**`salty_key()`**  
+
+* PBKDF2 with SHA-512: ✅ Strong hash function.
+* 600,000 iterations: ✅ Excellent for resisting brute-force attacks.
+* 32-byte key (256-bit): ✅ Ideal for AES-GCM.
+
+**`salty_encrypt()`**  
+
+* AES-GCM with 12-byte IV: ✅ Correct and secure.
+* IV is randomly generated: ✅ Good practice.
+* Tag length 128 bits: ✅ Standard and secure.
+* Concatenation of IV + ciphertext: ✅ Correct format for decryption.
+
+### Decryption
+
+**`salty_decrypt()`**  
+
+* Properly extracts IV and ciphertext.
+* Validates minimum length.
+* Uses AES-GCM with correct parameters.
+* Gracefully handles decryption errors.
+* ✅ Well-structured and secure.
+
+**`basE91 Encoding/Decoding`**  
+
+* The encoding and decoding logic follows the original basE91 spec.
+* The character tables are correctly defined.
+* Bitwise operations and buffer handling are accurate.
+
 ## Getting Started
 ### Prerequisites
 
