@@ -5,6 +5,7 @@
 
 import { salty_decrypt, salty_encrypt, salty_key } from './salty.ts';
 import { VERSION, VersionUtils, TECH_SPECS, SECURITY_INFO } from './version.ts';
+import { logger, LogCategory, SecurityEvent } from './logger.ts';
 
 /**
  * Security configuration constants
@@ -147,10 +148,11 @@ class SecurityUtils {
    * Logs security-related events with structured data
    * @param event - The type of security event
    * @param details - Additional details about the event
+   * @deprecated Use logger.security() instead
    */
   static logSecurityEvent(event: string, details: Record<string, any>): void {
-    const timestamp = new Date().toISOString();
-    console.log(`[SECURITY] ${timestamp} - ${event}:`, JSON.stringify(details));
+    // Legacy method - redirect to new logger
+    logger.security(event as SecurityEvent, `Security event: ${event}`, details);
   }
 }
 
@@ -177,11 +179,16 @@ class RateLimiter {
     }
     
     if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
-      SecurityUtils.logSecurityEvent('RATE_LIMIT_EXCEEDED', {
-        clientIP,
-        count: entry.count,
-        windowStart: entry.windowStart
-      });
+      logger.security(
+        SecurityEvent.RATE_LIMIT_EXCEEDED,
+        `Rate limit exceeded for IP: ${clientIP}`,
+        {
+          clientIP,
+          count: entry.count,
+          windowStart: entry.windowStart,
+          limit: RATE_LIMIT_MAX_REQUESTS
+        }
+      );
       return false;
     }
     
@@ -254,10 +261,27 @@ function validateApiKey(request: Request): void {
     const providedApiKey = request.headers.get('X-API-Key');
     
     if (!providedApiKey) {
+      logger.security(
+        SecurityEvent.API_KEY_MISSING,
+        'API request missing required API key',
+        { 
+          clientIP: SecurityUtils.getClientIP(request),
+          endpoint: new URL(request.url).pathname
+        }
+      );
       throw new ApiError('API key required', 401, 'API_KEY_MISSING');
     }
     
     if (providedApiKey !== expectedApiKey) {
+      logger.security(
+        SecurityEvent.API_KEY_INVALID,
+        'API request with invalid API key',
+        { 
+          clientIP: SecurityUtils.getClientIP(request),
+          endpoint: new URL(request.url).pathname,
+          providedKeyLength: providedApiKey.length
+        }
+      );
       throw new ApiError('Invalid API key', 401, 'API_KEY_INVALID');
     }
   }
@@ -275,20 +299,54 @@ async function validateRequestBody(request: Request): Promise<EncryptRequest> {
   try {
     body = await request.json();
   } catch {
+    logger.security(
+      SecurityEvent.MALFORMED_INPUT,
+      'Invalid JSON in request body',
+      { 
+        clientIP: SecurityUtils.getClientIP(request),
+        contentType: request.headers.get('content-type')
+      }
+    );
     throw new ApiError('Invalid JSON in request body', 400, 'INVALID_JSON');
   }
 
   if (!body || typeof body !== 'object') {
+    logger.security(
+      SecurityEvent.MALFORMED_INPUT,
+      'Request body is not a JSON object',
+      { 
+        clientIP: SecurityUtils.getClientIP(request),
+        bodyType: typeof body
+      }
+    );
     throw new ApiError('Request body must be a JSON object', 400, 'INVALID_BODY');
   }
 
   const { payload, key } = body;
 
   if (!payload || typeof payload !== 'string') {
+    logger.security(
+      SecurityEvent.MALFORMED_INPUT,
+      'Missing or invalid payload field',
+      { 
+        clientIP: SecurityUtils.getClientIP(request),
+        hasPayload: !!payload,
+        payloadType: typeof payload
+      }
+    );
     throw new ApiError('Missing or invalid payload field', 400, 'INVALID_PAYLOAD');
   }
 
   if (!key || typeof key !== 'string') {
+    logger.security(
+      SecurityEvent.MALFORMED_INPUT,
+      'Missing or invalid key field',
+      { 
+        clientIP: SecurityUtils.getClientIP(request),
+        hasKey: !!key,
+        keyType: typeof key
+      }
+    );
     throw new ApiError('Missing or invalid key field', 400, 'INVALID_KEY');
   }
 
@@ -347,9 +405,14 @@ async function handleApiRequest(
   request: Request,
   operation: 'encrypt' | 'decrypt'
 ): Promise<Response> {
+  const startTime = performance.now();
   const clientIP = SecurityUtils.getClientIP(request);
+  const requestId = logger.generateRequestId();
   
   try {
+    // Check for suspicious activity patterns
+    logger.detectSuspiciousActivity(clientIP);
+
     // Rate limiting check
     if (!RateLimiter.checkRateLimit(clientIP)) {
       throw new ApiError('Rate limit exceeded', 429, 'RATE_LIMIT_EXCEEDED');
@@ -379,19 +442,18 @@ async function handleApiRequest(
         result = await salty_decrypt(payload, cryptoKey);
       }
     } catch (cryptoError) {
-      SecurityUtils.logSecurityEvent('CRYPTO_OPERATION_FAILED', {
-        operation,
-        clientIP,
-        error: cryptoError.message,
-        errorStack: cryptoError.stack,
-        payloadLength: payload.length,
-        keyLength: key.length,
-        saltHexSet: !!Deno.env.get('SALT_HEX'),
-        saltHexLength: Deno.env.get('SALT_HEX')?.length || 0
-      });
-      
-      // Log the actual error for debugging
-      console.error(`[DEBUG] ${operation} operation failed:`, cryptoError);
+      logger.security(
+        SecurityEvent.CRYPTO_FAILURE,
+        `Crypto operation failed: ${operation}`,
+        {
+          operation,
+          clientIP,
+          error: cryptoError.message,
+          payloadLength: payload.length,
+          keyLength: key.length,
+          requestId
+        }
+      );
       
       throw new ApiError(
         `${operation} operation failed: ${cryptoError.message}`,
@@ -401,34 +463,69 @@ async function handleApiRequest(
     }
 
     // Log successful operation
-    SecurityUtils.logSecurityEvent('API_SUCCESS', {
-      operation,
+    const responseTime = performance.now() - startTime;
+    logger.apiRequest(
+      'POST',
+      `/api/${operation}`,
+      200,
+      responseTime,
       clientIP,
-      payloadLength: payload.length,
-      resultLength: result.length
-    });
+      requestId,
+      {
+        payloadLength: payload.length,
+        resultLength: result.length,
+        operation
+      }
+    );
 
     return createApiResponse(true, result);
 
   } catch (error) {
+    const responseTime = performance.now() - startTime;
+    
     if (error instanceof ApiError) {
-      SecurityUtils.logSecurityEvent('API_ERROR', {
-        operation,
+      // Log API-specific errors
+      logger.apiRequest(
+        'POST',
+        `/api/${operation}`,
+        error.statusCode,
+        responseTime,
         clientIP,
-        error: error.message,
-        code: error.code,
-        statusCode: error.statusCode
-      });
+        requestId,
+        {
+          error: error.message,
+          code: error.code,
+          operation
+        }
+      );
 
       return createApiResponse(false, undefined, error.message);
     }
 
     // Unexpected error
-    SecurityUtils.logSecurityEvent('UNEXPECTED_ERROR', {
-      operation,
+    logger.error(
+      `Unexpected error in API ${operation}`,
+      error as Error,
+      {
+        operation,
+        clientIP,
+        requestId
+      },
+      LogCategory.API
+    );
+
+    logger.apiRequest(
+      'POST',
+      `/api/${operation}`,
+      500,
+      responseTime,
       clientIP,
-      error: error.message
-    });
+      requestId,
+      {
+        error: 'Internal server error',
+        operation
+      }
+    );
 
     return createApiResponse(false, undefined, 'Internal server error');
   }
@@ -528,10 +625,13 @@ async function handleRequest(request: Request): Promise<Response> {
     return handleApiRequest(request, 'decrypt');
   }
 
-  // Health check endpoint
+  // Health check endpoint with enhanced metrics
   if (pathname === '/health') {
     const headers = SecurityUtils.createSecurityHeaders();
     headers.set('Content-Type', 'application/json');
+    
+    const metrics = logger.getMetrics();
+    const securitySummary = logger.getSecuritySummary();
     
     const healthData = {
       status: 'healthy',
@@ -541,24 +641,52 @@ async function handleRequest(request: Request): Promise<Response> {
       server: {
         runtime: `Deno ${Deno.version.deno}`,
         platform: TECH_SPECS.platform,
-        uptime: Math.floor(performance.now() / 1000), // seconds since start
+        uptime: metrics.uptime,
+        startTime: new Date(Date.now() - metrics.uptime * 1000).toISOString()
       },
       security: {
         rateLimiting: SECURITY_INFO.rateLimiting,
         headersApplied: SECURITY_INFO.securityHeaders.length,
-        apiKeyRequired: !!Deno.env.get('API_KEY')
+        apiKeyRequired: !!Deno.env.get('API_KEY'),
+        securityEvents: securitySummary
       },
       environment: {
         saltConfigured: !!Deno.env.get('SALT_HEX'),
         apiKeyConfigured: !!Deno.env.get('API_KEY'),
-        nodeEnv: Deno.env.get('NODE_ENV') || 'production'
+        nodeEnv: Deno.env.get('NODE_ENV') || 'production',
+        logLevel: Deno.env.get('LOG_LEVEL') || 'INFO'
       },
       endpoints: TECH_SPECS.endpoints,
       crypto: {
         features: TECH_SPECS.cryptoFeatures,
         webCryptoAvailable: !!globalThis.crypto?.subtle
+      },
+      metrics: {
+        requests: {
+          total: metrics.totalRequests,
+          successful: metrics.successfulRequests,
+          failed: metrics.failedRequests,
+          successRate: metrics.totalRequests > 0 ? 
+            Math.round((metrics.successfulRequests / metrics.totalRequests) * 100) : 0
+        },
+        performance: {
+          averageResponseTime: Math.round(metrics.averageResponseTime),
+          metricsResetTime: metrics.resetTime
+        },
+        endpoints: Object.fromEntries(metrics.endpointStats),
+        security: securitySummary
       }
     };
+    
+    logger.apiRequest(
+      'GET',
+      '/health',
+      200,
+      performance.now(),
+      SecurityUtils.getClientIP(request),
+      logger.generateRequestId(),
+      { healthCheck: true }
+    );
     
     return new Response(
       JSON.stringify(healthData, null, 2),
@@ -586,21 +714,33 @@ function validateEnvironment(): void {
   const saltHex = Deno.env.get('SALT_HEX');
   
   if (!saltHex) {
-    console.error('ERROR: SALT_HEX environment variable is required');
+    logger.critical('SALT_HEX environment variable is required', {
+      missingVariable: 'SALT_HEX'
+    });
     Deno.exit(1);
   }
 
   if (!/^[0-9A-Fa-f]{32}$/.test(saltHex)) {
-    console.error('ERROR: SALT_HEX must be a 32-character hexadecimal string');
+    logger.critical('SALT_HEX must be a 32-character hexadecimal string', {
+      saltHexLength: saltHex.length,
+      saltHexFormat: 'invalid'
+    });
     Deno.exit(1);
   }
 
   const apiKey = Deno.env.get('API_KEY');
   if (apiKey && apiKey.length < 16) {
-    console.warn('WARNING: API_KEY should be at least 16 characters for security');
+    logger.warn('API_KEY should be at least 16 characters for security', {
+      apiKeyLength: apiKey.length,
+      recommendedMinimum: 16
+    });
   }
 
-  console.log('Environment validation passed');
+  logger.info('Environment validation passed', {
+    saltHexConfigured: true,
+    apiKeyConfigured: !!apiKey,
+    apiKeyLength: apiKey?.length || 0
+  });
 }
 
 /**
@@ -610,10 +750,14 @@ function validateEnvironment(): void {
 // Validate environment variables before starting
 validateEnvironment();
 
-console.log(`Starting Salty v${VERSION} with enhanced security...`);
-console.log(`Rate limiting: ${SECURITY_INFO.rateLimiting.maxRequests} requests per hour`);
-console.log(`Max payload size: ${MAX_PAYLOAD_SIZE / 1024}KB`);
-console.log(`Build info: ${VersionUtils.getExtendedVersion()}`);
+logger.info(`Starting Salty v${VERSION} with enhanced security`, {
+  version: VERSION,
+  buildInfo: VersionUtils.getExtendedVersion(),
+  rateLimitConfig: SECURITY_INFO.rateLimiting,
+  maxPayloadSize: `${MAX_PAYLOAD_SIZE / 1024}KB`,
+  securityFeatures: TECH_SPECS.securityFeatures.length,
+  endpoints: TECH_SPECS.endpoints
+});
 
 /**
  * Start the Deno HTTP server
