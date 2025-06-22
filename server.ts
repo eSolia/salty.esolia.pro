@@ -1,10 +1,10 @@
 /**
  * @fileoverview Enhanced Salty server with comprehensive security features
- * @version 1.1.0
  * @author eSolia Inc.
  */
 
 import { salty_decrypt, salty_encrypt, salty_key } from './salty.ts';
+import { VERSION, VersionUtils, TECH_SPECS, SECURITY_INFO } from './version.ts';
 
 /**
  * Security configuration constants
@@ -533,12 +533,35 @@ async function handleRequest(request: Request): Promise<Response> {
     const headers = SecurityUtils.createSecurityHeaders();
     headers.set('Content-Type', 'application/json');
     
+    const healthData = {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      version: VERSION,
+      buildInfo: VersionUtils.getDetailedInfo(),
+      server: {
+        runtime: `Deno ${Deno.version.deno}`,
+        platform: TECH_SPECS.platform,
+        uptime: Math.floor(performance.now() / 1000), // seconds since start
+      },
+      security: {
+        rateLimiting: SECURITY_INFO.rateLimiting,
+        headersApplied: SECURITY_INFO.securityHeaders.length,
+        apiKeyRequired: !!Deno.env.get('API_KEY')
+      },
+      environment: {
+        saltConfigured: !!Deno.env.get('SALT_HEX'),
+        apiKeyConfigured: !!Deno.env.get('API_KEY'),
+        nodeEnv: Deno.env.get('NODE_ENV') || 'production'
+      },
+      endpoints: TECH_SPECS.endpoints,
+      crypto: {
+        features: TECH_SPECS.cryptoFeatures,
+        webCryptoAvailable: !!globalThis.crypto?.subtle
+      }
+    };
+    
     return new Response(
-      JSON.stringify({ 
-        status: 'healthy', 
-        timestamp: new Date().toISOString(),
-        version: '1.0.0'
-      }),
+      JSON.stringify(healthData, null, 2),
       { headers }
     );
   }
@@ -587,9 +610,10 @@ function validateEnvironment(): void {
 // Validate environment variables before starting
 validateEnvironment();
 
-console.log('Starting Salty server with enhanced security...');
-console.log(`Rate limiting: ${RATE_LIMIT_MAX_REQUESTS} requests per hour`);
+console.log(`Starting Salty v${VERSION} with enhanced security...`);
+console.log(`Rate limiting: ${SECURITY_INFO.rateLimiting.maxRequests} requests per hour`);
 console.log(`Max payload size: ${MAX_PAYLOAD_SIZE / 1024}KB`);
+console.log(`Build info: ${VersionUtils.getExtendedVersion()}`);
 
 /**
  * Start the Deno HTTP server
