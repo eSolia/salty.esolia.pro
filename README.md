@@ -59,8 +59,9 @@ Salty (<https://salty.esolia.pro>) is a simple, web-based application designed f
 * [Deno](https://deno.land/manual/getting_started/installation) installed locally (for development/testing).
 * A Deno Deploy account (for production deployment).
 * A `SALT_HEX` environment variable set in your Deno Deploy project or local environment. This is a crucial cryptographic salt (a hex representation of 16 cryptographically secure random bytes).
+* A base64 `API_KEY` stored in another environment variable in your Deno Deploy project and local environment, if you are going to use the encrypt and decrypt API. 
 
-To generate a `SALT_HEX` (example using Deno):
+To generate a `SALT_HEX` (e.g. using Deno):
 
 ```ts
 deno run -A -r https://deno.land/std@0.224.0/crypto/mod.ts -c crypto.getRandomValues --length 16 --format hex
@@ -72,7 +73,19 @@ Or, using `openssl`:
 openssl rand -hex 16 | tr '[:lower:]' '[:upper:]'
 ```
 
-Then, set this generated hex string as `SALT_HEX` in your Deno Deploy project settings.
+You can generate a `base64` API key this way in Deno:
+
+```ts
+deno run --allow-read --allow-env --allow-run https://deno.land/std/node/crypto.ts -c "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+Or, using `openssl`:
+
+```bash
+openssl rand -base64 32
+```
+
+The `openssl` versions are far simpler. Then, set the generated hex string as `SALT_HEX`, and the 32-bit base64 string as `API_KEY` in your Deno Deploy project settings.
 
 ### Project Structure
 
@@ -151,12 +164,6 @@ This API is useful if you need to integrate Salty's encryption capabilities into
    * `X-API-Key: YOUR_API_KEY`
       * This header is mandatory for authentication if you have set the `API_KEY` environment variable in your Deno Deploy project. Replace `YOUR_API_KEY` with the actual API key you configured.
       * If you have not set the `API_KEY` environment variable, then this header is not required, but be aware that the endpoint will not be authenticated. This is generally only recommended for local development or highly controlled environments.
-
-You can generate a `base64` API key this way: 
-
-```bash
-openssl rand -base64 32
-```
 
 3. Request Body (JSON):
 The request body must be a JSON object containing two properties:
