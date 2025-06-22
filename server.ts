@@ -12,7 +12,7 @@ import { salty_decrypt, salty_encrypt } from './salty.ts';
 /** Rate limiting window duration in milliseconds (1 hour) */
 const RATE_LIMIT_WINDOW = 60 * 60 * 1000;
 /** Maximum requests allowed per rate limit window */
-const RATE_LIMIT_MAX_REQUESTS = 100;
+const RATE_LIMIT_MAX_REQUESTS = 20;
 /** Maximum payload size in bytes (1MB) */
 const MAX_PAYLOAD_SIZE = 1024 * 1024;
 /** Maximum key size in bytes (1KB) */
@@ -97,11 +97,11 @@ class SecurityUtils {
   static createSecurityHeaders(): Headers {
     const headers = new Headers();
     
-    // Content Security Policy - Allow required external resources
+    // Content Security Policy - Secure configuration for required external resources
     headers.set('Content-Security-Policy', [
       "default-src 'self'",
       "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com",
-      "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://kit.fontawesome.com https://cdn.usefathom.com",
+      "script-src 'self' https://cdn.tailwindcss.com https://kit.fontawesome.com https://cdn.usefathom.com",
       "img-src 'self' data: https:",
       "connect-src 'self' https://cdn.usefathom.com",
       "font-src 'self' https://fonts.gstatic.com https://kit.fontawesome.com",
@@ -472,7 +472,8 @@ async function serveFile(pathname: string): Promise<Response> {
         fileContent = new TextEncoder().encode(htmlContent);
       }
     } else if (filePath.endsWith('.ts')) {
-      headers.set('Content-Type', 'application/typescript');
+      // Serve TypeScript files as JavaScript modules for browser compatibility
+      headers.set('Content-Type', 'text/javascript; charset=utf-8');
     } else if (filePath.endsWith('.svg')) {
       headers.set('Content-Type', 'image/svg+xml');
     } else if (filePath.endsWith('.md')) {
