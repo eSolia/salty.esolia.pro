@@ -97,14 +97,14 @@ class SecurityUtils {
   static createSecurityHeaders(): Headers {
     const headers = new Headers();
     
-    // Content Security Policy
+    // Content Security Policy - Allow required external resources
     headers.set('Content-Security-Policy', [
       "default-src 'self'",
-      "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
-      "script-src 'self' 'unsafe-inline'",
-      "img-src 'self' data:",
-      "connect-src 'self'",
-      "font-src 'self' https://cdn.jsdelivr.net",
+      "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com",
+      "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://kit.fontawesome.com https://cdn.usefathom.com",
+      "img-src 'self' data: https:",
+      "connect-src 'self' https://cdn.usefathom.com",
+      "font-src 'self' https://fonts.gstatic.com https://kit.fontawesome.com",
       "object-src 'none'",
       "base-uri 'self'",
       "frame-ancestors 'none'"
@@ -454,12 +454,23 @@ async function serveFile(pathname: string): Promise<Response> {
       throw new Error('File not found');
     }
 
-    const file = await Deno.readFile(filePath);
+    let fileContent = await Deno.readFile(filePath);
     const headers = SecurityUtils.createSecurityHeaders();
     
     // Set appropriate content type based on file extension
     if (filePath.endsWith('.html')) {
       headers.set('Content-Type', 'text/html; charset=utf-8');
+      
+      // Inject SALT_HEX into HTML files
+      const saltHex = Deno.env.get('SALT_HEX');
+      if (saltHex) {
+        let htmlContent = new TextDecoder().decode(fileContent);
+        htmlContent = htmlContent.replace(
+          'SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER',
+          saltHex
+        );
+        fileContent = new TextEncoder().encode(htmlContent);
+      }
     } else if (filePath.endsWith('.ts')) {
       headers.set('Content-Type', 'application/typescript');
     } else if (filePath.endsWith('.svg')) {
@@ -470,7 +481,7 @@ async function serveFile(pathname: string): Promise<Response> {
       headers.set('Content-Type', 'text/plain; charset=utf-8');
     }
 
-    return new Response(file, { headers });
+    return new Response(fileContent, { headers });
     
   } catch {
     const headers = SecurityUtils.createSecurityHeaders();
