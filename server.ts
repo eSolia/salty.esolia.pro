@@ -1,265 +1,571 @@
 /**
- * server.ts
- *
- * This file sets up a Deno HTTP server to serve:
- * 1. The web UI (Japanese and English versions) by reading HTML files.
- * 2. API endpoints for encryption and decryption requests.
- * 3. Static assets like JavaScript modules, CSS, and images.
- *
- * It retrieves the SALT_HEX and the API_KEY from Deno Deploy environment variables
- * to ensure secure and consistent operation.
- *
- * To run locally: deno run --allow-net --allow-read --allow-env server.ts
- * To deploy to Deno Deploy: Push this file to your Deno Deploy project
- * and set it as the entry point.
+ * @fileoverview Enhanced Salty server with comprehensive security features
+ * @version 1.1.0
+ * @author eSolia Inc.
  */
 
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { dirname, fromFileUrl, join, extname } from "https://deno.land/std@0.224.0/path/mod.ts";
-
-// Import cryptographic functions from salty.ts
-import { salty_key, salty_encrypt, salty_decrypt, hexToUint8Array } from "./salty.ts";
-
-// Determine the base directory of the script for reading static files
-const currentDir = dirname(fromFileUrl(import.meta.url));
-
-// --- Configuration ---
-// Retrieve SALT_HEX from environment variables.
-// In production on Deno Deploy, this *must* be set.
-const SALT_HEX = Deno.env.get('SALT_HEX');
-if (!SALT_HEX) {
-  console.error("CRITICAL ERROR: Environment variable 'SALT_HEX' is not set.");
-  console.error("Please set SALT_HEX in your Deno Deploy project settings (or locally for testing).");
-  Deno.exit(1); // Exit if critical configuration is missing
-}
-
-// Retrieve API_KEY from environment variables.
-// In production on Deno Deploy, this *must* be set for API access.
-const API_KEY = Deno.env.get('API_KEY');
-if (!API_KEY) {
-  console.warn("WARNING: Environment variable 'API_KEY' is not set. API endpoints will not be authenticated.");
-}
-
-// Define a placeholder that will be replaced in the HTML template when served
-const SALT_PLACEHOLDER = 'SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER';
+import { salty_decrypt, salty_encrypt } from './salty.ts';
 
 /**
- * Reads an HTML file and injects the SALT_HEX into it.
- * @param {string} filePath The path to the HTML file relative to currentDir.
- * @returns {Promise<string>} The HTML content with the salt injected.
+ * Security configuration constants
  */
-async function getHtmlContent(filePath: string): Promise<string> {
-  const fullPath = join(currentDir, filePath);
-  let htmlContent = '';
-  try {
-    htmlContent = await Deno.readTextFile(fullPath);
-    // Inject the SALT_HEX securely into the client-side JavaScript.
-    htmlContent = htmlContent.replace(SALT_PLACEHOLDER, SALT_HEX);
-  } catch (error) {
-    console.error(`Error reading HTML file ${fullPath}:`, error);
-    throw new Error('Failed to load HTML content.');
+/** Rate limiting window duration in milliseconds (1 hour) */
+const RATE_LIMIT_WINDOW = 60 * 60 * 1000;
+/** Maximum requests allowed per rate limit window */
+const RATE_LIMIT_MAX_REQUESTS = 100;
+/** Maximum payload size in bytes (1MB) */
+const MAX_PAYLOAD_SIZE = 1024 * 1024;
+/** Maximum key size in bytes (1KB) */
+const MAX_KEY_SIZE = 1024;
+
+/**
+ * Request body interface for encrypt/decrypt API endpoints
+ */
+interface EncryptRequest {
+  /** The text payload to encrypt or decrypt */
+  payload: string;
+  /** The encryption/decryption key */
+  key: string;
+}
+
+/**
+ * Standardized API response interface
+ */
+interface ApiResponse {
+  /** Whether the operation was successful */
+  success: boolean;
+  /** Response data (encrypted/decrypted text) */
+  data?: string;
+  /** Error message if operation failed */
+  error?: string;
+  /** ISO timestamp of the response */
+  timestamp?: string;
+}
+
+/**
+ * Rate limiting entry stored in memory
+ */
+interface RateLimitEntry {
+  /** Number of requests in current window */
+  count: number;
+  /** Timestamp when the current window started */
+  windowStart: number;
+}
+
+/**
+ * In-memory rate limiting store
+ * @description Maps client IP addresses to their rate limit data
+ * @todo Consider using Redis for production scaling across multiple instances
+ */
+const rateLimitStore = new Map<string, RateLimitEntry>();
+
+/**
+ * Security utility class providing various security-related helper functions
+ */
+class SecurityUtils {
+  /**
+   * Extracts the client IP address from the request headers
+   * @param request - The incoming HTTP request
+   * @returns The client IP address or 'unknown' if not found
+   */
+  static getClientIP(request: Request): string {
+    // Get IP from various headers (for proxies/load balancers)
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const realIP = request.headers.get('x-real-ip');
+    const cfConnectingIP = request.headers.get('cf-connecting-ip');
+    
+    return forwardedFor?.split(',')[0]?.trim() || 
+           realIP || 
+           cfConnectingIP || 
+           'unknown';
   }
-  return htmlContent;
+
+  /**
+   * Validates that the request has the correct content type for API endpoints
+   * @param request - The incoming HTTP request
+   * @returns True if content type is application/json, false otherwise
+   */
+  static isValidContentType(request: Request): boolean {
+    const contentType = request.headers.get('content-type');
+    return contentType === 'application/json';
+  }
+
+  /**
+   * Creates a comprehensive set of security headers for HTTP responses
+   * @returns Headers object with all security headers configured
+   */
+  static createSecurityHeaders(): Headers {
+    const headers = new Headers();
+    
+    // Content Security Policy
+    headers.set('Content-Security-Policy', [
+      "default-src 'self'",
+      "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+      "script-src 'self' 'unsafe-inline'",
+      "img-src 'self' data:",
+      "connect-src 'self'",
+      "font-src 'self' https://cdn.jsdelivr.net",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "frame-ancestors 'none'"
+    ].join('; '));
+    
+    // Security headers
+    headers.set('X-Content-Type-Options', 'nosniff');
+    headers.set('X-Frame-Options', 'DENY');
+    headers.set('X-XSS-Protection', '1; mode=block');
+    headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    headers.set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    
+    // HSTS (only if serving over HTTPS)
+    headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    
+    return headers;
+  }
+
+  /**
+   * Sanitizes user input by removing potentially dangerous characters
+   * @param input - The input string to sanitize
+   * @param maxLength - Maximum allowed length for the input
+   * @returns Sanitized input string
+   * @throws Error if input is invalid or exceeds maximum length
+   */
+  static sanitizeInput(input: string, maxLength: number): string {
+    if (typeof input !== 'string') {
+      throw new Error('Input must be a string');
+    }
+    
+    if (input.length > maxLength) {
+      throw new Error(`Input exceeds maximum length of ${maxLength}`);
+    }
+    
+    // Basic sanitization - remove null bytes
+    return input.replace(/\0/g, '');
+  }
+
+  /**
+   * Logs security-related events with structured data
+   * @param event - The type of security event
+   * @param details - Additional details about the event
+   */
+  static logSecurityEvent(event: string, details: Record<string, any>): void {
+    const timestamp = new Date().toISOString();
+    console.log(`[SECURITY] ${timestamp} - ${event}:`, JSON.stringify(details));
+  }
 }
 
 /**
- * Maps file extensions to MIME types.
+ * Rate limiting middleware class for preventing API abuse
  */
-const MIME_TYPES: { [key: string]: string } = {
-  '.html': 'text/html',
-  '.css': 'text/css',
-  '.js': 'application/javascript',
-  '.ts': 'application/javascript', // Deno Deploy transpiles TS to JS
-  '.json': 'application/json',
-  '.ico': 'image/x-icon',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.gif': 'image/gif',
-  '.svg': 'image/svg+xml',
-};
+class RateLimiter {
+  /**
+   * Checks if a client IP has exceeded the rate limit
+   * @param clientIP - The client's IP address
+   * @returns True if the request is allowed, false if rate limit exceeded
+   */
+  static checkRateLimit(clientIP: string): boolean {
+    const now = Date.now();
+    const entry = rateLimitStore.get(clientIP);
+    
+    if (!entry || (now - entry.windowStart) > RATE_LIMIT_WINDOW) {
+      // New window or first request
+      rateLimitStore.set(clientIP, {
+        count: 1,
+        windowStart: now
+      });
+      return true;
+    }
+    
+    if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
+      SecurityUtils.logSecurityEvent('RATE_LIMIT_EXCEEDED', {
+        clientIP,
+        count: entry.count,
+        windowStart: entry.windowStart
+      });
+      return false;
+    }
+    
+    entry.count++;
+    return true;
+  }
+
+  /**
+   * Removes expired rate limit entries from memory to prevent memory leaks
+   */
+  static cleanupExpiredEntries(): void {
+    const now = Date.now();
+    for (const [ip, entry] of rateLimitStore.entries()) {
+      if ((now - entry.windowStart) > RATE_LIMIT_WINDOW) {
+        rateLimitStore.delete(ip);
+      }
+    }
+  }
+}
 
 /**
- * Serves a static file (text or binary) from disk.
- * @param {string} requestPath The requested path (e.g., "/img/logo.png").
- * @returns {Promise<Response>} The Response object for the static file.
+ * Custom error class for API-specific errors with status codes
  */
-async function serveStaticFile(requestPath: string): Promise<Response> {
-  // Map request path to file system path. Remove leading slash for join.
-  const filePath = join(currentDir, requestPath.substring(1));
-  const fileExtension = extname(filePath).toLowerCase();
-  const contentType = MIME_TYPES[fileExtension] || 'application/octet-stream'; // Default to binary stream
+class ApiError extends Error {
+  /**
+   * Creates a new API error
+   * @param message - Human-readable error message
+   * @param statusCode - HTTP status code (default: 500)
+   * @param code - Machine-readable error code (default: 'INTERNAL_ERROR')
+   */
+  constructor(
+    message: string,
+    public statusCode: number = 500,
+    public code: string = 'INTERNAL_ERROR'
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
 
+/**
+ * Validates basic API request properties (method, content-type, size)
+ * @param request - The incoming HTTP request
+ * @throws ApiError if validation fails
+ */
+function validateApiRequest(request: Request): void {
+  if (request.method !== 'POST') {
+    throw new ApiError('Method not allowed', 405, 'METHOD_NOT_ALLOWED');
+  }
+
+  if (!SecurityUtils.isValidContentType(request)) {
+    throw new ApiError('Invalid content type. Expected application/json', 400, 'INVALID_CONTENT_TYPE');
+  }
+
+  const contentLength = request.headers.get('content-length');
+  if (contentLength && parseInt(contentLength) > MAX_PAYLOAD_SIZE) {
+    throw new ApiError('Request too large', 413, 'REQUEST_TOO_LARGE');
+  }
+}
+
+/**
+ * Validates the API key from request headers
+ * @param request - The incoming HTTP request
+ * @throws ApiError if API key is missing or invalid
+ */
+function validateApiKey(request: Request): void {
+  const expectedApiKey = Deno.env.get('API_KEY');
+  
+  if (expectedApiKey) {
+    const providedApiKey = request.headers.get('X-API-Key');
+    
+    if (!providedApiKey) {
+      throw new ApiError('API key required', 401, 'API_KEY_MISSING');
+    }
+    
+    if (providedApiKey !== expectedApiKey) {
+      throw new ApiError('Invalid API key', 401, 'API_KEY_INVALID');
+    }
+  }
+}
+
+/**
+ * Validates and sanitizes the request body for encrypt/decrypt operations
+ * @param request - The incoming HTTP request
+ * @returns Validated and sanitized request data
+ * @throws ApiError if validation fails
+ */
+async function validateRequestBody(request: Request): Promise<EncryptRequest> {
+  let body;
+  
   try {
-    let fileContent: string | Uint8Array;
-    if (contentType.startsWith('text/') || contentType.includes('javascript') || contentType.includes('json') || contentType.includes('xml')) {
-      fileContent = await Deno.readTextFile(filePath);
-    } else {
-      fileContent = await Deno.readFile(filePath); // Use readFile for binary data (images)
+    body = await request.json();
+  } catch {
+    throw new ApiError('Invalid JSON in request body', 400, 'INVALID_JSON');
+  }
+
+  if (!body || typeof body !== 'object') {
+    throw new ApiError('Request body must be a JSON object', 400, 'INVALID_BODY');
+  }
+
+  const { payload, key } = body;
+
+  if (!payload || typeof payload !== 'string') {
+    throw new ApiError('Missing or invalid payload field', 400, 'INVALID_PAYLOAD');
+  }
+
+  if (!key || typeof key !== 'string') {
+    throw new ApiError('Missing or invalid key field', 400, 'INVALID_KEY');
+  }
+
+  // Sanitize inputs
+  const sanitizedPayload = SecurityUtils.sanitizeInput(payload, MAX_PAYLOAD_SIZE);
+  const sanitizedKey = SecurityUtils.sanitizeInput(key, MAX_KEY_SIZE);
+
+  return {
+    payload: sanitizedPayload,
+    key: sanitizedKey
+  };
+}
+
+/**
+ * Creates a standardized API response with security headers
+ * @param success - Whether the operation was successful
+ * @param data - Response data (for successful operations)
+ * @param error - Error message (for failed operations)
+ * @returns HTTP Response object with proper headers and status code
+ */
+function createApiResponse(success: boolean, data?: string, error?: string): Response {
+  const response: ApiResponse = {
+    success,
+    timestamp: new Date().toISOString()
+  };
+
+  if (success && data !== undefined) {
+    response.data = data;
+  }
+
+  if (!success && error) {
+    response.error = error;
+  }
+
+  const headers = SecurityUtils.createSecurityHeaders();
+  headers.set('Content-Type', 'application/json');
+
+  return new Response(
+    JSON.stringify(response),
+    {
+      headers,
+      status: success ? 200 : (error?.includes('401') ? 401 : 
+                              error?.includes('405') ? 405 : 
+                              error?.includes('413') ? 413 : 400)
+    }
+  );
+}
+
+/**
+ * Handles encrypt and decrypt API requests with comprehensive security checks
+ * @param request - The incoming HTTP request
+ * @param operation - Whether to 'encrypt' or 'decrypt' the payload
+ * @returns HTTP Response with the operation result or error
+ */
+async function handleApiRequest(
+  request: Request,
+  operation: 'encrypt' | 'decrypt'
+): Promise<Response> {
+  const clientIP = SecurityUtils.getClientIP(request);
+  
+  try {
+    // Rate limiting check
+    if (!RateLimiter.checkRateLimit(clientIP)) {
+      throw new ApiError('Rate limit exceeded', 429, 'RATE_LIMIT_EXCEEDED');
     }
 
-    // For empty CSS or favicon, return 204 No Content as before
-    if ((requestPath === '/style.css' || requestPath === '/favicon.ico') && fileContent.byteLength === 0) {
-      return new Response(null, { status: 204, headers: { 'Content-Type': contentType + '; charset=utf-8' } });
+    // Validate request
+    validateApiRequest(request);
+    validateApiKey(request);
+    
+    const { payload, key } = await validateRequestBody(request);
+
+    // Perform operation
+    let result: string;
+    
+    try {
+      if (operation === 'encrypt') {
+        result = await salty_encrypt(payload, key);
+      } else {
+        result = await salty_decrypt(payload, key);
+      }
+    } catch (cryptoError) {
+      SecurityUtils.logSecurityEvent('CRYPTO_OPERATION_FAILED', {
+        operation,
+        clientIP,
+        error: cryptoError.message,
+        payloadLength: payload.length
+      });
+      
+      throw new ApiError(
+        `${operation} operation failed`,
+        400,
+        `${operation.toUpperCase()}_FAILED`
+      );
     }
 
-    return new Response(fileContent, {
-      headers: { 'Content-Type': contentType + '; charset=utf-8' },
+    // Log successful operation
+    SecurityUtils.logSecurityEvent('API_SUCCESS', {
+      operation,
+      clientIP,
+      payloadLength: payload.length,
+      resultLength: result.length
     });
+
+    return createApiResponse(true, result);
+
   } catch (error) {
-    if (error instanceof Deno.errors.NotFound) {
-      return new Response('Not Found', { status: 404 });
+    if (error instanceof ApiError) {
+      SecurityUtils.logSecurityEvent('API_ERROR', {
+        operation,
+        clientIP,
+        error: error.message,
+        code: error.code,
+        statusCode: error.statusCode
+      });
+
+      return createApiResponse(false, undefined, error.message);
     }
-    console.error(`Error serving static file ${filePath}:`, error);
-    return new Response('Internal Server Error', { status: 500 });
+
+    // Unexpected error
+    SecurityUtils.logSecurityEvent('UNEXPECTED_ERROR', {
+      operation,
+      clientIP,
+      error: error.message
+    });
+
+    return createApiResponse(false, undefined, 'Internal server error');
   }
 }
 
-// --- Request Handler ---
-console.log(`Salty server listening on http://localhost:8000/`);
-console.log(`SALT_HEX from environment: ${SALT_HEX}`);
-if (API_KEY) {
-  console.log("API_KEY is set. API endpoints are authenticated.");
-} else {
-  console.log("API_KEY is NOT set. API endpoints are NOT authenticated.");
+/**
+ * Serves static files with appropriate security headers
+ * @param pathname - The requested file path
+ * @returns HTTP Response with the file contents or 404 error
+ */
+async function serveFile(pathname: string): Promise<Response> {
+  try {
+    let filePath: string;
+    
+    // Main routes
+    if (pathname === '/' || pathname === '') {
+      filePath = './index.html';
+    } else if (pathname === '/en' || pathname === '/en/') {
+      filePath = './en/index.html';
+    } else if (pathname === '/salty.ts') {
+      filePath = './salty.ts';
+    } 
+    // Handle image files
+    else if (pathname.startsWith('/img/') && pathname.endsWith('.svg')) {
+      // Security check: prevent directory traversal
+      const fileName = pathname.replace('/img/', '');
+      if (fileName.includes('..') || fileName.includes('/') || fileName.includes('\\')) {
+        throw new Error('Invalid file path');
+      }
+      filePath = `./img/${fileName}`;
+    } 
+    // Handle other potential static files (LICENSE, README.md for reference)
+    else if (pathname === '/LICENSE') {
+      filePath = './LICENSE';
+    } else if (pathname === '/README.md') {
+      filePath = './README.md';
+    } else {
+      throw new Error('File not found');
+    }
+
+    const file = await Deno.readFile(filePath);
+    const headers = SecurityUtils.createSecurityHeaders();
+    
+    // Set appropriate content type based on file extension
+    if (filePath.endsWith('.html')) {
+      headers.set('Content-Type', 'text/html; charset=utf-8');
+    } else if (filePath.endsWith('.ts')) {
+      headers.set('Content-Type', 'application/typescript');
+    } else if (filePath.endsWith('.svg')) {
+      headers.set('Content-Type', 'image/svg+xml');
+    } else if (filePath.endsWith('.md')) {
+      headers.set('Content-Type', 'text/markdown; charset=utf-8');
+    } else if (filePath === './LICENSE') {
+      headers.set('Content-Type', 'text/plain; charset=utf-8');
+    }
+
+    return new Response(file, { headers });
+    
+  } catch {
+    const headers = SecurityUtils.createSecurityHeaders();
+    headers.set('Content-Type', 'text/html; charset=utf-8');
+    
+    return new Response(
+      '<!DOCTYPE html><html><head><title>404 Not Found</title></head><body><h1>404 - Page Not Found</h1></body></html>',
+      { status: 404, headers }
+    );
+  }
 }
 
-serve(async (req: Request) => {
-  const url = new URL(req.url);
+/**
+ * Main request handler that routes requests to appropriate handlers
+ * @param request - The incoming HTTP request
+ * @returns HTTP Response for the request
+ */
+async function handleRequest(request: Request): Promise<Response> {
+  const url = new URL(request.url);
   const pathname = url.pathname;
 
-  try {
-    // Serve the Japanese UI
-    if (pathname === '/') {
-      const htmlContent = await getHtmlContent('index.html');
-      return new Response(htmlContent, {
-        headers: { 'Content-Type': 'text/html; charset=utf-8' },
-      });
-    }
-
-    // Serve the English UI
-    if (pathname === '/en/' || pathname === '/en') {
-      const htmlContent = await getHtmlContent('en/index.html');
-      return new Response(htmlContent, {
-        headers: { 'Content-Type': 'text/html; charset=utf-8' },
-      });
-    }
-
-    // Handle the API endpoint for Encryption
-    if (pathname === '/api/encrypt') {
-      if (req.method !== 'POST') {
-        return new Response('Method Not Allowed', { status: 405 });
-      }
-
-      // API Key Authentication
-      if (API_KEY) { // Only check if API_KEY env var is actually set
-        const receivedApiKey = req.headers.get('X-API-Key');
-        if (!receivedApiKey || receivedApiKey !== API_KEY) {
-          return new Response('Unauthorized: Invalid or missing API key', { status: 401 });
-        }
-      } else {
-        console.warn("API_KEY environment variable not set. API endpoint is not authenticated (for local testing).");
-      }
-
-      // Expecting application/json for payload and key
-      if (!req.headers.get('content-type')?.includes('application/json')) {
-        return new Response('Content-Type must be application/json', { status: 400 });
-      }
-
-      const { payload, key } = await req.json();
-
-      if (typeof payload !== 'string' || typeof key !== 'string') {
-        return new Response('Missing or invalid payload or key parameters.', { status: 400 });
-      }
-
-      // Use the securely loaded SALT_HEX for API encryption
-      const cryptoKey = await salty_key(key, SALT_HEX);
-      const encryptedText = await salty_encrypt(payload, cryptoKey);
-
-      return new Response(encryptedText, {
-        headers: { 'Content-Type': 'text/plain' },
-      });
-    }
-
-    // Handle the API endpoint for Decryption (NEW)
-    if (pathname === '/api/decrypt') {
-      if (req.method !== 'POST') {
-        return new Response('Method Not Allowed', { status: 405 });
-      }
-
-      // API Key Authentication (same as encrypt)
-      if (API_KEY) {
-        const receivedApiKey = req.headers.get('X-API-Key');
-        if (!receivedApiKey || receivedApiKey !== API_KEY) {
-          return new Response('Unauthorized: Invalid or missing API key', { status: 401 });
-        }
-      } else {
-        console.warn("API_KEY environment variable not set. API endpoint is not authenticated (for local testing).");
-      }
-
-      // Expecting application/json for payload and key
-      if (!req.headers.get('content-type')?.includes('application/json')) {
-        return new Response('Content-Type must be application/json', { status: 400 });
-      }
-
-      const { payload, key } = await req.json();
-
-      if (typeof payload !== 'string' || typeof key !== 'string') {
-        return new Response('Missing or invalid payload or key parameters.', { status: 400 });
-      }
-
-      try {
-        // Use the securely loaded SALT_HEX for API decryption
-        const cryptoKey = await salty_key(key, SALT_HEX);
-
-        // Clean the payload for decryption (remove headers/spaces if present)
-        let cleanedPayload = payload
-            .replace(/-- BEGIN SALTY ENCRYPTED MESSAGE --/g, '')
-            .replace(/-- END SALTY ENCRYPTED MESSAGE --/g, '')
-            .replace(/\n|\r| /g, '');
-
-        const decryptedText = await salty_decrypt(cleanedPayload, cryptoKey);
-
-        if (decryptedText === null) {
-          // Decryption failed (e.g., wrong key, corrupted data)
-          return new Response('Decryption failed: Invalid key or corrupted ciphertext.', { status: 400 });
-        }
-
-        return new Response(decryptedText, {
-          headers: { 'Content-Type': 'text/plain' },
-        });
-
-      } catch (e) {
-        console.error("API Decryption error:", e);
-        return new Response(`Internal Server Error during decryption: ${e.message}`, { status: 500 });
-      }
-    }
-
-    // Serve salty.ts module
-    if (pathname === '/salty.ts') {
-        return await serveStaticFile('/salty.ts');
-    }
-
-    // Serve style.css
-    if (pathname === '/style.css') {
-        return await serveStaticFile('/style.css');
-    }
-
-    // Handle favicon.ico
-    if (pathname === '/favicon.ico') {
-      return await serveStaticFile('/favicon.ico');
-    }
-
-    // Serve images from /img directory
-    if (pathname.startsWith('/img/')) {
-        return await serveStaticFile(pathname);
-    }
-
-    // Catch-all for unknown routes
-    return new Response('Not Found', { status: 404 });
-
-  } catch (error) {
-    console.error("Request handling error:", error);
-    return new Response(`Internal Server Error: ${error.message}`, { status: 500 });
+  // API endpoints
+  if (pathname === '/api/encrypt') {
+    return handleApiRequest(request, 'encrypt');
   }
-});
+  
+  if (pathname === '/api/decrypt') {
+    return handleApiRequest(request, 'decrypt');
+  }
+
+  // Health check endpoint
+  if (pathname === '/health') {
+    const headers = SecurityUtils.createSecurityHeaders();
+    headers.set('Content-Type', 'application/json');
+    
+    return new Response(
+      JSON.stringify({ 
+        status: 'healthy', 
+        timestamp: new Date().toISOString(),
+        version: '1.0.0'
+      }),
+      { headers }
+    );
+  }
+
+  // Static file serving
+  return serveFile(pathname);
+}
+
+/**
+ * Cleanup task for rate limiting - removes expired entries to prevent memory leaks
+ * Runs every 5 minutes
+ */
+setInterval(() => {
+  RateLimiter.cleanupExpiredEntries();
+}, 5 * 60 * 1000);
+
+/**
+ * Validates required environment variables on startup
+ * @throws Process exit if critical environment variables are missing or invalid
+ */
+function validateEnvironment(): void {
+  const saltHex = Deno.env.get('SALT_HEX');
+  
+  if (!saltHex) {
+    console.error('ERROR: SALT_HEX environment variable is required');
+    Deno.exit(1);
+  }
+
+  if (!/^[0-9A-Fa-f]{32}$/.test(saltHex)) {
+    console.error('ERROR: SALT_HEX must be a 32-character hexadecimal string');
+    Deno.exit(1);
+  }
+
+  const apiKey = Deno.env.get('API_KEY');
+  if (apiKey && apiKey.length < 16) {
+    console.warn('WARNING: API_KEY should be at least 16 characters for security');
+  }
+
+  console.log('Environment validation passed');
+}
+
+/**
+ * Application startup and server initialization
+ */
+
+// Validate environment variables before starting
+validateEnvironment();
+
+console.log('Starting Salty server with enhanced security...');
+console.log(`Rate limiting: ${RATE_LIMIT_MAX_REQUESTS} requests per hour`);
+console.log(`Max payload size: ${MAX_PAYLOAD_SIZE / 1024}KB`);
+
+/**
+ * Start the Deno HTTP server
+ * @description Starts the server on port 8000 with the main request handler
+ */
+Deno.serve({ port: 8000 }, handleRequest);
