@@ -97,11 +97,11 @@ class SecurityUtils {
   static createSecurityHeaders(): Headers {
     const headers = new Headers();
     
-    // Content Security Policy - Secure configuration for required external resources
+    // Content Security Policy - Secure configuration with necessary inline scripts allowed
     headers.set('Content-Security-Policy', [
       "default-src 'self'",
       "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com",
-      "script-src 'self' https://cdn.tailwindcss.com https://kit.fontawesome.com https://cdn.usefathom.com",
+      "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://kit.fontawesome.com https://cdn.usefathom.com",
       "img-src 'self' data: https:",
       "connect-src 'self' https://cdn.usefathom.com",
       "font-src 'self' https://fonts.gstatic.com https://kit.fontawesome.com",
