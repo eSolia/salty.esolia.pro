@@ -4,7 +4,7 @@
  * @author eSolia Inc.
  */
 
-import { salty_decrypt, salty_encrypt } from './salty.ts';
+import { salty_decrypt, salty_encrypt, salty_key } from './salty.ts';
 
 /**
  * Security configuration constants
@@ -365,21 +365,36 @@ async function handleApiRequest(
     let result: string;
     
     try {
+      // Get the salt from environment and derive the crypto key
+      const saltHex = Deno.env.get('SALT_HEX');
+      if (!saltHex) {
+        throw new Error('SALT_HEX environment variable not found');
+      }
+      
+      const cryptoKey = await salty_key(key, saltHex);
+      
       if (operation === 'encrypt') {
-        result = await salty_encrypt(payload, key);
+        result = await salty_encrypt(payload, cryptoKey);
       } else {
-        result = await salty_decrypt(payload, key);
+        result = await salty_decrypt(payload, cryptoKey);
       }
     } catch (cryptoError) {
       SecurityUtils.logSecurityEvent('CRYPTO_OPERATION_FAILED', {
         operation,
         clientIP,
         error: cryptoError.message,
-        payloadLength: payload.length
+        errorStack: cryptoError.stack,
+        payloadLength: payload.length,
+        keyLength: key.length,
+        saltHexSet: !!Deno.env.get('SALT_HEX'),
+        saltHexLength: Deno.env.get('SALT_HEX')?.length || 0
       });
       
+      // Log the actual error for debugging
+      console.error(`[DEBUG] ${operation} operation failed:`, cryptoError);
+      
       throw new ApiError(
-        `${operation} operation failed`,
+        `${operation} operation failed: ${cryptoError.message}`,
         400,
         `${operation.toUpperCase()}_FAILED`
       );
