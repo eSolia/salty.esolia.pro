@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <style>
   /* IBM Plex Sans JP font */
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@300;400;500;600;700&display=swap');
   body {
     font-family: 'IBM Plex Sans JP', sans-serif;
   }
@@ -382,10 +382,26 @@
   document.addEventListener('DOMContentLoaded', () => {
     const urlPayload = getQueryParam('payload');
     if (urlPayload) {
-      payloadInput.value = decodeURIComponent(urlPayload);
-      // Optionally, you might want to automatically submit the form if a key is also provided
-      // For now, we'll just populate the payload.
+      try {
+        // Simple URL decoding (since database now uses standard URLEncode)
+        const decodedPayload = decodeURIComponent(urlPayload);
+        
+        payloadInput.value = decodedPayload;
+        console.log('Payload populated from URL parameter:', decodedPayload.substring(0, 20) + '...');
+        
+        // Show a message that payload was loaded
+        // showMessageBox('Payload loaded from URL parameter'); // For English
+        showMessageBox('URLパラメータからペイロードが読み込まれました'); // For Japanese
+        
+      } catch (error) {
+        console.error('Error decoding payload parameter:', error);
+        // showMessageBox('Invalid payload parameter in URL', true); // For English
+        showMessageBox('URLパラメータのペイロードが無効です', true); // For Japanese
+      }
     }
+    
+    // Intentionally NOT loading key from URL for security reasons
+    // Keys should be transmitted separately (email, phone, etc.)
   });
 
 </script>

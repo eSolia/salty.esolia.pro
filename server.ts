@@ -734,83 +734,18 @@ async function serveFile(pathname: string): Promise<Response> {
       if (saltHex) {
         let htmlContent = new TextDecoder().decode(fileContent);
         
-        // Log which file we're processing
         console.log(`[DEBUG] Processing HTML file: ${filePath}`);
         console.log('[DEBUG] Attempting salt injection...');
-        console.log('[DEBUG] Salt to inject:', saltHex);
-        console.log('[DEBUG] Looking for placeholder in HTML');
         
-        // Find and show the exact context around INJECTED_SALT_HEX
-        const saltIndex = htmlContent.indexOf('INJECTED_SALT_HEX');
-        if (saltIndex !== -1) {
-          const contextStart = Math.max(0, saltIndex - 100);
-          const contextEnd = Math.min(htmlContent.length, saltIndex + 200);
-          const context = htmlContent.substring(contextStart, contextEnd);
-          console.log('[DEBUG] Found INJECTED_SALT_HEX context:');
-          console.log(context);
+        // Simple, reliable replacement
+        const placeholder = 'SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER';
+        
+        if (htmlContent.includes(placeholder)) {
+          console.log(`[DEBUG] Found salt placeholder, injecting salt: ${saltHex}`);
+          htmlContent = htmlContent.replace(placeholder, saltHex);
+          console.log('[DEBUG] Salt injection completed successfully');
         } else {
-          console.log('[DEBUG] INJECTED_SALT_HEX not found in this HTML file');
-          // Check if this is the right file
-          const scriptIndex = htmlContent.indexOf('salty.ts');
-          console.log(`[DEBUG] Contains salty.ts reference: ${scriptIndex !== -1}`);
-        }
-        
-        // Multiple replacement patterns to handle different formatting
-        const patterns = [
-          "const INJECTED_SALT_HEX = 'SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER';",
-          'const INJECTED_SALT_HEX = "SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER";',
-          "  const INJECTED_SALT_HEX = 'SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER';",
-          '  const INJECTED_SALT_HEX = "SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER";'
-        ];
-        
-        let replaced = false;
-        for (const pattern of patterns) {
-          if (htmlContent.includes(pattern)) {
-            console.log(`[DEBUG] Found pattern: "${pattern}"`);
-            // Make it global so console can access it, and also expose crypto functions
-            const replacement = `const INJECTED_SALT_HEX = '${saltHex}'; 
-window.INJECTED_SALT_HEX = '${saltHex}';
-// Also expose crypto functions globally for debugging
-window.salty_key = salty_key;
-window.salty_encrypt = salty_encrypt; 
-window.salty_decrypt = salty_decrypt;`;
-            
-            const beforeLength = htmlContent.length;
-            htmlContent = htmlContent.replace(pattern, replacement);
-            const afterLength = htmlContent.length;
-            
-            console.log(`[DEBUG] Replacement: "${replacement}"`);
-            console.log(`[DEBUG] HTML length changed from ${beforeLength} to ${afterLength}`);
-            replaced = true;
-            break;
-          }
-        }
-        
-        if (!replaced) {
-          console.log('[DEBUG] No salt placeholder pattern found');
-          
-          // Try a more aggressive search
-          const placeholderIndex = htmlContent.indexOf('SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER');
-          if (placeholderIndex !== -1) {
-            console.log('[DEBUG] Found raw placeholder, attempting replacement');
-            htmlContent = htmlContent.replace('SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER', saltHex);
-            console.log('[DEBUG] Raw placeholder replacement attempted');
-            replaced = true;
-          }
-        }
-        
-        // Verify the replacement worked
-        if (replaced) {
-          const verifyIndex = htmlContent.indexOf(saltHex);
-          console.log(`[DEBUG] Verification: Salt found in HTML at position ${verifyIndex}`);
-          
-          if (verifyIndex !== -1) {
-            const verifyContext = htmlContent.substring(
-              Math.max(0, verifyIndex - 50), 
-              Math.min(htmlContent.length, verifyIndex + saltHex.length + 50)
-            );
-            console.log('[DEBUG] Verification context:', verifyContext);
-          }
+          console.log('[DEBUG] No salt placeholder found in this HTML file');
         }
         
         fileContent = new TextEncoder().encode(htmlContent);
