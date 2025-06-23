@@ -734,11 +734,17 @@ async function serveFile(pathname: string): Promise<Response> {
     } else if (pathname === '/en' || pathname === '/en/') {
       filePath = './en/index.html';
     } else if (pathname === '/salty.ts') {
+      console.log('[DEBUG] Handling /salty.ts transpilation');
       // Read the TypeScript file
       const tsContent = await Deno.readTextFile('./salty.ts');
+      console.log('[DEBUG] Read TypeScript file, length:', tsContent.length);
+      
       // Transpile to JavaScript for browser compatibility
       const jsContent = transpileTypeScript(tsContent);
-      // Serve as JavaScript
+      console.log('[DEBUG] Transpiled to JavaScript, length:', jsContent.length);
+      
+      // Create headers and serve as JavaScript
+      const headers = SecurityUtils.createSecurityHeaders();  // ✅ CREATE HEADERS FIRST
       headers.set('Content-Type', 'text/javascript; charset=utf-8');
       return new Response(jsContent, { headers });
     } 
