@@ -495,12 +495,28 @@ async function handleApiRequest(
           });
         } else {
           result = await TracingHelpers.traceCrypto('decrypt', async () => {
+            // Add detailed logging for decrypt operation
+            logger.info(`Starting decryption`, {
+              encryptedLength: payload.length,
+              encryptedPreview: String(payload).substring(0, 20) + (String(payload).length > 20 ? '...' : ''),
+              keyLength: key.length
+            }, LogCategory.CRYPTO);
+            
             const decrypted = await salty_decrypt(payload, cryptoKey);
+            
+            if (decrypted === null) {
+              logger.error(`Decryption returned null - basE91 decode likely failed`, {
+                payloadLength: payload.length,
+                payloadSample: String(payload).substring(0, 50)
+              }, LogCategory.CRYPTO);
+              throw new Error('Decryption failed - invalid basE91 or corrupted data');
+            }
+            
             logger.info(`Decryption successful`, {
               encryptedLength: payload.length,
               decryptedLength: decrypted.length,
-              encryptedPreview: String(payload).substring(0, 20) + (payload.length > 20 ? '...' : ''),
-              decryptedPreview: String(decrypted).substring(0, 20) + (decrypted.length > 20 ? '...' : '')
+              encryptedPreview: String(payload).substring(0, 20) + (String(payload).length > 20 ? '...' : ''),
+              decryptedPreview: String(decrypted).substring(0, 20) + (String(decrypted).length > 20 ? '...' : '')
             }, LogCategory.CRYPTO);
             return decrypted;
           }, {
@@ -730,8 +746,13 @@ async function serveFile(pathname: string): Promise<Response> {
         for (const pattern of patterns) {
           if (htmlContent.includes(pattern)) {
             console.log(`[DEBUG] Found pattern: "${pattern}"`);
-            // Make it global so console can access it
-            const replacement = `const INJECTED_SALT_HEX = '${saltHex}'; window.INJECTED_SALT_HEX = '${saltHex}';`;
+            // Make it global so console can access it, and also expose crypto functions
+            const replacement = `const INJECTED_SALT_HEX = '${saltHex}'; 
+window.INJECTED_SALT_HEX = '${saltHex}';
+// Also expose crypto functions globally for debugging
+window.salty_key = salty_key;
+window.salty_encrypt = salty_encrypt; 
+window.salty_decrypt = salty_decrypt;`;
             
             const beforeLength = htmlContent.length;
             htmlContent = htmlContent.replace(pattern, replacement);
