@@ -689,7 +689,7 @@ async function handleApiRequest(
 
 
 /**
- * Simple TypeScript to JavaScript transpiler for browser compatibility
+ * Improved TypeScript to JavaScript transpiler for browser compatibility
  * @param tsContent - The TypeScript source code
  * @returns Transpiled JavaScript code
  */
@@ -697,23 +697,30 @@ function transpileTypeScript(tsContent: string): string {
   // Remove TypeScript-specific syntax for browser compatibility
   let jsContent = tsContent;
   
-  // Remove type annotations from function parameters and return types
-  jsContent = jsContent.replace(/:\s*[^,)={\s]+(\s*[,)={\s])/g, '$1');
+  // Remove type annotations from function parameters (but keep the parameter names)
+  // Match patterns like: functionName(param: Type, param2: Type)
+  jsContent = jsContent.replace(/(\w+)\s*:\s*[^,)={\s]+/g, '$1');
   
-  // Remove explicit return type annotations (: Type before {)
-  jsContent = jsContent.replace(/:\s*[^{]+(\s*{)/g, '$1');
+  // Remove return type annotations (: ReturnType before {)
+  // Match patterns like: ): ReturnType {
+  jsContent = jsContent.replace(/\)\s*:\s*[^{]+(\s*{)/g, ')$1');
   
   // Remove interface declarations
-  jsContent = jsContent.replace(/interface\s+\w+\s*{[^}]*}/g, '');
+  jsContent = jsContent.replace(/interface\s+\w+\s*{[^}]*}\s*/g, '');
   
   // Remove type assertions (as Type)
   jsContent = jsContent.replace(/\s+as\s+\w+/g, '');
   
-  // Remove type imports/exports
-  jsContent = jsContent.replace(/import\s+type\s+{[^}]*}\s+from\s+['"][^'"]*['"];?/g, '');
+  // Remove type imports/exports (but keep regular exports)
+  jsContent = jsContent.replace(/import\s+type\s+{[^}]*}\s+from\s+['"][^'"]*['"];?\s*/g, '');
+  jsContent = jsContent.replace(/export\s+type\s+{[^}]*}\s*/g, '');
   
-  // Clean up any double spaces or empty lines created by removals
-  jsContent = jsContent.replace(/\s+/g, ' ').replace(/\n\s*\n/g, '\n');
+  // Remove standalone type annotations in variable declarations
+  // Match patterns like: const variable: Type = 
+  jsContent = jsContent.replace(/:\s*{\s*\[key:\s*string\]\s*:\s*\w+\s*}/g, '');
+  
+  // Clean up extra whitespace but preserve line breaks for readability
+  jsContent = jsContent.replace(/[ \t]+/g, ' ').replace(/\n\s*\n\s*\n/g, '\n\n');
   
   return jsContent;
 }
