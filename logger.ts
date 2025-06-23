@@ -447,4 +447,4 @@ export const logger = new Logger({
 /**
  * Export types and enums for use in other modules
  */
-export { SecurityEvent, LogLevel, LogCategory };
+export { SecurityEvent };
