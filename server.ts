@@ -687,6 +687,38 @@ async function handleApiRequest(
   });
 }
 
+
+/**
+ * Simple TypeScript to JavaScript transpiler for browser compatibility
+ * @param tsContent - The TypeScript source code
+ * @returns Transpiled JavaScript code
+ */
+function transpileTypeScript(tsContent: string): string {
+  // Remove TypeScript-specific syntax for browser compatibility
+  let jsContent = tsContent;
+  
+  // Remove type annotations from function parameters and return types
+  jsContent = jsContent.replace(/:\s*[^,)={\s]+(\s*[,)={\s])/g, '$1');
+  
+  // Remove explicit return type annotations (: Type before {)
+  jsContent = jsContent.replace(/:\s*[^{]+(\s*{)/g, '$1');
+  
+  // Remove interface declarations
+  jsContent = jsContent.replace(/interface\s+\w+\s*{[^}]*}/g, '');
+  
+  // Remove type assertions (as Type)
+  jsContent = jsContent.replace(/\s+as\s+\w+/g, '');
+  
+  // Remove type imports/exports
+  jsContent = jsContent.replace(/import\s+type\s+{[^}]*}\s+from\s+['"][^'"]*['"];?/g, '');
+  
+  // Clean up any double spaces or empty lines created by removals
+  jsContent = jsContent.replace(/\s+/g, ' ').replace(/\n\s*\n/g, '\n');
+  
+  return jsContent;
+}
+
+
 /**
  * Serves static files with appropriate security headers
  * @param pathname - The requested file path
@@ -702,7 +734,13 @@ async function serveFile(pathname: string): Promise<Response> {
     } else if (pathname === '/en' || pathname === '/en/') {
       filePath = './en/index.html';
     } else if (pathname === '/salty.ts') {
-      filePath = './salty.ts';
+      // Read the TypeScript file
+      const tsContent = await Deno.readTextFile('./salty.ts');
+      // Transpile to JavaScript for browser compatibility
+      const jsContent = transpileTypeScript(tsContent);
+      // Serve as JavaScript
+      headers.set('Content-Type', 'text/javascript; charset=utf-8');
+      return new Response(jsContent, { headers });
     } 
     // Handle image files
     else if (pathname.startsWith('/img/') && pathname.endsWith('.svg')) {
@@ -750,9 +788,6 @@ async function serveFile(pathname: string): Promise<Response> {
         
         fileContent = new TextEncoder().encode(htmlContent);
       }
-    } else if (filePath.endsWith('.ts')) {
-      // Serve TypeScript files as JavaScript modules for browser compatibility
-      headers.set('Content-Type', 'text/javascript; charset=utf-8');
     } else if (filePath.endsWith('.svg')) {
       headers.set('Content-Type', 'image/svg+xml');
     } else if (filePath.endsWith('.md')) {
