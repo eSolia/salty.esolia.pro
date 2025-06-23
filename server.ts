@@ -498,8 +498,9 @@ async function handleApiRequest(
             // Add detailed logging for decrypt operation
             logger.info(`Starting decryption`, {
               encryptedLength: payload.length,
-              encryptedPreview: String(payload).substring(0, 20) + (String(payload).length > 20 ? '...' : ''),
-              keyLength: key.length
+              encryptedPreview: payload.substring(0, 20) + (payload.length > 20 ? '...' : ''),
+              keyLength: key.length,
+              payloadType: typeof payload
             }, LogCategory.CRYPTO);
             
             const decrypted = await salty_decrypt(payload, cryptoKey);
