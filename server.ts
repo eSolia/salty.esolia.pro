@@ -6,6 +6,7 @@
 import { salty_decrypt, salty_encrypt, salty_key } from './salty.ts';
 import { VERSION, VersionUtils, TECH_SPECS, SECURITY_INFO } from './version.ts';
 import { logger, LogCategory, SecurityEvent } from './logger.ts';
+import { tracer, TracingHelpers } from './telemetry.ts';
 
 /**
  * Security configuration constants
@@ -255,36 +256,41 @@ function validateApiRequest(request: Request): void {
  * @throws ApiError if API key is missing or invalid
  */
 function validateApiKey(request: Request): void {
-  const expectedApiKey = Deno.env.get('API_KEY');
-  
-  if (expectedApiKey) {
-    const providedApiKey = request.headers.get('X-API-Key');
+  return TracingHelpers.traceSecurity('api-key', () => {
+    const expectedApiKey = Deno.env.get('API_KEY');
     
-    if (!providedApiKey) {
-      logger.security(
-        SecurityEvent.API_KEY_MISSING,
-        'API request missing required API key',
-        { 
-          clientIP: SecurityUtils.getClientIP(request),
-          endpoint: new URL(request.url).pathname
-        }
-      );
-      throw new ApiError('API key required', 401, 'API_KEY_MISSING');
+    if (expectedApiKey) {
+      const providedApiKey = request.headers.get('X-API-Key');
+      
+      if (!providedApiKey) {
+        logger.security(
+          SecurityEvent.API_KEY_MISSING,
+          'API request missing required API key',
+          { 
+            clientIP: SecurityUtils.getClientIP(request),
+            endpoint: new URL(request.url).pathname
+          }
+        );
+        throw new ApiError('API key required', 401, 'API_KEY_MISSING');
+      }
+      
+      if (providedApiKey !== expectedApiKey) {
+        logger.security(
+          SecurityEvent.API_KEY_INVALID,
+          'API request with invalid API key',
+          { 
+            clientIP: SecurityUtils.getClientIP(request),
+            endpoint: new URL(request.url).pathname,
+            providedKeyLength: providedApiKey.length
+          }
+        );
+        throw new ApiError('Invalid API key', 401, 'API_KEY_INVALID');
+      }
     }
-    
-    if (providedApiKey !== expectedApiKey) {
-      logger.security(
-        SecurityEvent.API_KEY_INVALID,
-        'API request with invalid API key',
-        { 
-          clientIP: SecurityUtils.getClientIP(request),
-          endpoint: new URL(request.url).pathname,
-          providedKeyLength: providedApiKey.length
-        }
-      );
-      throw new ApiError('Invalid API key', 401, 'API_KEY_INVALID');
-    }
-  }
+  }, {
+    'client.ip': SecurityUtils.getClientIP(request),
+    'api_key.required': !!Deno.env.get('API_KEY')
+  });
 }
 
 /**
@@ -294,70 +300,80 @@ function validateApiKey(request: Request): void {
  * @throws ApiError if validation fails
  */
 async function validateRequestBody(request: Request): Promise<EncryptRequest> {
-  let body;
-  
-  try {
-    body = await request.json();
-  } catch {
-    logger.security(
-      SecurityEvent.MALFORMED_INPUT,
-      'Invalid JSON in request body',
-      { 
-        clientIP: SecurityUtils.getClientIP(request),
-        contentType: request.headers.get('content-type')
-      }
-    );
-    throw new ApiError('Invalid JSON in request body', 400, 'INVALID_JSON');
-  }
+  return TracingHelpers.traceValidation('body-parsing', async () => {
+    let body;
+    
+    try {
+      body = await request.json();
+    } catch {
+      logger.security(
+        SecurityEvent.MALFORMED_INPUT,
+        'Invalid JSON in request body',
+        { 
+          clientIP: SecurityUtils.getClientIP(request),
+          contentType: request.headers.get('content-type')
+        }
+      );
+      throw new ApiError('Invalid JSON in request body', 400, 'INVALID_JSON');
+    }
 
-  if (!body || typeof body !== 'object') {
-    logger.security(
-      SecurityEvent.MALFORMED_INPUT,
-      'Request body is not a JSON object',
-      { 
-        clientIP: SecurityUtils.getClientIP(request),
-        bodyType: typeof body
-      }
-    );
-    throw new ApiError('Request body must be a JSON object', 400, 'INVALID_BODY');
-  }
+    if (!body || typeof body !== 'object') {
+      logger.security(
+        SecurityEvent.MALFORMED_INPUT,
+        'Request body is not a JSON object',
+        { 
+          clientIP: SecurityUtils.getClientIP(request),
+          bodyType: typeof body
+        }
+      );
+      throw new ApiError('Request body must be a JSON object', 400, 'INVALID_BODY');
+    }
 
-  const { payload, key } = body;
+    const { payload, key } = body;
 
-  if (!payload || typeof payload !== 'string') {
-    logger.security(
-      SecurityEvent.MALFORMED_INPUT,
-      'Missing or invalid payload field',
-      { 
-        clientIP: SecurityUtils.getClientIP(request),
-        hasPayload: !!payload,
-        payloadType: typeof payload
-      }
-    );
-    throw new ApiError('Missing or invalid payload field', 400, 'INVALID_PAYLOAD');
-  }
+    if (!payload || typeof payload !== 'string') {
+      logger.security(
+        SecurityEvent.MALFORMED_INPUT,
+        'Missing or invalid payload field',
+        { 
+          clientIP: SecurityUtils.getClientIP(request),
+          hasPayload: !!payload,
+          payloadType: typeof payload
+        }
+      );
+      throw new ApiError('Missing or invalid payload field', 400, 'INVALID_PAYLOAD');
+    }
 
-  if (!key || typeof key !== 'string') {
-    logger.security(
-      SecurityEvent.MALFORMED_INPUT,
-      'Missing or invalid key field',
-      { 
-        clientIP: SecurityUtils.getClientIP(request),
-        hasKey: !!key,
-        keyType: typeof key
-      }
-    );
-    throw new ApiError('Missing or invalid key field', 400, 'INVALID_KEY');
-  }
+    if (!key || typeof key !== 'string') {
+      logger.security(
+        SecurityEvent.MALFORMED_INPUT,
+        'Missing or invalid key field',
+        { 
+          clientIP: SecurityUtils.getClientIP(request),
+          hasKey: !!key,
+          keyType: typeof key
+        }
+      );
+      throw new ApiError('Missing or invalid key field', 400, 'INVALID_KEY');
+    }
 
-  // Sanitize inputs
-  const sanitizedPayload = SecurityUtils.sanitizeInput(payload, MAX_PAYLOAD_SIZE);
-  const sanitizedKey = SecurityUtils.sanitizeInput(key, MAX_KEY_SIZE);
+    // Sanitize inputs with tracing
+    const sanitizedPayload = TracingHelpers.traceSecurity('input-sanitization', () => {
+      return SecurityUtils.sanitizeInput(payload, MAX_PAYLOAD_SIZE);
+    }, { 'input.type': 'payload', 'input.length': payload.length });
 
-  return {
-    payload: sanitizedPayload,
-    key: sanitizedKey
-  };
+    const sanitizedKey = TracingHelpers.traceSecurity('input-sanitization', () => {
+      return SecurityUtils.sanitizeInput(key, MAX_KEY_SIZE);
+    }, { 'input.type': 'key', 'input.length': key.length });
+
+    return {
+      payload: sanitizedPayload,
+      key: sanitizedKey
+    };
+  }, {
+    'client.ip': SecurityUtils.getClientIP(request),
+    'content_type': request.headers.get('content-type') || 'unknown'
+  });
 }
 
 /**
@@ -405,130 +421,216 @@ async function handleApiRequest(
   request: Request,
   operation: 'encrypt' | 'decrypt'
 ): Promise<Response> {
-  const startTime = performance.now();
-  const clientIP = SecurityUtils.getClientIP(request);
-  const requestId = logger.generateRequestId();
-  
-  try {
-    // Check for suspicious activity patterns
-    logger.detectSuspiciousActivity(clientIP);
-
-    // Rate limiting check
-    if (!RateLimiter.checkRateLimit(clientIP)) {
-      throw new ApiError('Rate limit exceeded', 429, 'RATE_LIMIT_EXCEEDED');
-    }
-
-    // Validate request
-    validateApiRequest(request);
-    validateApiKey(request);
+  return TracingHelpers.traceAPI('request-handler', async () => {
+    const startTime = performance.now();
+    const clientIP = SecurityUtils.getClientIP(request);
+    const requestId = logger.generateRequestId();
     
-    const { payload, key } = await validateRequestBody(request);
-
-    // Perform operation
-    let result: string;
+    // Add request context to tracing
+    tracer.addSpanAttributes({
+      'http.method': 'POST',
+      'http.url': request.url,
+      'http.route': `/api/${operation}`,
+      'client.ip': clientIP,
+      'request.id': requestId
+    });
     
     try {
-      // Get the salt from environment and derive the crypto key
-      const saltHex = Deno.env.get('SALT_HEX');
-      if (!saltHex) {
-        throw new Error('SALT_HEX environment variable not found');
+      // Check for suspicious activity patterns with tracing
+      await TracingHelpers.traceSecurity('suspicious-activity', async () => {
+        logger.detectSuspiciousActivity(clientIP);
+      }, { 'client.ip': clientIP });
+
+      // Rate limiting check (already traced in RateLimiter.checkRateLimit)
+      if (!RateLimiter.checkRateLimit(clientIP)) {
+        throw new ApiError('Rate limit exceeded', 429, 'RATE_LIMIT_EXCEEDED');
       }
+
+      // Validate request (already traced)
+      TracingHelpers.traceValidation('request', () => {
+        validateApiRequest(request);
+      }, { 'http.method': request.method });
       
-      const cryptoKey = await salty_key(key, saltHex);
+      // API key validation (already traced)
+      validateApiKey(request);
       
-      if (operation === 'encrypt') {
-        result = await salty_encrypt(payload, cryptoKey);
-      } else {
-        result = await salty_decrypt(payload, cryptoKey);
-      }
-    } catch (cryptoError) {
-      logger.security(
-        SecurityEvent.CRYPTO_FAILURE,
-        `Crypto operation failed: ${operation}`,
-        {
-          operation,
-          clientIP,
-          error: cryptoError.message,
-          payloadLength: payload.length,
-          keyLength: key.length,
-          requestId
+      // Body validation (already traced)
+      const { payload, key } = await validateRequestBody(request);
+
+      // Perform crypto operations with detailed tracing
+      let result: string;
+      
+      try {
+        // Get the salt from environment
+        const saltHex = Deno.env.get('SALT_HEX');
+        if (!saltHex) {
+          throw new Error('SALT_HEX environment variable not found');
         }
-      );
-      
-      throw new ApiError(
-        `${operation} operation failed: ${cryptoError.message}`,
-        400,
-        `${operation.toUpperCase()}_FAILED`
-      );
-    }
-
-    // Log successful operation
-    const responseTime = performance.now() - startTime;
-    logger.apiRequest(
-      'POST',
-      `/api/${operation}`,
-      200,
-      responseTime,
-      clientIP,
-      requestId,
-      {
-        payloadLength: payload.length,
-        resultLength: result.length,
-        operation
+        
+        // Key derivation with tracing
+        const cryptoKey = await TracingHelpers.traceCrypto('key-derivation', async () => {
+          return await salty_key(key, saltHex);
+        }, {
+          'crypto.salt_length': saltHex.length,
+          'crypto.key_length': key.length
+        });
+        
+        // Encryption/decryption with tracing
+        if (operation === 'encrypt') {
+          result = await TracingHelpers.traceCrypto('encrypt', async () => {
+            return await salty_encrypt(payload, cryptoKey);
+          }, {
+            'crypto.payload_length': payload.length,
+            'crypto.algorithm': 'AES-GCM'
+          });
+        } else {
+          result = await TracingHelpers.traceCrypto('decrypt', async () => {
+            return await salty_decrypt(payload, cryptoKey);
+          }, {
+            'crypto.payload_length': payload.length,
+            'crypto.algorithm': 'AES-GCM'
+          });
+        }
+        
+        // Record success metrics
+        tracer.recordMetric(`crypto.${operation}.success`, 1, {
+          'operation': operation,
+          'payload_size': payload.length,
+          'result_size': result.length
+        });
+        
+      } catch (cryptoError) {
+        // Record crypto failure metrics
+        tracer.recordMetric(`crypto.${operation}.failure`, 1, {
+          'operation': operation,
+          'error_type': cryptoError instanceof Error ? cryptoError.constructor.name : 'Unknown'
+        });
+        
+        logger.security(
+          SecurityEvent.CRYPTO_FAILURE,
+          `Crypto operation failed: ${operation}`,
+          {
+            operation,
+            clientIP,
+            error: cryptoError.message,
+            payloadLength: payload.length,
+            keyLength: key.length,
+            requestId
+          }
+        );
+        
+        throw new ApiError(
+          `${operation} operation failed: ${cryptoError.message}`,
+          400,
+          `${operation.toUpperCase()}_FAILED`
+        );
       }
-    );
 
-    return createApiResponse(true, result);
+      // Create response with tracing
+      const response = await TracingHelpers.traceAPI('response-creation', () => {
+        return createApiResponse(true, result);
+      }, {
+        'response.success': true,
+        'response.result_length': result.length
+      });
 
-  } catch (error) {
-    const responseTime = performance.now() - startTime;
-    
-    if (error instanceof ApiError) {
-      // Log API-specific errors
+      // Log successful operation
+      const responseTime = performance.now() - startTime;
       logger.apiRequest(
         'POST',
         `/api/${operation}`,
-        error.statusCode,
+        200,
         responseTime,
         clientIP,
         requestId,
         {
-          error: error.message,
-          code: error.code,
+          payloadLength: payload.length,
+          resultLength: result.length,
           operation
         }
       );
 
-      return createApiResponse(false, undefined, error.message);
-    }
+      // Record performance metrics
+      tracer.recordMetric('api.request.duration', responseTime, {
+        'operation': operation,
+        'status': 'success'
+      });
 
-    // Unexpected error
-    logger.error(
-      `Unexpected error in API ${operation}`,
-      error as Error,
-      {
-        operation,
-        clientIP,
-        requestId
-      },
-      LogCategory.API
-    );
+      return response;
 
-    logger.apiRequest(
-      'POST',
-      `/api/${operation}`,
-      500,
-      responseTime,
-      clientIP,
-      requestId,
-      {
-        error: 'Internal server error',
-        operation
+    } catch (error) {
+      const responseTime = performance.now() - startTime;
+      
+      if (error instanceof ApiError) {
+        // Log API-specific errors
+        logger.apiRequest(
+          'POST',
+          `/api/${operation}`,
+          error.statusCode,
+          responseTime,
+          clientIP,
+          requestId,
+          {
+            error: error.message,
+            code: error.code,
+            operation
+          }
+        );
+
+        // Record error metrics
+        tracer.recordMetric('api.request.error', 1, {
+          'operation': operation,
+          'error_code': error.code,
+          'status_code': error.statusCode.toString()
+        });
+
+        const errorResponse = TracingHelpers.traceAPI('response-creation', () => {
+          return createApiResponse(false, undefined, error.message);
+        }, {
+          'response.success': false,
+          'response.error_code': error.code
+        });
+
+        return errorResponse;
       }
-    );
 
-    return createApiResponse(false, undefined, 'Internal server error');
-  }
+      // Unexpected error
+      logger.error(
+        `Unexpected error in API ${operation}`,
+        error as Error,
+        {
+          operation,
+          clientIP,
+          requestId
+        },
+        LogCategory.API
+      );
+
+      logger.apiRequest(
+        'POST',
+        `/api/${operation}`,
+        500,
+        responseTime,
+        clientIP,
+        requestId,
+        {
+          error: 'Internal server error',
+          operation
+        }
+      );
+
+      // Record unexpected error metrics
+      tracer.recordMetric('api.request.unexpected_error', 1, {
+        'operation': operation,
+        'error_type': error instanceof Error ? error.constructor.name : 'Unknown'
+      });
+
+      return createApiResponse(false, undefined, 'Internal server error');
+    }
+  }, {
+    'api.operation': operation,
+    'client.ip': SecurityUtils.getClientIP(request)
+  });
 }
 
 /**
