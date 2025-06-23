@@ -485,8 +485,8 @@ async function handleApiRequest(
             logger.info(`Encryption successful`, {
               originalLength: payload.length,
               encryptedLength: encrypted.length,
-              payloadPreview: String(payload).substring(0, 20) + (payload.length > 20 ? '...' : ''),
-              encryptedPreview: String(encrypted).substring(0, 20) + (encrypted.length > 20 ? '...' : '')
+              payloadPreview: String(payload).substring(0, 20) + (String(payload).length > 20 ? '...' : ''),
+              encryptedPreview: String(encrypted).substring(0, 20) + (String(encrypted).length > 20 ? '...' : '')
             }, LogCategory.CRYPTO);
             return encrypted;
           }, {
@@ -699,38 +699,70 @@ async function serveFile(pathname: string): Promise<Response> {
         
         // Log the replacement for debugging
         console.log('[DEBUG] Attempting salt injection...');
+        console.log('[DEBUG] Salt to inject:', saltHex);
         console.log('[DEBUG] Looking for placeholder in HTML');
+        
+        // Find and show the exact context around INJECTED_SALT_HEX
+        const saltIndex = htmlContent.indexOf('INJECTED_SALT_HEX');
+        if (saltIndex !== -1) {
+          const contextStart = Math.max(0, saltIndex - 100);
+          const contextEnd = Math.min(htmlContent.length, saltIndex + 200);
+          const context = htmlContent.substring(contextStart, contextEnd);
+          console.log('[DEBUG] Found INJECTED_SALT_HEX context:');
+          console.log(context);
+        }
         
         // Multiple replacement patterns to handle different formatting
         const patterns = [
           "const INJECTED_SALT_HEX = 'SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER';",
           'const INJECTED_SALT_HEX = "SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER";',
-          "'SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER'",
-          '"SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER"',
-          "SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER"
+          "  const INJECTED_SALT_HEX = 'SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER';",
+          '  const INJECTED_SALT_HEX = "SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER";'
         ];
         
         let replaced = false;
         for (const pattern of patterns) {
           if (htmlContent.includes(pattern)) {
-            console.log(`[DEBUG] Found pattern: ${pattern}`);
-            if (pattern.startsWith('const INJECTED_SALT_HEX')) {
-              htmlContent = htmlContent.replace(pattern, `const INJECTED_SALT_HEX = '${saltHex}';`);
-            } else {
-              htmlContent = htmlContent.replace(pattern, saltHex);
-            }
+            console.log(`[DEBUG] Found pattern: "${pattern}"`);
+            const replacement = pattern.includes("'") ? 
+              `const INJECTED_SALT_HEX = '${saltHex}';` :
+              `const INJECTED_SALT_HEX = "${saltHex}";`;
+            
+            const beforeLength = htmlContent.length;
+            htmlContent = htmlContent.replace(pattern, replacement);
+            const afterLength = htmlContent.length;
+            
+            console.log(`[DEBUG] Replacement: "${replacement}"`);
+            console.log(`[DEBUG] HTML length changed from ${beforeLength} to ${afterLength}`);
             replaced = true;
-            console.log('[DEBUG] Salt injection successful');
             break;
           }
         }
         
         if (!replaced) {
-          console.log('[DEBUG] No salt placeholder found in HTML');
-          console.log('[DEBUG] HTML snippet around INJECTED_SALT_HEX:');
-          const saltIndex = htmlContent.indexOf('INJECTED_SALT_HEX');
-          if (saltIndex !== -1) {
-            console.log(htmlContent.substring(saltIndex - 50, saltIndex + 100));
+          console.log('[DEBUG] No salt placeholder pattern found');
+          
+          // Try a more aggressive search
+          const placeholderIndex = htmlContent.indexOf('SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER');
+          if (placeholderIndex !== -1) {
+            console.log('[DEBUG] Found raw placeholder, attempting replacement');
+            htmlContent = htmlContent.replace('SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER', saltHex);
+            console.log('[DEBUG] Raw placeholder replacement attempted');
+            replaced = true;
+          }
+        }
+        
+        // Verify the replacement worked
+        if (replaced) {
+          const verifyIndex = htmlContent.indexOf(saltHex);
+          console.log(`[DEBUG] Verification: Salt found in HTML at position ${verifyIndex}`);
+          
+          if (verifyIndex !== -1) {
+            const verifyContext = htmlContent.substring(
+              Math.max(0, verifyIndex - 50), 
+              Math.min(htmlContent.length, verifyIndex + saltHex.length + 50)
+            );
+            console.log('[DEBUG] Verification context:', verifyContext);
           }
         }
         
