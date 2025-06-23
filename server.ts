@@ -696,11 +696,44 @@ async function serveFile(pathname: string): Promise<Response> {
       const saltHex = Deno.env.get('SALT_HEX');
       if (saltHex) {
         let htmlContent = new TextDecoder().decode(fileContent);
-        // Replace the entire variable assignment
-        htmlContent = htmlContent.replace(
+        
+        // Log the replacement for debugging
+        console.log('[DEBUG] Attempting salt injection...');
+        console.log('[DEBUG] Looking for placeholder in HTML');
+        
+        // Multiple replacement patterns to handle different formatting
+        const patterns = [
           "const INJECTED_SALT_HEX = 'SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER';",
-          `const INJECTED_SALT_HEX = '${saltHex}';`
-        );
+          'const INJECTED_SALT_HEX = "SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER";',
+          "'SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER'",
+          '"SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER"',
+          "SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER"
+        ];
+        
+        let replaced = false;
+        for (const pattern of patterns) {
+          if (htmlContent.includes(pattern)) {
+            console.log(`[DEBUG] Found pattern: ${pattern}`);
+            if (pattern.startsWith('const INJECTED_SALT_HEX')) {
+              htmlContent = htmlContent.replace(pattern, `const INJECTED_SALT_HEX = '${saltHex}';`);
+            } else {
+              htmlContent = htmlContent.replace(pattern, saltHex);
+            }
+            replaced = true;
+            console.log('[DEBUG] Salt injection successful');
+            break;
+          }
+        }
+        
+        if (!replaced) {
+          console.log('[DEBUG] No salt placeholder found in HTML');
+          console.log('[DEBUG] HTML snippet around INJECTED_SALT_HEX:');
+          const saltIndex = htmlContent.indexOf('INJECTED_SALT_HEX');
+          if (saltIndex !== -1) {
+            console.log(htmlContent.substring(saltIndex - 50, saltIndex + 100));
+          }
+        }
+        
         fileContent = new TextEncoder().encode(htmlContent);
       }
     } else if (filePath.endsWith('.ts')) {
