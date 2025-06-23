@@ -352,11 +352,16 @@
     }
   });
 
-  // Event listener for the new reset button
+  // Event listener for the reset button
   resetFormBtn.addEventListener('click', () => {
-    payloadInput.value = ''; // Clear payload
-    keyInput.value = '';      // Clear key
-    saltyResultDiv.classList.add('hidden'); // Hide results
+    payloadInput.value = '';
+    keyInput.value = '';
+    saltyResultDiv.classList.add('hidden');
+    
+    // Clear URL parameters
+    const cleanUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+    
     showMessageBox('フォームをリセットしました。');
   });
 
