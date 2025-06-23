@@ -697,7 +697,8 @@ async function serveFile(pathname: string): Promise<Response> {
       if (saltHex) {
         let htmlContent = new TextDecoder().decode(fileContent);
         
-        // Log the replacement for debugging
+        // Log which file we're processing
+        console.log(`[DEBUG] Processing HTML file: ${filePath}`);
         console.log('[DEBUG] Attempting salt injection...');
         console.log('[DEBUG] Salt to inject:', saltHex);
         console.log('[DEBUG] Looking for placeholder in HTML');
@@ -710,6 +711,11 @@ async function serveFile(pathname: string): Promise<Response> {
           const context = htmlContent.substring(contextStart, contextEnd);
           console.log('[DEBUG] Found INJECTED_SALT_HEX context:');
           console.log(context);
+        } else {
+          console.log('[DEBUG] INJECTED_SALT_HEX not found in this HTML file');
+          // Check if this is the right file
+          const scriptIndex = htmlContent.indexOf('salty.ts');
+          console.log(`[DEBUG] Contains salty.ts reference: ${scriptIndex !== -1}`);
         }
         
         // Multiple replacement patterns to handle different formatting
@@ -724,9 +730,8 @@ async function serveFile(pathname: string): Promise<Response> {
         for (const pattern of patterns) {
           if (htmlContent.includes(pattern)) {
             console.log(`[DEBUG] Found pattern: "${pattern}"`);
-            const replacement = pattern.includes("'") ? 
-              `const INJECTED_SALT_HEX = '${saltHex}';` :
-              `const INJECTED_SALT_HEX = "${saltHex}";`;
+            // Make it global so console can access it
+            const replacement = `const INJECTED_SALT_HEX = '${saltHex}'; window.INJECTED_SALT_HEX = '${saltHex}';`;
             
             const beforeLength = htmlContent.length;
             htmlContent = htmlContent.replace(pattern, replacement);
