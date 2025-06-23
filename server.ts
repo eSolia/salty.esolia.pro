@@ -485,8 +485,8 @@ async function handleApiRequest(
             logger.info(`Encryption successful`, {
               originalLength: payload.length,
               encryptedLength: encrypted.length,
-              payloadPreview: payload.substring(0, 20) + (payload.length > 20 ? '...' : ''),
-              encryptedPreview: encrypted.substring(0, 20) + (encrypted.length > 20 ? '...' : '')
+              payloadPreview: String(payload).substring(0, 20) + (payload.length > 20 ? '...' : ''),
+              encryptedPreview: String(encrypted).substring(0, 20) + (encrypted.length > 20 ? '...' : '')
             }, LogCategory.CRYPTO);
             return encrypted;
           }, {
@@ -499,8 +499,8 @@ async function handleApiRequest(
             logger.info(`Decryption successful`, {
               encryptedLength: payload.length,
               decryptedLength: decrypted.length,
-              encryptedPreview: payload.substring(0, 20) + (payload.length > 20 ? '...' : ''),
-              decryptedPreview: decrypted.substring(0, 20) + (decrypted.length > 20 ? '...' : '')
+              encryptedPreview: String(payload).substring(0, 20) + (payload.length > 20 ? '...' : ''),
+              decryptedPreview: String(decrypted).substring(0, 20) + (decrypted.length > 20 ? '...' : '')
             }, LogCategory.CRYPTO);
             return decrypted;
           }, {
