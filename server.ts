@@ -1,5 +1,5 @@
 /**
- * @fileoverview Enhanced Salty server with comprehensive security features
+ * @fileoverview Enhanced Salty server with comprehensive security features  
  * @author eSolia Inc.
  */
 
@@ -167,34 +167,40 @@ class RateLimiter {
    * @returns True if the request is allowed, false if rate limit exceeded
    */
   static checkRateLimit(clientIP: string): boolean {
-    const now = Date.now();
-    const entry = rateLimitStore.get(clientIP);
-    
-    if (!entry || (now - entry.windowStart) > RATE_LIMIT_WINDOW) {
-      // New window or first request
-      rateLimitStore.set(clientIP, {
-        count: 1,
-        windowStart: now
-      });
+    return TracingHelpers.traceSecurity('rate-limit', () => {
+      const now = Date.now();
+      const entry = rateLimitStore.get(clientIP);
+      
+      if (!entry || (now - entry.windowStart) > RATE_LIMIT_WINDOW) {
+        // New window or first request
+        rateLimitStore.set(clientIP, {
+          count: 1,
+          windowStart: now
+        });
+        return true;
+      }
+      
+      if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
+        logger.security(
+          SecurityEvent.RATE_LIMIT_EXCEEDED,
+          `Rate limit exceeded for IP: ${clientIP}`,
+          {
+            clientIP,
+            count: entry.count,
+            windowStart: entry.windowStart,
+            limit: RATE_LIMIT_MAX_REQUESTS
+          }
+        );
+        return false;
+      }
+
+      entry.count++;
       return true;
-    }
-    
-    if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
-      logger.security(
-        SecurityEvent.RATE_LIMIT_EXCEEDED,
-        `Rate limit exceeded for IP: ${clientIP}`,
-        {
-          clientIP,
-          count: entry.count,
-          windowStart: entry.windowStart,
-          limit: RATE_LIMIT_MAX_REQUESTS
-        }
-      );
-      return false;
-    }
-    
-    entry.count++;
-    return true;
+    }, {
+      'client.ip': clientIP,
+      'rate_limit.window_ms': RATE_LIMIT_WINDOW,
+      'rate_limit.max_requests': RATE_LIMIT_MAX_REQUESTS
+    });
   }
 
   /**
@@ -338,7 +344,9 @@ async function validateRequestBody(request: Request): Promise<EncryptRequest> {
         { 
           clientIP: SecurityUtils.getClientIP(request),
           hasPayload: !!payload,
-          payloadType: typeof payload
+          payloadType: typeof payload,
+          payloadConstructor: payload?.constructor?.name || 'unknown',
+          payloadValue: String(payload).substring(0, 100)
         }
       );
       throw new ApiError('Missing or invalid payload field', 400, 'INVALID_PAYLOAD');
@@ -351,20 +359,31 @@ async function validateRequestBody(request: Request): Promise<EncryptRequest> {
         { 
           clientIP: SecurityUtils.getClientIP(request),
           hasKey: !!key,
-          keyType: typeof key
+          keyType: typeof key,
+          keyConstructor: key?.constructor?.name || 'unknown'
         }
       );
       throw new ApiError('Missing or invalid key field', 400, 'INVALID_KEY');
     }
 
-    // Sanitize inputs with tracing
-    const sanitizedPayload = TracingHelpers.traceSecurity('input-sanitization', () => {
-      return SecurityUtils.sanitizeInput(payload, MAX_PAYLOAD_SIZE);
-    }, { 'input.type': 'payload', 'input.length': payload.length });
+    // Sanitize inputs with tracing - ensure Promises are resolved
+    const sanitizedPayload = await TracingHelpers.traceSecurity('input-sanitization', async () => {
+      // Ensure payload is resolved if it's a Promise
+      const resolvedPayload = await Promise.resolve(payload);
+      if (typeof resolvedPayload !== 'string') {
+        throw new Error(`Payload resolved to ${typeof resolvedPayload}, expected string`);
+      }
+      return SecurityUtils.sanitizeInput(resolvedPayload, MAX_PAYLOAD_SIZE);
+    }, { 'input.type': 'payload', 'input.length': typeof payload === 'string' ? payload.length : 'unknown' });
 
-    const sanitizedKey = TracingHelpers.traceSecurity('input-sanitization', () => {
-      return SecurityUtils.sanitizeInput(key, MAX_KEY_SIZE);
-    }, { 'input.type': 'key', 'input.length': key.length });
+    const sanitizedKey = await TracingHelpers.traceSecurity('input-sanitization', async () => {
+      // Ensure key is resolved if it's a Promise  
+      const resolvedKey = await Promise.resolve(key);
+      if (typeof resolvedKey !== 'string') {
+        throw new Error(`Key resolved to ${typeof resolvedKey}, expected string`);
+      }
+      return SecurityUtils.sanitizeInput(resolvedKey, MAX_KEY_SIZE);
+    }, { 'input.type': 'key', 'input.length': typeof key === 'string' ? key.length : 'unknown' });
 
     return {
       payload: sanitizedPayload,
