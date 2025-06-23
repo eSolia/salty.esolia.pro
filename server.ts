@@ -497,10 +497,11 @@ async function handleApiRequest(
           result = await TracingHelpers.traceCrypto('decrypt', async () => {
             // Add detailed logging for decrypt operation
             logger.info(`Starting decryption`, {
-              encryptedLength: payload.length,
-              encryptedPreview: payload.substring(0, 20) + (payload.length > 20 ? '...' : ''),
+              encryptedLength: typeof payload === 'string' ? payload.length : 'N/A',
+              encryptedPreview: typeof payload === 'string' ? payload.substring(0, 20) + (payload.length > 20 ? '...' : '') : String(payload),
               keyLength: key.length,
-              payloadType: typeof payload
+              payloadType: typeof payload,
+              payloadConstructor: payload?.constructor?.name || 'unknown'
             }, LogCategory.CRYPTO);
             
             const decrypted = await salty_decrypt(payload, cryptoKey);
