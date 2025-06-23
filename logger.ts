@@ -443,8 +443,3 @@ export const logger = new Logger({
   jsonFormat: Deno.env.get('LOG_FORMAT') === 'json',
   webhookUrl: Deno.env.get('WEBHOOK_URL')
 });
-
-/**
- * Export types and enums for use in other modules
- */
-export { SecurityEvent };
