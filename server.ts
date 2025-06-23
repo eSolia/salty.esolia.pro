@@ -7,6 +7,7 @@ import { salty_decrypt, salty_encrypt, salty_key } from './salty.ts';
 import { VERSION, VersionUtils, TECH_SPECS, SECURITY_INFO } from './version.ts';
 import { logger, LogCategory, SecurityEvent } from './logger.ts';
 import { tracer, TracingHelpers } from './telemetry.ts';
+import { bundle } from "https://deno.land/x/emit@0.32.0/mod.ts"; 
 
 /**
  * Security configuration constants
@@ -687,45 +688,6 @@ async function handleApiRequest(
   });
 }
 
-
-/**
- * Improved TypeScript to JavaScript transpiler for browser compatibility
- * @param tsContent - The TypeScript source code
- * @returns Transpiled JavaScript code
- */
-function transpileTypeScript(tsContent: string): string {
-  // Remove TypeScript-specific syntax for browser compatibility
-  let jsContent = tsContent;
-  
-  // Remove type annotations from function parameters (but keep the parameter names)
-  // Match patterns like: functionName(param: Type, param2: Type)
-  jsContent = jsContent.replace(/(\w+)\s*:\s*[^,)={\s]+/g, '$1');
-  
-  // Remove return type annotations (: ReturnType before {)
-  // Match patterns like: ): ReturnType {
-  jsContent = jsContent.replace(/\)\s*:\s*[^{]+(\s*{)/g, ')$1');
-  
-  // Remove interface declarations
-  jsContent = jsContent.replace(/interface\s+\w+\s*{[^}]*}\s*/g, '');
-  
-  // Remove type assertions (as Type)
-  jsContent = jsContent.replace(/\s+as\s+\w+/g, '');
-  
-  // Remove type imports/exports (but keep regular exports)
-  jsContent = jsContent.replace(/import\s+type\s+{[^}]*}\s+from\s+['"][^'"]*['"];?\s*/g, '');
-  jsContent = jsContent.replace(/export\s+type\s+{[^}]*}\s*/g, '');
-  
-  // Remove standalone type annotations in variable declarations
-  // Match patterns like: const variable: Type = 
-  jsContent = jsContent.replace(/:\s*{\s*\[key:\s*string\]\s*:\s*\w+\s*}/g, '');
-  
-  // Clean up extra whitespace but preserve line breaks for readability
-  jsContent = jsContent.replace(/[ \t]+/g, ' ').replace(/\n\s*\n\s*\n/g, '\n\n');
-  
-  return jsContent;
-}
-
-
 /**
  * Serves static files with appropriate security headers
  * @param pathname - The requested file path
@@ -741,19 +703,21 @@ async function serveFile(pathname: string): Promise<Response> {
     } else if (pathname === '/en' || pathname === '/en/') {
       filePath = './en/index.html';
     } else if (pathname === '/salty.ts') {
-      console.log('[DEBUG] Handling /salty.ts transpilation');
-      // Read the TypeScript file
-      const tsContent = await Deno.readTextFile('./salty.ts');
-      console.log('[DEBUG] Read TypeScript file, length:', tsContent.length);
-      
-      // Transpile to JavaScript for browser compatibility
-      const jsContent = transpileTypeScript(tsContent);
-      console.log('[DEBUG] Transpiled to JavaScript, length:', jsContent.length);
-      
-      // Create headers and serve as JavaScript
-      const headers = SecurityUtils.createSecurityHeaders();  // ✅ CREATE HEADERS FIRST
-      headers.set('Content-Type', 'text/javascript; charset=utf-8');
-      return new Response(jsContent, { headers });
+      console.log('[DEBUG] Handling /salty.ts transpilation with Deno emit');
+      try {
+        // Use Deno's built-in transpiler
+        const result = await bundle(new URL('./salty.ts', import.meta.url));
+        const jsContent = result.code;
+        
+        console.log('[DEBUG] Deno transpilation successful, length:', jsContent.length);
+        
+        const headers = SecurityUtils.createSecurityHeaders();
+        headers.set('Content-Type', 'text/javascript; charset=utf-8');
+        return new Response(jsContent, { headers });
+      } catch (error) {
+        console.error('[ERROR] Deno transpilation failed:', error);
+        throw new Error('Transpilation failed');
+      }
     } 
     // Handle image files
     else if (pathname.startsWith('/img/') && pathname.endsWith('.svg')) {
