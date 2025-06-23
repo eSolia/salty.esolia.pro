@@ -696,9 +696,10 @@ async function serveFile(pathname: string): Promise<Response> {
       const saltHex = Deno.env.get('SALT_HEX');
       if (saltHex) {
         let htmlContent = new TextDecoder().decode(fileContent);
+        // Replace the entire variable assignment
         htmlContent = htmlContent.replace(
-          'SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER',
-          saltHex
+          "const INJECTED_SALT_HEX = 'SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER';",
+          `const INJECTED_SALT_HEX = '${saltHex}';`
         );
         fileContent = new TextEncoder().encode(htmlContent);
       }
