@@ -216,7 +216,6 @@ export async function salty_decrypt(encrypted: string, cryptoKey: CryptoKey): Pr
 
   // Check minimum length: IV (12 bytes) + GCM Tag (16 bytes)
   if (!decoded || decoded.length < 12 + 16) {
-    console.error('Invalid ciphertext length:', decoded?.length || 0);
     return null; // Invalid ciphertext length
   }
 
@@ -238,8 +237,7 @@ export async function salty_decrypt(encrypted: string, cryptoKey: CryptoKey): Pr
     // Decode the decrypted buffer back to a string
     return new TextDecoder().decode(decryptedBuffer);
   } catch (e) {
-    // Log any decryption errors (e.g., incorrect key, corrupted ciphertext)
-    console.error("Decryption failed:", e);
+    // e.g., incorrect key, corrupted ciphertext
     return null;
   }
 }
