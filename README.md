@@ -1,260 +1,377 @@
 # Salty: Browser-Native Secure Text Encryption
 
-Salty (<https://salty.esolia.pro>) is a simple, web-based application designed for secure text encryption and decryption using a shared key. It leverages the browser's built-in Web Crypto API for robust cryptographic operations, ensuring that sensitive data is processed client-side. The application also employs basE91 encoding for portability, making the encrypted output suitable for various communication channels, including those with length limitations.
+Salty (<https://salty.esolia.pro>) is a comprehensive, web-based application designed for secure text encryption and decryption using a shared key. It leverages the browser's built-in Web Crypto API for robust cryptographic operations, ensuring that sensitive data is processed client-side. The application employs basE91 encoding for portability, making the encrypted output suitable for various communication channels, including those with length limitations.
 
 ## Features
 
-* Browser-Native Encryption: Utilizes the Web Crypto API for strong, client-side encryption (`AES-GCM`) and key derivation (`PBKDF2`).
-* Shared Key Security: Securely encrypt and decrypt messages using a shared passphrase.
-* Automatic Detection: Intelligently detects whether the input payload is plaintext (to be encrypted) or a Salty-encrypted cipher (to be decrypted).
-* `basE91` Encoding: Encrypted output is encoded using `basE91`, providing a compact and portable format.
-* Clipboard Integration: Easy one-click copying of encrypted or decrypted text to the clipboard.
-* Responsive UI: Designed with Tailwind CSS for a clean and adaptive user experience across devices.
-* Multi-language Support: Available in English and Japanese.
+### Core Encryption Features
+* **Browser-Native Encryption**: Utilizes the Web Crypto API for strong, client-side encryption (AES-GCM-256) and key derivation (PBKDF2-SHA512 with 600,000 iterations)
+* **Shared Key Security**: Securely encrypt and decrypt messages using a shared passphrase
+* **Automatic Detection**: Intelligently detects whether the input payload is plaintext (to be encrypted) or a Salty-encrypted cipher (to be decrypted)
+* **basE91 Encoding**: Encrypted output is encoded using basE91, providing a compact and portable format
+* **URL Parameter Support**: Pre-populate payload via URL parameters for database integration workflows
+
+### Security Features (v1.1.0)
+* **Rate Limiting**: 20 requests per hour per IP address to prevent abuse
+* **Input Validation**: Comprehensive sanitization and size limits (1MB payload, 1KB key)
+* **Security Headers**: Content Security Policy, HSTS, XSS protection, and more
+* **API Authentication**: Optional API key protection for server endpoints
+* **Structured Logging**: Security event tracking and performance monitoring
+* **Request Size Limits**: Protection against oversized payloads
+
+### User Experience Features
+* **Responsive UI**: Designed with Tailwind CSS for clean and adaptive user experience across devices
+* **Multi-language Support**: Available in English and Japanese with proper font support (IBM Plex Sans JP)
+* **Clipboard Integration**: Easy one-click copying of encrypted or decrypted text to the clipboard
+* **Real-time Feedback**: User-friendly messages and error handling
+* **Modal Help System**: Comprehensive documentation accessible within the application
 
 ## Technologies Used
 
-* Deno: Powers the server-side backend for serving static files and handling API requests (though core crypto is client-side).
-* TypeScript: Used for type-safe JavaScript development.
-* Web Crypto API: The browser's native cryptographic interface for secure operations.
-* `basE91`: An efficient binary-to-text encoding scheme.
-* HTML, CSS (Tailwind CSS): For structuring and styling the user interface.
+### Backend
+* **Deno**: Powers the server-side backend with native TypeScript support
+* **TypeScript**: Used for type-safe server-side development with comprehensive interfaces
+* **Deno Deploy**: Cloud deployment platform with automatic HTTPS and global distribution
+
+### Security & Monitoring
+* **Structured Logging**: Comprehensive logging system with categories, levels, and security event tracking
+* **OpenTelemetry-style Tracing**: Custom telemetry integration for performance monitoring
+* **Centralized Version Management**: Single source of truth for version information and metadata
+
+### Frontend
+* **Web Crypto API**: Browser's native cryptographic interface for secure operations
+* **basE91**: Efficient binary-to-text encoding scheme optimized for compactness
+* **HTML, CSS (Tailwind CSS)**: Modern styling framework for responsive design
+* **ES6 Modules**: Native browser module system with server-side TypeScript transpilation
+
+### Cryptographic Specifications
+* **Key Derivation**: PBKDF2 with SHA-512, 600,000 iterations, 256-bit output
+* **Encryption**: AES-GCM with 12-byte IV, 128-bit authentication tag
+* **Encoding**: basE91 for maximum portability and compactness
 
 ## Security Confirmation
 
 ### Encryption & Key Derivation
 
-**`salty_key()`**  
+**Key Derivation (`salty_key()`)**
+* ✅ PBKDF2 with SHA-512: Strong, industry-standard hash function
+* ✅ 600,000 iterations: Excellent resistance against brute-force attacks
+* ✅ 32-byte key (256-bit): Optimal for AES-GCM encryption
+* ✅ Cryptographically secure salt: Server-configured hex salt
 
-* PBKDF2 with SHA-512: ✅ Strong hash function.
-* 600,000 iterations: ✅ Excellent for resisting brute-force attacks.
-* 32-byte key (256-bit): ✅ Ideal for AES-GCM.
+**Encryption (`salty_encrypt()`)**
+* ✅ AES-GCM with 12-byte IV: Secure and authenticated encryption
+* ✅ Randomly generated IV: Best practice for semantic security
+* ✅ 128-bit authentication tag: Standard and secure tag length
+* ✅ IV + ciphertext concatenation: Correct format for decryption
 
-**`salty_encrypt()`**  
+**Decryption (`salty_decrypt()`)**
+* ✅ Proper IV and ciphertext extraction with length validation
+* ✅ AES-GCM with correct parameters matching encryption
+* ✅ Graceful error handling for invalid ciphertext or wrong keys
+* ✅ Null return for failed operations
 
-* AES-GCM with 12-byte IV: ✅ Correct and secure.
-* IV is randomly generated: ✅ Good practice.
-* Tag length 128 bits: ✅ Standard and secure.
-* Concatenation of IV + ciphertext: ✅ Correct format for decryption.
-
-### Decryption
-
-**`salty_decrypt()`**  
-
-* Properly extracts IV and ciphertext.
-* Validates minimum length.
-* Uses AES-GCM with correct parameters.
-* Gracefully handles decryption errors.
-* ✅ Well-structured and secure.
-
-**`basE91 Encoding/Decoding`**  
-
-* The encoding and decoding logic follows the original basE91 spec.
-* The character tables are correctly defined.
-* Bitwise operations and buffer handling are accurate.
+**basE91 Encoding/Decoding**
+* ✅ Standards-compliant implementation following original basE91 specification
+* ✅ Correct character tables and bitwise operations
+* ✅ Robust error handling for invalid input
 
 ## Getting Started
+
 ### Prerequisites
 
-* [Deno](https://deno.land/manual/getting_started/installation) installed locally (for development/testing).
-* A Deno Deploy account (for production deployment).
-* A `SALT_HEX` environment variable set in your Deno Deploy project or local environment. This is a crucial cryptographic salt (a hex representation of 16 cryptographically secure random bytes).
-* A base64 `API_KEY` stored in another environment variable in your Deno Deploy project and local environment, if you are going to use the encrypt and decrypt API. 
+* [Deno](https://deno.land/manual/getting_started/installation) installed locally (for development/testing)
+* A Deno Deploy account (for production deployment)
+* A `SALT_HEX` environment variable: 32-character hexadecimal representation of 16 cryptographically secure random bytes
+* A base64 `API_KEY` environment variable (optional, for API authentication)
 
-To generate a `SALT_HEX` (e.g. using Deno):
+### Environment Variable Generation
 
-```ts
-deno run -A -r https://deno.land/std@0.224.0/crypto/mod.ts -c crypto.getRandomValues --length 16 --format hex
-```
-
-Or, using `openssl`:
-
+**Generate SALT_HEX** (using OpenSSL - recommended):
 ```bash
 openssl rand -hex 16 | tr '[:lower:]' '[:upper:]'
 ```
 
-You can generate a `base64` API key this way in Deno:
-
-```ts
-deno run --allow-read --allow-env --allow-run https://deno.land/std/node/crypto.ts -c "console.log(require('crypto').randomBytes(32).toString('base64'))"
-```
-
-Or, using `openssl`:
-
+**Generate API_KEY** (using OpenSSL):
 ```bash
 openssl rand -base64 32
 ```
 
-The `openssl` versions are far simpler. Then, set the generated hex string as `SALT_HEX`, and the 32-bit base64 string as `API_KEY` in your Deno Deploy project settings.
+**Alternative using Deno**:
+```typescript
+// For SALT_HEX
+deno eval "console.log(Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('').toUpperCase())"
+
+// For API_KEY  
+deno eval "console.log(btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32)))))"
+```
 
 ### Project Structure
 
 ```
 .
-├── server.ts
-├── salty.ts
-├── index.html
+├── server.ts              # Enhanced server with security and logging
+├── salty.ts               # Core cryptographic functions (TypeScript)
+├── logger.ts              # Structured logging system
+├── telemetry.ts           # OpenTelemetry-style tracing
+├── version.ts             # Centralized version and metadata management
+├── index.html             # Japanese user interface
 ├── en/
-│   └── index.html
-└── README.md
+│   └── index.html         # English user interface
+├── img/                   # eSolia branding assets
+│   ├── symbol_white_bgtransparent.svg
+│   └── logo_horiz_white_bgtransparent.svg
+├── LICENSE                # MIT License
+└── README.md              # This file
 ```
 
 ### Local Development
 
-1. Clone the repository (or copy the files):
-Ensure you have `server.ts`, `salty.ts`, `index.html`, and en/index.html in your project directory.
-
-2. Set `SALT_HEX` environment variable:
-For local testing, you can set it directly in your shell:
-
-```bash
-export SALT_HEX="YOUR_GENERATED_SALT_HEX_HERE"
-```
-
-(Replace with a salt generated using the command above).
-
-3. Run the Deno server:
-
-```
-deno run --allow-net --allow-read --allow-env server.ts
-```
-
-4. Open your browser and navigate to <http://localhost:8000/> (for Japanese UI) or <http://localhost:8000/en/> (for English UI).
+1. **Clone the repository** and ensure you have all required files
+2. **Set environment variables**:
+   ```bash
+   export SALT_HEX="YOUR_GENERATED_32_CHAR_HEX_STRING"
+   export API_KEY="YOUR_GENERATED_BASE64_KEY"  # Optional
+   export LOG_LEVEL="DEBUG"  # Optional, for development
+   ```
+3. **Run the Deno server**:
+   ```bash
+   deno run --allow-net --allow-read --allow-env server.ts
+   ```
+4. **Open browser** and navigate to:
+   - <http://localhost:8000/> (Japanese UI)
+   - <http://localhost:8000/en/> (English UI)
 
 ### Deployment to Deno Deploy
 
-1. Create a new Deno Deploy project.
-2. Link the project to your github repository `main` branch. 
-3. Set the entry point for your Deno Deploy project to `server.ts`.
-4. Configure Environment Variables: Go to your project settings in Deno Deploy and add an environment variable named `SALT_HEX` with the cryptographically secure hexadecimal salt value you generated. This is critical for the application's security.
- 
+1. **Create a new Deno Deploy project**
+2. **Link to your GitHub repository** main branch
+3. **Set entry point** to `server.ts`
+4. **Configure Environment Variables** in project settings:
+   - `SALT_HEX`: Your generated 32-character hexadecimal salt
+   - `API_KEY`: Your generated base64 API key (optional)
+   - `LOG_LEVEL`: Desired logging level (optional, defaults to INFO)
+5. **Deploy** - Deno Deploy will automatically handle TypeScript compilation
+
 ## Usage
 
-1. Open Salty in your web browser.
-2. Enter your plaintext message into the "Payload" textarea.
-3. Provide a strong key (passphrase) in the "Key" input field. This key is crucial for both encryption and decryption.
-4. Click "Go" (or "実行") to encrypt your message. 
-5. The encrypted cipher will be displayed in two formats:
-   * Shareable cipher: Formatted with BEGIN/END markers and spaces for readability.
-   * Compressed version: A continuous string without formatting, suitable for sharing in length-restricted contexts.
-6. Use the "Copy" buttons to easily copy the generated cipher to your clipboard.
+### Web Interface
 
-### Decryption
+**Encryption Process:**
+1. Open Salty in your web browser
+2. Enter your plaintext message into the "Payload" textarea
+3. Provide a strong key (passphrase) in the "Key" input field
+4. Click "Go" (or "実行" in Japanese) to encrypt your message
+5. Copy the encrypted cipher in your preferred format:
+   - **Shareable cipher**: Formatted with BEGIN/END markers for readability
+   - **Compressed version**: Continuous string for length-restricted contexts
 
-To decrypt a Salty-encrypted message:
+**Decryption Process:**
+1. Paste the Salty-encrypted message into the "Payload" textarea
+2. Enter the exact same key used for encryption
+3. Click "Go" (or "実行") to decrypt the message
+4. The original plaintext will be displayed
 
-1. Paste the Salty-encrypted message (including the BEGIN/END markers) into the "Payload" textarea. Salty will automatically detect it as an encrypted message.
-2. Enter the exact same key that was used for encryption in the "Key" input field.
-3. Click "Go" (or "実行") to decrypt the message. 
-4. The original plaintext will be displayed.
+### API Endpoints
 
-### How to Use the `/api/encrypt` and `/api/decrypt` API Endpoints
+The server provides RESTful API endpoints for programmatic encryption/decryption:
 
-These API endpoints in `server.ts` allow you to programmatically encrypt and decrypt data by sending a payload and a key to the server. It's distinct from the client-side encryption that happens directly in your browser when you use the web UI.
+**Endpoint Configuration:**
+- **Base URL**: `https://your-deployment-url.deno.dev/api/`
+- **Method**: POST for both encrypt and decrypt
+- **Content-Type**: `application/json` (required)
+- **Authentication**: `X-API-Key` header (if API_KEY environment variable is set)
 
-This API is useful if you need to integrate Salty's encryption capabilities into other backend systems or services, rather than solely relying on the browser UI.
-
-1. Endpoint URL:
-   * Method: POST
-   * URL: <https://your-deno-deploy-url.deno.dev/api/encrypt> (or `/api/decrypt`)
-      * Replace <https://your-deno-deploy-url.deno.dev> with the actual URL of your deployed Salty application.
-2. Request Headers:
-   * `Content-Type: application/json`
-      * This header is mandatory because the API expects the request body to be in JSON format.
-   * `X-API-Key: YOUR_API_KEY`
-      * This header is mandatory for authentication if you have set the `API_KEY` environment variable in your Deno Deploy project. Replace `YOUR_API_KEY` with the actual API key you configured.
-      * If you have not set the `API_KEY` environment variable, then this header is not required, but be aware that the endpoint will not be authenticated. This is generally only recommended for local development or highly controlled environments.
-
-3. Request Body (JSON):
-The request body must be a JSON object containing two properties:
-* `payload`: The plaintext string you want to encrypt, or the `basE91`-encoded ciphertext to decrypt.
-* `key`: The passphrase (string) that will be used to derive the cryptographic key, or that was used to encrypt the cleartext.
-
-Example request body when encrypting: 
-
+**Request Format:**
 ```json
 {
-  "payload": "My super secret message",
-  "key": "123"
+  "payload": "text to encrypt OR basE91 cipher to decrypt",
+  "key": "shared passphrase"
 }
 ```
 
-... and when decrypting: 
-
+**Response Format:**
 ```json
 {
-  "payload": "v^0{<^0w@S...q+gGNeXSyM+>)7TIbq$s^B",
-  "key": "123"
+  "success": true,
+  "data": "encrypted basE91 string OR decrypted plaintext",
+  "timestamp": "2025-06-23T12:00:00.000Z"
 }
 ```
 
-4. Responses
-* Success (Status 200 OK):
-   * The response will be the `basE91` encoded ciphertext as plain text. This is the "compressed version" of the encrypted output you see on the web UI.
-* Error Responses:
-   * 400 Bad Request: If Content-Type is not application/json, or if payload or key are missing/invalid in the JSON body.
-   * 401 Unauthorized: If the X-API-Key header is missing or incorrect (and API_KEY is set in your environment variables).
-   * 405 Method Not Allowed: If you use a method other than POST.
-   * 500 Internal Server Error: For any server-side errors during processing.
+**Example Usage:**
 
-5. Testing
-Example `curl` commands for encrypt:
-
+*Encryption:*
 ```bash
 curl -X POST \
      -H "Content-Type: application/json" \
-     -H "X-API-Key: YOUR_ACTUAL_API_KEY" \
-     -d '{"payload": "My super secret message", "key": "123"}' \
-     https://your-deno-deploy-url.deno.dev/api/encrypt
+     -H "X-API-Key: YOUR_API_KEY" \
+     -d '{"payload": "Hello, World!", "key": "mySecretKey"}' \
+     https://your-deployment.deno.dev/api/encrypt
 ```
 
-... and decrypt:
-
+*Decryption:*
 ```bash
 curl -X POST \
      -H "Content-Type: application/json" \
-     -H "X-API-Key: YOUR_ACTUAL_API_KEY" \
-     -d '{"payload": "v^0{<^0w@Sj%q...GNeXSyM+>)7TIbq$s^B", "key": "123"}' \
-     https://your-deno-deploy-url.deno.dev/api/decrypt
+     -H "X-API-Key: YOUR_API_KEY" \
+     -d '{"payload": "basE91EncodedCiphertext", "key": "mySecretKey"}' \
+     https://your-deployment.deno.dev/api/decrypt
 ```
 
-### How to Pre-populate the Payload Text Box
+### Database Integration & URL Pre-population
 
-If you prepare an URL using the url parameter `payload` with its value set to an url-encoded basE91 compact encrypted string, you can pre-populate the Payload text box. This makes it easy to send the encrypted string to a 3rd party, following up with the key in a separate email, or via a voice call. 
+Salty supports workflow integration where encrypted payloads can be pre-populated via URL parameters:
 
+**URL Format:**
 ```
-https://my-salty.deno.dev/?payload=yvC%22U0X64Xe.UUf4%...etc
-https://my-salty.deno.dev/en/?payload=yvC%22U0X64Xe.UUf4%...etc
-```
-
-We use the API from an operations database to prepare a URL like this for sending a password to a client via one email, followed by another email with the key. 
-
-One anomaly is, we discovered that certain `urlencode()` functions don't encode strictly enough for the function being used in javascript: `encodeURIComponent()`. If your `UrlEncode()` behaves like `encodeURIComponent()` in JavaScript, then it should already handle most of these characters correctly, but sometimes, a character will cause trouble. The telltale sign is, when you try to open the URL with the `payload` URL param, it won't populate. We fixed this by manually replacing `%` with `%25` before encoding, like so: 
-
-```
-URLEncode(Replace([Salty Encrypted Payload],"%","%25"))
+https://your-deployment.deno.dev/en/?payload=ENCODED_CIPHER_TEXT
 ```
 
-If the `payload` URL param is not acting to pre-populate the payload text area, then you should check the string for `&, =, ?, #, +, ;, -, :` or quote marks, commas, backticks, and pre-replace them with their encoded equivalent as appropriate. 
+**Database Formula** (for proper URL encoding):
+```
+URLEncode(Replace(Replace(Replace(Replace(Replace(Replace([Encrypted Payload], "%", "%25"), ")", "%29"), "~", "%7E"), "\"", "%22"), "(", "%28"), "?", "%3F"))
+```
+
+**Security Workflow:**
+1. Encrypt sensitive data using the API
+2. Generate URL with payload parameter using database formula
+3. Send URL via one communication channel (email)
+4. Send key via separate secure channel (phone call, different email)
+5. Recipient clicks URL, enters key, and decrypts message
+
+### Health Monitoring
+
+**Health Endpoint**: `GET /health`
+
+Returns comprehensive system status including:
+- Application version and build information
+- Security configuration status
+- Performance metrics and request statistics
+- Environment validation results
+- Crypto system availability
+
+Example response includes server uptime, request success rates, security event summaries, and endpoint usage statistics.
+
+## Security Architecture
+
+### Defense in Depth
+
+**Network Level:**
+- HTTPS enforcement via Deno Deploy
+- Rate limiting (20 requests/hour per IP)
+- Request size limits (1MB payload, 1KB key)
+
+**Application Level:**
+- Input validation and sanitization
+- SQL injection prevention through parameterized operations
+- Cross-site scripting (XSS) protection via Content Security Policy
+
+**Cryptographic Level:**
+- Client-side encryption (server never sees plaintext)
+- Industry-standard algorithms (AES-GCM, PBKDF2-SHA512)
+- Cryptographically secure random number generation
+
+### Security Headers
+
+Comprehensive security headers implemented:
+- **Content-Security-Policy**: Restrictive policy allowing only necessary resources
+- **Strict-Transport-Security**: HSTS with subdomain inclusion
+- **X-Content-Type-Options**: MIME type sniffing prevention
+- **X-Frame-Options**: Clickjacking protection
+- **X-XSS-Protection**: Browser XSS filter activation
+- **Referrer-Policy**: Strict origin policy for referrer information
+
+### Logging & Monitoring
+
+**Security Event Tracking:**
+- Failed authentication attempts
+- Rate limit violations
+- Input validation failures
+- Suspicious activity patterns
+
+**Performance Monitoring:**
+- Request response times
+- Endpoint usage statistics
+- Error rates and patterns
+- System resource utilization
 
 ## Important Security Notes
-### General
 
-* Key Management: The security of your encrypted messages relies entirely on the strength and secrecy of your key. Choose a strong, unique key and never share it insecurely.
-* Salt: The `SALT_HEX` environment variable is essential for key derivation. It should be a truly random, unique value generated once per deployment. Do not reuse salts across different deployments or applications.
-* Client-Side Processing: All encryption/decryption happens directly in your browser. The server only serves the application files and does not handle your plaintext or keys (unless you use the `/api/encrypt` endpoint, which is not actively used by the client-side UI for crypto operations in this setup, but exists for potential server-side use cases if implemented).
+### Key Management
+- **Strong Passphrases**: Use complex, unique keys for each encryption session
+- **Secure Distribution**: Never transmit keys alongside encrypted data
+- **Key Rotation**: Regularly update encryption keys for long-term usage
 
-### API
+### Salt Security
+- **Unique per Deployment**: Each Salty instance must use a unique SALT_HEX
+- **Cryptographically Secure**: Generate salt using proper random number generators
+- **Environment Protection**: Store salt securely in environment variables
 
-* HTTPS is Crucial: Always ensure your API calls are made over HTTPS to prevent eavesdropping on your `payload`, `key`, and `X-API-Key`. Deno Deploy automatically enforces HTTPS.
-* API Key Security: Treat your `API_KEY` environment variable as a sensitive secret. Never expose it in client-side code (e.g., JavaScript in your HTML). It should only be used from secure server-side applications or environments.
-* Key Derivation: The server-side encryption also uses the `SALT_HEX` environment variable for key derivation, just like the client-side. Ensure this `SALT_HEX` is truly random and kept secret in your Deno Deploy environment variables.
+### Client-Side Processing
+- **Local Encryption**: All cryptographic operations occur in the user's browser
+- **Server Independence**: Server never processes plaintext data (except via API endpoints)
+- **Data Isolation**: No persistent storage of user data on server
 
+### API Security
+- **HTTPS Required**: All API communications must use HTTPS
+- **API Key Protection**: Treat API keys as sensitive credentials
+- **Input Validation**: Server validates all API inputs regardless of client validation
+
+## Advanced Features
+
+### Telemetry & Observability
+
+The application includes comprehensive telemetry features:
+- Custom span tracing for crypto operations
+- Performance metric collection
+- Security event correlation
+- Request flow monitoring
+
+### Version Management
+
+Centralized version management system provides:
+- Semantic versioning with build metadata
+- Release notes and changelog tracking
+- Runtime environment information
+- Dependency version reporting
+
+### Extensibility
+
+The modular architecture supports:
+- Custom logging backends
+- Additional security middleware
+- Extended telemetry integrations
+- Alternative encoding schemes
 
 ## Contributing
 
-Salty is an open-source project. Feel free to contribute by opening issues, suggesting features, or submitting pull requests on the GitHub repository.
+Salty is an open-source project under the MIT License. Contributions are welcome:
+
+1. **Fork the repository** and create a feature branch
+2. **Follow TypeScript best practices** and maintain type safety
+3. **Add appropriate tests** for new functionality
+4. **Update documentation** for user-facing changes
+5. **Submit a pull request** with clear description of changes
+
+### Development Guidelines
+
+- Maintain backward compatibility for API endpoints
+- Follow existing code style and documentation patterns
+- Ensure security features are not compromised by changes
+- Test thoroughly across different browsers and environments
 
 ## License
 
-This project is released under the MIT License. See the LICENSE file for details.
+This project is released under the MIT License. See the LICENSE file for complete details.
+
+## Support & Documentation
+
+- **Repository**: <https://github.com/esolia/salty.esolia.pro>
+- **Live Application**: <https://salty.esolia.pro>
+- **Company**: eSolia Inc. - <https://esolia.com>
+- **Contact**: Professional support available through eSolia Inc.
+
+---
+
+**Built with ❤️ by eSolia Inc. - Tokyo-based IT Management and Support**
