@@ -436,10 +436,13 @@ async function handleApiRequest(
     });
     
     try {
-      // Check for suspicious activity patterns with tracing
-      await TracingHelpers.traceSecurity('suspicious-activity', async () => {
-        logger.detectSuspiciousActivity(clientIP);
-      }, { 'client.ip': clientIP });
+      // Check for suspicious activity patterns with tracing (skip if API key provided)
+      const hasValidApiKey = !!request.headers.get('X-API-Key') && !!Deno.env.get('API_KEY');
+      if (!hasValidApiKey) {
+        await TracingHelpers.traceSecurity('suspicious-activity', async () => {
+          logger.detectSuspiciousActivity(clientIP);
+        }, { 'client.ip': clientIP });
+      }
 
       // Rate limiting check (already traced in RateLimiter.checkRateLimit)
       if (!RateLimiter.checkRateLimit(clientIP)) {
@@ -478,14 +481,28 @@ async function handleApiRequest(
         // Encryption/decryption with tracing
         if (operation === 'encrypt') {
           result = await TracingHelpers.traceCrypto('encrypt', async () => {
-            return await salty_encrypt(payload, cryptoKey);
+            const encrypted = await salty_encrypt(payload, cryptoKey);
+            logger.info(`Encryption successful`, {
+              originalLength: payload.length,
+              encryptedLength: encrypted.length,
+              payloadPreview: payload.substring(0, 20) + (payload.length > 20 ? '...' : ''),
+              encryptedPreview: encrypted.substring(0, 20) + (encrypted.length > 20 ? '...' : '')
+            }, LogCategory.CRYPTO);
+            return encrypted;
           }, {
             'crypto.payload_length': payload.length,
             'crypto.algorithm': 'AES-GCM'
           });
         } else {
           result = await TracingHelpers.traceCrypto('decrypt', async () => {
-            return await salty_decrypt(payload, cryptoKey);
+            const decrypted = await salty_decrypt(payload, cryptoKey);
+            logger.info(`Decryption successful`, {
+              encryptedLength: payload.length,
+              decryptedLength: decrypted.length,
+              encryptedPreview: payload.substring(0, 20) + (payload.length > 20 ? '...' : ''),
+              decryptedPreview: decrypted.substring(0, 20) + (decrypted.length > 20 ? '...' : '')
+            }, LogCategory.CRYPTO);
+            return decrypted;
           }, {
             'crypto.payload_length': payload.length,
             'crypto.algorithm': 'AES-GCM'
