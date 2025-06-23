@@ -20,7 +20,7 @@ const b91_enctab = [
 ];
 
 // Global constant for basE91 decoding table (derived from encoding table)
-const b91_dectab: { [key: string]: number } = {};
+const b91_dectab = {};
 b91_enctab.forEach((char, index) => {
   b91_dectab[char] = index;
 });
