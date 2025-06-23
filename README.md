@@ -148,10 +148,72 @@ deno eval "console.log(btoa(String.fromCharCode(...crypto.getRandomValues(new Ui
 2. **Link to your GitHub repository** main branch
 3. **Set entry point** to `server.ts`
 4. **Configure Environment Variables** in project settings:
-   - `SALT_HEX`: Your generated 32-character hexadecimal salt
-   - `API_KEY`: Your generated base64 API key (optional)
-   - `LOG_LEVEL`: Desired logging level (optional, defaults to INFO)
+   
+   **Required:**
+   - `SALT_HEX`: Your generated 32-character hexadecimal salt (required for cryptographic operations)
+   
+   **Optional:**
+   - `API_KEY`: Your generated base64 API key (enables API authentication; if not set, API endpoints are unprotected)
+   - `LOG_LEVEL`: Logging verbosity level (defaults to INFO)
+     - Available options: `DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`, `CRITICAL`
+     - Recommended: `INFO` for production, `DEBUG` for development
+   - `LOG_FORMAT`: Output format for logs (defaults to JSON)
+     - Available options: `json`, `text`
+     - `json`: Structured JSON logging for production monitoring
+     - `text`: Human-readable format for development
+   - `WEBHOOK_URL`: Webhook URL for critical alerts (optional)
+     - Format: Standard webhook URL (e.g., Slack, Discord, Microsoft Teams, or custom endpoint)
+     - When set, critical errors and security events will be sent to the webhook endpoint
+   - `NODE_ENV`: Environment identifier (defaults to production)
+     - Available options: `development`, `staging`, `production`
+     - Affects logging behavior and security settings
 5. **Deploy** - Deno Deploy will automatically handle TypeScript compilation
+
+### Environment Variable Examples
+
+**Minimal Production Setup:**
+```
+SALT_HEX=073E58F04F052C4759D50366656BAF55
+```
+
+**Full Production Setup with Monitoring:**
+```
+SALT_HEX=073E58F04F052C4759D50366656BAF55
+API_KEY=54cz+XMiorw1VjZZ3p4Xm/RdMwDOGV/mkorEgyyN1OI=
+LOG_LEVEL=INFO
+LOG_FORMAT=json
+WEBHOOK_URL=https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
+NODE_ENV=production
+```
+
+**Development Setup:**
+```
+SALT_HEX=073E58F04F052C4759D50366656BAF55
+LOG_LEVEL=DEBUG
+LOG_FORMAT=text
+NODE_ENV=development
+```
+
+### Log Level Behavior
+
+Different log levels control what information is captured:
+
+- **DEBUG**: All messages including detailed function entry/exit, variable values, and debug information
+- **INFO**: General operational messages, API requests, successful operations (recommended for production)
+- **WARN**: Warning conditions that don't prevent operation but should be monitored
+- **ERROR**: Error conditions that affect functionality but don't crash the system
+- **SECURITY**: Security-related events like failed authentication, rate limiting, suspicious activity
+- **CRITICAL**: System-critical issues that require immediate attention (always logged regardless of level)
+
+### Webhook Integration
+
+When `WEBHOOK_URL` is configured, the following events trigger webhook notifications:
+- Missing or invalid `SALT_HEX` configuration
+- System startup failures
+- Critical security events
+- Application crashes or unhandled errors
+
+The webhook payload includes structured information about the event, timestamp, and system context for rapid incident response. Compatible with Slack, Discord, Microsoft Teams, or any service that accepts JSON webhook payloads.
 
 ## Usage
 
@@ -228,7 +290,9 @@ Salty supports workflow integration where encrypted payloads can be pre-populate
 https://your-deployment.deno.dev/en/?payload=ENCODED_CIPHER_TEXT
 ```
 
-**Database Formula** (for proper URL encoding):
+**Example Database Formula** (for proper URL encoding):
+eSolia integrates Salty with our ops database, allowing users to enter a payload and key, then Encrypt and Decrypt to create a pre-built URL to send to our clients. The URL is populated as above, but the encoded cipher text must be URL encoded. The database's `URLEncode()` function does not produce a strict enough encoding, so we do some replacements prior to generating the URL, like so:
+
 ```
 URLEncode(Replace(Replace(Replace(Replace(Replace(Replace([Encrypted Payload], "%", "%25"), ")", "%29"), "~", "%7E"), "\"", "%22"), "(", "%28"), "?", "%3F"))
 ```
