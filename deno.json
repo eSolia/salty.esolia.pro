@@ -6,7 +6,7 @@
     "release:patch": "deno run --allow-read --allow-write --allow-run release.ts patch",
     "release:minor": "deno run --allow-read --allow-write --allow-run release.ts minor",
     "release:major": "deno run --allow-read --allow-write --allow-run release.ts major",
-    "version": "deno run --allow-read version.ts"
+    "version": "deno run --allow-read version-check.ts"
   },
   "imports": {
     "@std/semver": "https://deno.land/std@0.208.0/semver/mod.ts"
