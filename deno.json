@@ -12,7 +12,6 @@
     "@std/semver": "https://deno.land/std@0.208.0/semver/mod.ts"
   },
   "compilerOptions": {
-    "allowJs": true,
     "lib": ["deno.window"],
     "strict": true
   },
