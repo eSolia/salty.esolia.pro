@@ -235,16 +235,17 @@ class ReleaseManager {
     };
 
     return `{
-  version: VERSION,
-  releaseDate: "${releaseNotes.date}",
-  changes: {
-    added: ${formatArrayForTs(releaseNotes.added)},
-    improved: ${formatArrayForTs(releaseNotes.changed)},
-    removed: ${formatArrayForTs(releaseNotes.removed)},
-    fixed: ${formatArrayForTs(releaseNotes.fixed)},
-    security: ${formatArrayForTs(releaseNotes.security)}
+      version: VERSION,
+      releaseDate: "${releaseNotes.date}",
+      changes: {
+        added: ${formatArrayForTs(releaseNotes.added)},
+        improved: ${formatArrayForTs(releaseNotes.changed)},
+        removed: ${formatArrayForTs(releaseNotes.removed)},
+        fixed: ${formatArrayForTs(releaseNotes.fixed)},
+        security: ${formatArrayForTs(releaseNotes.security)}
+      }
+    }`;
   }
-}`;
 
   async updateChangelog(releaseNotes: ReleaseNotes): Promise<void> {
     const changelogPath = './CHANGELOG.md';
