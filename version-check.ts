@@ -12,13 +12,23 @@ console.log(`📅 Build Date: ${VersionUtils.getExtendedVersion()}`);
 console.log(`📦 Last Release: ${RELEASE_NOTES.releaseDate}`);
 
 const changes = RELEASE_NOTES.changes;
-const totalChanges = changes.added.length + changes.improved.length + 
-                    changes.fixed.length + changes.security.length;
+
+// Handle both old and new property names safely
+const added = changes.added || [];
+const improved = changes.improved || [];
+const fixed = changes.fixed || [];
+const security = changes.security || [];
+const removed = changes.removed || [];
+
+const totalChanges = added.length + improved.length + fixed.length + security.length + removed.length;
 
 if (totalChanges > 0) {
   console.log(`📝 Changes in this release: ${totalChanges} items`);
-  if (changes.added.length > 0) console.log(`   ✨ Added: ${changes.added.length}`);
-  if (changes.improved.length > 0) console.log(`   🔄 Improved: ${changes.improved.length}`);
-  if (changes.fixed.length > 0) console.log(`   🐛 Fixed: ${changes.fixed.length}`);
-  if (changes.security.length > 0) console.log(`   🔒 Security: ${changes.security.length}`);
+  if (added.length > 0) console.log(`   ✨ Added: ${added.length}`);
+  if (improved.length > 0) console.log(`   🔄 Improved: ${improved.length}`);
+  if (fixed.length > 0) console.log(`   🐛 Fixed: ${fixed.length}`);
+  if (security.length > 0) console.log(`   🔒 Security: ${security.length}`);
+  if (removed.length > 0) console.log(`   🗑️  Removed: ${removed.length}`);
+} else {
+  console.log(`📝 No detailed change information available`);
 }
