@@ -60,8 +60,9 @@ class ReleaseManager {
     const range = lastTag === 'HEAD' ? 'HEAD' : `${lastTag}..HEAD`;
     
     try {
+      // Use a more robust delimiter and simpler format
       const result = await this.runCommand([
-        'git', 'log', range, '--pretty=format:%H|%ci|%s|%b', '--no-merges'
+        'git', 'log', range, '--pretty=format:%H|||%ci|||%s', '--no-merges'
       ]);
       
       if (!result.trim()) {
@@ -85,30 +86,34 @@ class ReleaseManager {
       return null;
     }
     
-    const parts = gitLogLine.split('|');
+    // Use triple pipe delimiter which is less likely to appear in commit messages
+    const parts = gitLogLine.split('|||');
     if (parts.length < 3) {
-      console.warn('Incomplete git log line:', gitLogLine);
+      console.warn('Incomplete git log line:', gitLogLine.substring(0, 100) + '...');
       return null;
     }
     
-    const [hash, date, subject, body] = parts;
+    const [hash, date, subject] = parts;
     
     if (!hash || !date || !subject) {
-      console.warn('Missing required fields in git log line:', gitLogLine);
+      console.warn('Missing required fields in git log line:', gitLogLine.substring(0, 100) + '...');
       return null;
     }
+    
+    // Clean up the subject line - remove any extra whitespace and newlines
+    const cleanSubject = subject.trim().replace(/\n.*$/s, ''); // Take only first line
     
     // Parse conventional commit format: type(scope): description
     const conventionalRegex = /^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|revert)(\([^)]+\))?\!?:\s*(.+)$/;
-    const match = subject.match(conventionalRegex);
+    const match = cleanSubject.match(conventionalRegex);
     
     if (!match) {
       // Not a conventional commit, but include it anyway
       return {
         type: 'other',
-        description: subject,
-        body: body || undefined,
-        breakingChange: subject.includes('BREAKING CHANGE') || subject.includes('!:'),
+        description: cleanSubject.substring(0, 100), // Limit description length
+        body: undefined, // Skip body for non-conventional commits
+        breakingChange: cleanSubject.includes('BREAKING CHANGE') || cleanSubject.includes('!:'),
         hash: hash.substring(0, 7),
         date: date.split(' ')[0]
       };
@@ -116,13 +121,13 @@ class ReleaseManager {
 
     const [, type, scopeMatch, description] = match;
     const scope = scopeMatch ? scopeMatch.slice(1, -1) : undefined;
-    const breakingChange = subject.includes('!:') || (body && body.includes('BREAKING CHANGE'));
+    const breakingChange = cleanSubject.includes('!:');
 
     return {
       type,
       scope,
-      description,
-      body: body || undefined,
+      description: description.substring(0, 100), // Limit description length
+      body: undefined, // Skip body parsing to avoid complexity
       breakingChange,
       hash: hash.substring(0, 7),
       date: date.split(' ')[0]
