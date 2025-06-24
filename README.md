@@ -11,7 +11,7 @@ Salty (<https://salty.esolia.pro>) is a comprehensive, web-based application des
 * **basE91 Encoding**: Encrypted output is encoded using basE91, providing a compact and portable format
 * **URL Parameter Support**: Pre-populate payload via URL parameters for database integration workflows
 
-### Security Features (v1.1.0)
+### Security Features
 * **Rate Limiting**: 20 requests per hour per IP address to prevent abuse
 * **Input Validation**: Comprehensive sanitization and size limits (1MB payload, 1KB key)
 * **Security Headers**: Content Security Policy, HSTS, XSS protection, and more

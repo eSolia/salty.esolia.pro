@@ -6,7 +6,7 @@
 /**
  * Application version information
  */
-export const VERSION = "1.1.0";
+export const VERSION = "1.0.2";
 
 /**
  * Build and deployment metadata
@@ -77,7 +77,7 @@ export const TECH_SPECS = {
     "Web Crypto API"
   ],
   
-  /** Security features added in v1.1.0 */
+  /** Security features */
   securityFeatures: [
     "Rate limiting",
     "Input validation",
@@ -169,7 +169,7 @@ export const RELEASE_NOTES = {
 export const VersionUtils = {
   /**
    * Get the full version string
-   * @returns Version string (e.g., "1.1.0")
+   * @returns Version string (e.g., "1.2.3")
    */
   getVersion(): string {
     return VERSION;

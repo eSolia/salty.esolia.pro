@@ -80,7 +80,7 @@ URLEncode(Replace(Replace(Replace(Replace(Replace(Replace([Salty Encrypted Paylo
 - `GET /en/`: English UI
 - `GET /salty.ts`: Transpiled JavaScript for browser
 
-## Security Features (v1.1.0)
+## Security Features
 - Rate limiting with IP-based windows
 - Request size limits (1MB payload, 1KB key)
 - Input sanitization and validation
