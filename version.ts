@@ -6,14 +6,14 @@
 /**
  * Application version information
  */
-export const VERSION = "1.1.0";
+export const VERSION = "1.0.2";
 
 /**
  * Build and deployment metadata
  */
 export const BUILD_INFO = {
   /** Build timestamp (updated manually or via CI/CD) */
-  buildDate: "2025-06-24T02:47:09.399Z",
+  buildDate: "2025-06-23T00:00:00.000Z",
   
   /** Git commit hash (update manually or via CI/CD) */
   gitCommit: "main",
@@ -133,16 +133,15 @@ export const SECURITY_INFO = {
  * Release notes for current version
  */
 export const RELEASE_NOTES = {
-      version: VERSION,
-      releaseDate: "2025-06-24",
-      changes: {
-        added: [],
-        improved: [],
-        removed: [],
-        fixed: [],
-        security: []
-      }
-    } as const;
+  version: VERSION,
+  releaseDate: "2025-06-21",
+  changes: {
+    improved: [
+      "docs(readme): add how to prepopulate payload (e5d78b8)",
+      "docs(readme): add section on security details (e92d0e6)"
+    ]
+  }
+} as const;
 
 /**
  * Utility functions for version information
