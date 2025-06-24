@@ -702,6 +702,8 @@ async function serveFile(pathname: string): Promise<Response> {
       filePath = './index.html';
     } else if (pathname === '/en' || pathname === '/en/') {
       filePath = './en/index.html';
+    } else if (pathname === 'favicon.ico') {
+      filePath = './favicon.ico';
     } else if (pathname === '/salty.ts') {
       console.log('[DEBUG] Handling /salty.ts transpilation with Deno emit');
       try {
@@ -767,6 +769,10 @@ async function serveFile(pathname: string): Promise<Response> {
       }
     } else if (filePath.endsWith('.svg')) {
       headers.set('Content-Type', 'image/svg+xml');
+    } else if (filePath.endsWith('.ico')) {
+      headers.set('Content-Type', 'image/x-icon');
+      // Add cache headers for favicon
+      headers.set('Cache-Control', 'public, max-age=86400'); // 24 hours
     } else if (filePath.endsWith('.md')) {
       headers.set('Content-Type', 'text/markdown; charset=utf-8');
     } else if (filePath === './LICENSE') {
