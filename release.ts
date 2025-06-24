@@ -80,7 +80,23 @@ class ReleaseManager {
   }
 
   private parseConventionalCommit(gitLogLine: string): ConventionalCommit | null {
-    const [hash, date, subject, body] = gitLogLine.split('|');
+    if (!gitLogLine || typeof gitLogLine !== 'string') {
+      console.warn('Invalid git log line:', gitLogLine);
+      return null;
+    }
+    
+    const parts = gitLogLine.split('|');
+    if (parts.length < 3) {
+      console.warn('Incomplete git log line:', gitLogLine);
+      return null;
+    }
+    
+    const [hash, date, subject, body] = parts;
+    
+    if (!hash || !date || !subject) {
+      console.warn('Missing required fields in git log line:', gitLogLine);
+      return null;
+    }
     
     // Parse conventional commit format: type(scope): description
     const conventionalRegex = /^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|revert)(\([^)]+\))?\!?:\s*(.+)$/;
@@ -235,16 +251,16 @@ class ReleaseManager {
     };
 
     return `{
-      version: VERSION,
-      releaseDate: "${releaseNotes.date}",
-      changes: {
-        added: ${formatArrayForTs(releaseNotes.added)},
-        improved: ${formatArrayForTs(releaseNotes.changed)},
-        removed: ${formatArrayForTs(releaseNotes.removed)},
-        fixed: ${formatArrayForTs(releaseNotes.fixed)},
-        security: ${formatArrayForTs(releaseNotes.security)}
-      }
-    }`;
+  version: VERSION,
+  releaseDate: "${releaseNotes.date}",
+  changes: {
+    added: ${formatArrayForTs(releaseNotes.added)},
+    improved: ${formatArrayForTs(releaseNotes.changed)},
+    removed: ${formatArrayForTs(releaseNotes.removed)},
+    fixed: ${formatArrayForTs(releaseNotes.fixed)},
+    security: ${formatArrayForTs(releaseNotes.security)}
+  }
+}`;
   }
 
   async updateChangelog(releaseNotes: ReleaseNotes): Promise<void> {
@@ -322,6 +338,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     }
 
     try {
+      // Push the tag first
+      console.log('📤 Pushing tag to GitHub...');
+      await this.runCommand(['git', 'push', 'origin', `v${this.newVersion}`]);
+      
       const releaseBody = this.formatReleaseBodyMarkdown(releaseNotes);
       await this.runCommand([
         'gh', 'release', 'create', `v${this.newVersion}`,
@@ -332,6 +352,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     } catch (error) {
       console.error('❌ Error creating GitHub release:', error.message);
       console.log('ℹ️  You can create it manually at: https://github.com/esolia/salty.esolia.pro/releases/new');
+      console.log('   The tag has been created locally. Push it with: git push origin --tags');
     }
   }
 

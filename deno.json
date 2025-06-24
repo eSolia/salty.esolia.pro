@@ -6,6 +6,7 @@
     "release:patch": "deno run --allow-read --allow-write --allow-run release.ts patch",
     "release:minor": "deno run --allow-read --allow-write --allow-run release.ts minor",
     "release:major": "deno run --allow-read --allow-write --allow-run release.ts major",
+    "rollback": "deno run --allow-read --allow-write --allow-run rollback.ts",
     "version": "deno run --allow-read version-check.ts"
   },
   "imports": {
