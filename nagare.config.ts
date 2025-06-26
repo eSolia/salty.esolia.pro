@@ -81,6 +81,10 @@ export const RELEASE_NOTES = {{releaseNotes}} as const;
       path: "./deno.json",
       patterns: {
         version: /^(\s*)"version":\s*"([^"]+)"/m
+      },
+      updateFn: (content: string, data: TemplateData) => {
+        // Custom replacement that preserves the structure correctly
+        return content.replace(/^(\s*)"version":\s*"([^"]+)"/m, `$1"version": "${data.version}"`);
       }
     }
   ]
