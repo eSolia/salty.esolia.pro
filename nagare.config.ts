@@ -80,7 +80,7 @@ export const RELEASE_NOTES = {{releaseNotes}} as const;
     {
       path: "./deno.json",
       patterns: {
-        version: /"version":\s*"([^"]+)"/
+        version: /^(\s*)"version":\s*"([^"]+)"/m
       }
     }
   ]
