@@ -12,7 +12,7 @@
     "rollback": "deno task nagare rollback",
     
     "_comment_utilities": "// Utility tasks",
-    "version": "deno run --allow-read version-check.ts",
+    "1.2.0",
     "docs": "deno task nagare docs",
     "docs:serve": "deno task nagare docs --serve", 
     "changelog": "deno task nagare changelog --preview",
