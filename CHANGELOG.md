@@ -8,9 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.2] - 2025-06-26
 
 ### Changed
+
 - bump nagare to 0.8.0 (a61f7a9)
 
 ### Fixed
+
 - specify export in deno.json as server.ts (5afc743)
 - remove namespace reference (d9db864)
 - add back the version key (4497599)
@@ -18,29 +20,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.1] - 2025-06-26
 
 ### Changed
+
 - improve deno.json adding metadata and lint rules (f8badfb)
 - bump nagare to 0.7.0 (f64329b)
 
 ### Fixed
+
 - make regex more precise (0bffed5)
 
 ## [1.2.0] - 2025-06-26
 
 ### Added
+
 - add scratch directory for dev experiments (5c1c790)
 - add release library nagare (161c422)
 
 ### Changed
+
 - bump nagare version (a13e68f)
 - add br to top Jp message for clean look (ea4daed)
 
 ### Fixed
+
 - add deno wrapper to fix eval problem (3f9be05)
 - run nagare more directly (4fa0412)
 
 ## [1.1.0] - 2025-06-24
 
 ### Added
+
 - add rollback and fix release (d3329b7)
 - add deno.json changelog and release management scripts (d262ca3)
 - add telemetry custom tracing spans (68caf7d)
@@ -48,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add version.ts that other files can use (a05641e)
 
 ### Changed
+
 - revert docs to before release (57a2f52)
 - bump version to 1.1.0 (e74e5d8)
 - ignore deno.lock (7d2c0e2)
@@ -61,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - refactor how to generate api key (2efe156)
 
 ### Fixed
+
 - handle detailed commit log messages (79cbe46)
 - adds missing bracket (49f1a36)
 - fix deno task version error (77783d2)

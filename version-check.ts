@@ -5,7 +5,7 @@
  * Usage: deno task version
  */
 
-import { VERSION, VersionUtils, RELEASE_NOTES } from './version.ts';
+import { RELEASE_NOTES, VERSION, VersionUtils } from "./version.ts";
 
 console.log(`🏷️  Salty Version: ${VERSION}`);
 console.log(`📅 Build Date: ${VersionUtils.getExtendedVersion()}`);
@@ -20,7 +20,8 @@ const fixed = changes.fixed || [];
 const security = changes.security || [];
 const removed = changes.removed || [];
 
-const totalChanges = added.length + improved.length + fixed.length + security.length + removed.length;
+const totalChanges = added.length + improved.length + fixed.length +
+  security.length + removed.length;
 
 if (totalChanges > 0) {
   console.log(`📝 Changes in this release: ${totalChanges} items`);

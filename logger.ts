@@ -3,7 +3,7 @@
  * @description Provides comprehensive logging with categories, levels, and monitoring hooks
  */
 
-import { VERSION } from './version.ts';
+import { VERSION } from "./version.ts";
 
 /**
  * Log levels in order of severity
@@ -14,22 +14,22 @@ export enum LogLevel {
   WARN = 2,
   ERROR = 3,
   SECURITY = 4,
-  CRITICAL = 5
+  CRITICAL = 5,
 }
 
 /**
  * Log categories for better organization
  */
 export enum LogCategory {
-  SYSTEM = 'SYSTEM',
-  API = 'API',
-  AUTH = 'AUTH',
-  RATE_LIMIT = 'RATE_LIMIT',
-  CRYPTO = 'CRYPTO',
-  SECURITY = 'SECURITY',
-  PERFORMANCE = 'PERFORMANCE',
-  VALIDATION = 'VALIDATION',
-  HEALTH = 'HEALTH'
+  SYSTEM = "SYSTEM",
+  API = "API",
+  AUTH = "AUTH",
+  RATE_LIMIT = "RATE_LIMIT",
+  CRYPTO = "CRYPTO",
+  SECURITY = "SECURITY",
+  PERFORMANCE = "PERFORMANCE",
+  VALIDATION = "VALIDATION",
+  HEALTH = "HEALTH",
 }
 
 /**
@@ -66,14 +66,14 @@ export interface LogEntry {
  * Security event types for specialized logging
  */
 export enum SecurityEvent {
-  API_KEY_MISSING = 'API_KEY_MISSING',
-  API_KEY_INVALID = 'API_KEY_INVALID',
-  RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
-  INVALID_REQUEST = 'INVALID_REQUEST',
-  CRYPTO_FAILURE = 'CRYPTO_FAILURE',
-  SUSPICIOUS_ACTIVITY = 'SUSPICIOUS_ACTIVITY',
-  MALFORMED_INPUT = 'MALFORMED_INPUT',
-  UNAUTHORIZED_ACCESS = 'UNAUTHORIZED_ACCESS'
+  API_KEY_MISSING = "API_KEY_MISSING",
+  API_KEY_INVALID = "API_KEY_INVALID",
+  RATE_LIMIT_EXCEEDED = "RATE_LIMIT_EXCEEDED",
+  INVALID_REQUEST = "INVALID_REQUEST",
+  CRYPTO_FAILURE = "CRYPTO_FAILURE",
+  SUSPICIOUS_ACTIVITY = "SUSPICIOUS_ACTIVITY",
+  MALFORMED_INPUT = "MALFORMED_INPUT",
+  UNAUTHORIZED_ACCESS = "UNAUTHORIZED_ACCESS",
 }
 
 /**
@@ -133,7 +133,7 @@ export class Logger {
       includeStackTrace: true,
       collectMetrics: true,
       maxLogEntries: 1000,
-      ...config
+      ...config,
     };
 
     this.metrics = {
@@ -143,7 +143,7 @@ export class Logger {
       averageResponseTime: 0,
       endpointStats: new Map(),
       securityEvents: new Map(),
-      resetTime: new Date().toISOString()
+      resetTime: new Date().toISOString(),
     };
   }
 
@@ -162,7 +162,7 @@ export class Logger {
     category: LogCategory,
     message: string,
     data?: Record<string, any>,
-    error?: Error
+    error?: Error,
   ): void {
     if (level < this.config.minLevel) return;
 
@@ -174,7 +174,9 @@ export class Logger {
       message,
       data,
       version: VERSION,
-      stack: error?.stack && this.config.includeStackTrace ? error.stack : undefined
+      stack: error?.stack && this.config.includeStackTrace
+        ? error.stack
+        : undefined,
     };
 
     // Add to recent logs
@@ -200,12 +202,12 @@ export class Logger {
       console.log(JSON.stringify(entry));
     } else {
       const color = this.getLogColor(entry.level);
-      const prefix = this.config.enableColors ? color : '';
-      const suffix = this.config.enableColors ? '\x1b[0m' : '';
-      
+      const prefix = this.config.enableColors ? color : "";
+      const suffix = this.config.enableColors ? "\x1b[0m" : "";
+
       console.log(
         `${prefix}[${entry.timestamp}] ${entry.levelName} [${entry.category}] ${entry.message}${suffix}`,
-        entry.data ? JSON.stringify(entry.data) : ''
+        entry.data ? JSON.stringify(entry.data) : "",
       );
     }
   }
@@ -215,13 +217,20 @@ export class Logger {
    */
   private getLogColor(level: LogLevel): string {
     switch (level) {
-      case LogLevel.DEBUG: return '\x1b[36m'; // Cyan
-      case LogLevel.INFO: return '\x1b[32m';  // Green
-      case LogLevel.WARN: return '\x1b[33m';  // Yellow
-      case LogLevel.ERROR: return '\x1b[31m'; // Red
-      case LogLevel.SECURITY: return '\x1b[35m'; // Magenta
-      case LogLevel.CRITICAL: return '\x1b[41m'; // Red background
-      default: return '';
+      case LogLevel.DEBUG:
+        return "\x1b[36m"; // Cyan
+      case LogLevel.INFO:
+        return "\x1b[32m"; // Green
+      case LogLevel.WARN:
+        return "\x1b[33m"; // Yellow
+      case LogLevel.ERROR:
+        return "\x1b[31m"; // Red
+      case LogLevel.SECURITY:
+        return "\x1b[35m"; // Magenta
+      case LogLevel.CRITICAL:
+        return "\x1b[41m"; // Red background
+      default:
+        return "";
     }
   }
 
@@ -233,52 +242,69 @@ export class Logger {
 
     try {
       await fetch(this.config.webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text: `🚨 Salty Critical Alert`,
           attachments: [{
-            color: 'danger',
+            color: "danger",
             fields: [
-              { title: 'Level', value: entry.levelName, short: true },
-              { title: 'Category', value: entry.category, short: true },
-              { title: 'Message', value: entry.message, short: false },
-              { title: 'Timestamp', value: entry.timestamp, short: true },
-              { title: 'Version', value: entry.version, short: true }
-            ]
-          }]
-        })
+              { title: "Level", value: entry.levelName, short: true },
+              { title: "Category", value: entry.category, short: true },
+              { title: "Message", value: entry.message, short: false },
+              { title: "Timestamp", value: entry.timestamp, short: true },
+              { title: "Version", value: entry.version, short: true },
+            ],
+          }],
+        }),
       });
     } catch (error) {
-      console.error('Failed to send webhook:', error);
+      console.error("Failed to send webhook:", error);
     }
   }
 
   /**
    * Log debug information
    */
-  debug(message: string, data?: Record<string, any>, category = LogCategory.SYSTEM): void {
+  debug(
+    message: string,
+    data?: Record<string, any>,
+    category = LogCategory.SYSTEM,
+  ): void {
     this.log(LogLevel.DEBUG, category, message, data);
   }
 
   /**
    * Log general information
    */
-  info(message: string, data?: Record<string, any>, category = LogCategory.SYSTEM): void {
+  info(
+    message: string,
+    data?: Record<string, any>,
+    category = LogCategory.SYSTEM,
+  ): void {
     this.log(LogLevel.INFO, category, message, data);
   }
 
   /**
    * Log warnings
    */
-  warn(message: string, data?: Record<string, any>, category = LogCategory.SYSTEM): void {
+  warn(
+    message: string,
+    data?: Record<string, any>,
+    category = LogCategory.SYSTEM,
+  ): void {
     this.log(LogLevel.WARN, category, message, data);
   }
 
   /**
    * Log errors
    */
-  error(message: string, error?: Error, data?: Record<string, any>, category = LogCategory.SYSTEM): void {
+  error(
+    message: string,
+    error?: Error,
+    data?: Record<string, any>,
+    category = LogCategory.SYSTEM,
+  ): void {
     this.log(LogLevel.ERROR, category, message, data, error);
   }
 
@@ -288,11 +314,11 @@ export class Logger {
   security(
     event: SecurityEvent,
     message: string,
-    data?: Record<string, any>
+    data?: Record<string, any>,
   ): void {
     const enhancedData = {
       securityEvent: event,
-      ...data
+      ...data,
     };
 
     this.log(LogLevel.SECURITY, LogCategory.SECURITY, message, enhancedData);
@@ -307,7 +333,11 @@ export class Logger {
   /**
    * Log critical system events
    */
-  critical(message: string, data?: Record<string, any>, category = LogCategory.SYSTEM): void {
+  critical(
+    message: string,
+    data?: Record<string, any>,
+    category = LogCategory.SYSTEM,
+  ): void {
     this.log(LogLevel.CRITICAL, category, message, data);
   }
 
@@ -321,7 +351,7 @@ export class Logger {
     responseTime: number,
     clientIP: string,
     requestId: string,
-    data?: Record<string, any>
+    data?: Record<string, any>,
   ): void {
     const endpoint = `${method} ${path}`;
     const isSuccess = statusCode >= 200 && statusCode < 400;
@@ -334,7 +364,7 @@ export class Logger {
       clientIP,
       requestId,
       success: isSuccess,
-      ...data
+      ...data,
     };
 
     // Update metrics
@@ -348,7 +378,7 @@ export class Logger {
 
       // Update average response time
       const total = this.metrics.totalRequests;
-      this.metrics.averageResponseTime = 
+      this.metrics.averageResponseTime =
         (this.metrics.averageResponseTime * (total - 1) + responseTime) / total;
 
       // Track endpoint usage
@@ -368,7 +398,7 @@ export class Logger {
   getMetrics(): PerformanceMetrics & { uptime: number } {
     return {
       ...this.metrics,
-      uptime: Math.floor(performance.now() / 1000)
+      uptime: Math.floor(performance.now() / 1000),
     };
   }
 
@@ -383,7 +413,7 @@ export class Logger {
       averageResponseTime: 0,
       endpointStats: new Map(),
       securityEvents: new Map(),
-      resetTime: new Date().toISOString()
+      resetTime: new Date().toISOString(),
     };
   }
 
@@ -410,8 +440,8 @@ export class Logger {
    */
   detectSuspiciousActivity(clientIP: string): boolean {
     const recentLogs = this.recentLogs
-      .filter(log => 
-        log.clientIP === clientIP && 
+      .filter((log) =>
+        log.clientIP === clientIP &&
         log.level >= LogLevel.WARN &&
         Date.now() - new Date(log.timestamp).getTime() < 5 * 60 * 1000 // Last 5 minutes
       );
@@ -421,10 +451,10 @@ export class Logger {
       this.security(
         SecurityEvent.SUSPICIOUS_ACTIVITY,
         `Suspicious activity detected from IP: ${clientIP}`,
-        { 
+        {
           recentWarnings: recentLogs.length,
-          timeWindow: '5 minutes'
-        }
+          timeWindow: "5 minutes",
+        },
       );
       return true;
     }
@@ -437,9 +467,9 @@ export class Logger {
  * Create and export a default logger instance
  */
 export const logger = new Logger({
-  minLevel: Deno.env.get('LOG_LEVEL') ? 
-    LogLevel[Deno.env.get('LOG_LEVEL') as keyof typeof LogLevel] : 
-    LogLevel.INFO,
-  jsonFormat: Deno.env.get('LOG_FORMAT') === 'json',
-  webhookUrl: Deno.env.get('WEBHOOK_URL')
+  minLevel: Deno.env.get("LOG_LEVEL")
+    ? LogLevel[Deno.env.get("LOG_LEVEL") as keyof typeof LogLevel]
+    : LogLevel.INFO,
+  jsonFormat: Deno.env.get("LOG_FORMAT") === "json",
+  webhookUrl: Deno.env.get("WEBHOOK_URL"),
 });

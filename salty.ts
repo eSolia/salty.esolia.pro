@@ -10,13 +10,97 @@
 
 // Fixed basE91 encoding table - using the standard basE91 character set
 const b91_enctab = [
-  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-  'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '#', '$',
-  '%', '&', '(', ')', '*', '+', ',', '.', '/', ':', ';', '<', '=',
-  '>', '?', '@', '[', ']', '^', '_', '`', '{', '|', '}', '~', '"'
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "G",
+  "H",
+  "I",
+  "J",
+  "K",
+  "L",
+  "M",
+  "N",
+  "O",
+  "P",
+  "Q",
+  "R",
+  "S",
+  "T",
+  "U",
+  "V",
+  "W",
+  "X",
+  "Y",
+  "Z",
+  "a",
+  "b",
+  "c",
+  "d",
+  "e",
+  "f",
+  "g",
+  "h",
+  "i",
+  "j",
+  "k",
+  "l",
+  "m",
+  "n",
+  "o",
+  "p",
+  "q",
+  "r",
+  "s",
+  "t",
+  "u",
+  "v",
+  "w",
+  "x",
+  "y",
+  "z",
+  "0",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "!",
+  "#",
+  "$",
+  "%",
+  "&",
+  "(",
+  ")",
+  "*",
+  "+",
+  ",",
+  ".",
+  "/",
+  ":",
+  ";",
+  "<",
+  "=",
+  ">",
+  "?",
+  "@",
+  "[",
+  "]",
+  "^",
+  "_",
+  "`",
+  "{",
+  "|",
+  "}",
+  "~",
+  '"',
 ];
 
 // Global constant for basE91 decoding table (derived from encoding table)
@@ -32,11 +116,13 @@ b91_enctab.forEach((char, index) => {
  */
 export function hexToUint8Array(hexString: string): Uint8Array {
   // Ensure the hex string has an even length by padding with a leading zero if necessary.
-  const normalizedHexString = hexString.length % 2 !== 0 ? '0' + hexString : hexString;
+  const normalizedHexString = hexString.length % 2 !== 0
+    ? "0" + hexString
+    : hexString;
   // Match every two characters and parse them as hexadecimal bytes.
   const matches = normalizedHexString.match(/.{1,2}/g);
   if (!matches) {
-    throw new Error('Invalid hex string');
+    throw new Error("Invalid hex string");
   }
   return Uint8Array.from(matches.map((byte) => parseInt(byte, 16)));
 }
@@ -48,7 +134,7 @@ export function hexToUint8Array(hexString: string): Uint8Array {
  * @returns The decoded Uint8Array, or null if decoding fails.
  */
 export function base91_decode(data: string): Uint8Array | null {
-  if (!data || typeof data !== 'string') {
+  if (!data || typeof data !== "string") {
     return null;
   }
 
@@ -63,20 +149,20 @@ export function base91_decode(data: string): Uint8Array | null {
       // Skip invalid characters
       continue;
     }
-    
+
     if (v < 0) {
       v = c;
     } else {
       v += c * 91;
       b |= (v << n) & 0xFFFFFFFF; // Ensure 32-bit arithmetic
       n += (v & 8191) > 88 ? 13 : 14;
-      
+
       do {
         output.push(b & 0xFF);
         b >>>= 8; // Unsigned right shift
         n -= 8;
       } while (n > 7);
-      
+
       v = -1;
     }
   }
@@ -96,17 +182,17 @@ export function base91_decode(data: string): Uint8Array | null {
  */
 export function base91_encode(data: Uint8Array): string {
   if (!data || data.length === 0) {
-    return '';
+    return "";
   }
 
   let b = 0;
   let n = 0;
-  let output = '';
+  let output = "";
 
   for (let i = 0; i < data.length; i++) {
     b |= (data[i] << n) & 0xFFFFFFFF; // Ensure 32-bit arithmetic
     n += 8;
-    
+
     if (n > 13) {
       let v = b & 8191;
       if (v > 88) {
@@ -137,36 +223,39 @@ export function base91_encode(data: Uint8Array): string {
  * @param saltHex The hexadecimal string representation of the salt.
  * @returns The derived CryptoKey.
  */
-export async function salty_key(key: string, saltHex: string): Promise<CryptoKey> {
+export async function salty_key(
+  key: string,
+  saltHex: string,
+): Promise<CryptoKey> {
   const enc = new TextEncoder();
   const password = enc.encode(key);
   const salt = hexToUint8Array(saltHex); // Convert hex salt to Uint8Array
 
   const iterations = 600000; // Number of PBKDF2 iterations (high for security)
-  const hash = 'SHA-512'; // Hashing algorithm
+  const hash = "SHA-512"; // Hashing algorithm
   const keyLen = 32; // Key length in bytes (256 bits for AES-GCM)
 
   // Import the password as a raw key for PBKDF2
   const passwordKey = await crypto.subtle.importKey(
-    'raw',
+    "raw",
     password,
-    { name: 'PBKDF2' },
+    { name: "PBKDF2" },
     false, // not extractable
-    ['deriveBits', 'deriveKey'] // usage
+    ["deriveBits", "deriveKey"], // usage
   );
 
   // Derive the actual encryption key using PBKDF2
   const derivedKey = await crypto.subtle.deriveKey(
     {
-      name: 'PBKDF2',
+      name: "PBKDF2",
       salt: salt,
       iterations: iterations,
       hash: hash,
     },
     passwordKey,
-    { name: 'AES-GCM', length: keyLen * 8 }, // AES-GCM with 256-bit key
+    { name: "AES-GCM", length: keyLen * 8 }, // AES-GCM with 256-bit key
     true, // extractable
-    ['encrypt', 'decrypt'] // usage
+    ["encrypt", "decrypt"], // usage
   );
 
   return derivedKey;
@@ -178,7 +267,10 @@ export async function salty_key(key: string, saltHex: string): Promise<CryptoKey
  * @param cryptoKey The CryptoKey derived from the passphrase.
  * @returns The basE91 encoded ciphertext.
  */
-export async function salty_encrypt(message: string, cryptoKey: CryptoKey): Promise<string> {
+export async function salty_encrypt(
+  message: string,
+  cryptoKey: CryptoKey,
+): Promise<string> {
   const enc = new TextEncoder();
   const data = enc.encode(message); // Encode message to Uint8Array
 
@@ -188,12 +280,12 @@ export async function salty_encrypt(message: string, cryptoKey: CryptoKey): Prom
   // Encrypt the data
   const ciphertext = await crypto.subtle.encrypt(
     {
-      name: 'AES-GCM',
+      name: "AES-GCM",
       iv: iv,
       tagLength: 128, // Authentication tag length in bits
     },
     cryptoKey,
-    data
+    data,
   );
 
   // Concatenate IV and ciphertext for storage/transmission
@@ -211,7 +303,10 @@ export async function salty_encrypt(message: string, cryptoKey: CryptoKey): Prom
  * @param cryptoKey The CryptoKey derived from the passphrase.
  * @returns The decrypted plaintext message, or null if decryption fails.
  */
-export async function salty_decrypt(encrypted: string, cryptoKey: CryptoKey): Promise<string | null> {
+export async function salty_decrypt(
+  encrypted: string,
+  cryptoKey: CryptoKey,
+): Promise<string | null> {
   const decoded = base91_decode(encrypted); // Decode from basE91
 
   // Check minimum length: IV (12 bytes) + GCM Tag (16 bytes)
@@ -226,12 +321,12 @@ export async function salty_decrypt(encrypted: string, cryptoKey: CryptoKey): Pr
     // Decrypt the data
     const decryptedBuffer = await crypto.subtle.decrypt(
       {
-        name: 'AES-GCM',
+        name: "AES-GCM",
         iv: iv,
         tagLength: 128,
       },
       cryptoKey,
-      ciphertextWithTag
+      ciphertextWithTag,
     );
 
     // Decode the decrypted buffer back to a string

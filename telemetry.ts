@@ -3,16 +3,16 @@
  * @description Adds custom spans to track internal operations in EA's trace view
  */
 
-import { VERSION } from './version.ts';
+import { VERSION } from "./version.ts";
 
 /**
  * Telemetry service names for span organization
  */
 export const TELEMETRY_SERVICE = {
-  CRYPTO: 'salty-crypto',
-  SECURITY: 'salty-security', 
-  VALIDATION: 'salty-validation',
-  API: 'salty-api'
+  CRYPTO: "salty-crypto",
+  SECURITY: "salty-security",
+  VALIDATION: "salty-validation",
+  API: "salty-api",
 } as const;
 
 /**
@@ -20,24 +20,24 @@ export const TELEMETRY_SERVICE = {
  */
 export const SPAN_NAMES = {
   // Crypto operations
-  KEY_DERIVATION: 'crypto.key-derivation',
-  ENCRYPT_OPERATION: 'crypto.encrypt',
-  DECRYPT_OPERATION: 'crypto.decrypt',
-  
+  KEY_DERIVATION: "crypto.key-derivation",
+  ENCRYPT_OPERATION: "crypto.encrypt",
+  DECRYPT_OPERATION: "crypto.decrypt",
+
   // Security operations
-  RATE_LIMIT_CHECK: 'security.rate-limit-check',
-  API_KEY_VALIDATION: 'security.api-key-validation',
-  INPUT_SANITIZATION: 'security.input-sanitization',
-  SUSPICIOUS_ACTIVITY_CHECK: 'security.suspicious-activity-check',
-  
+  RATE_LIMIT_CHECK: "security.rate-limit-check",
+  API_KEY_VALIDATION: "security.api-key-validation",
+  INPUT_SANITIZATION: "security.input-sanitization",
+  SUSPICIOUS_ACTIVITY_CHECK: "security.suspicious-activity-check",
+
   // Validation operations
-  REQUEST_VALIDATION: 'validation.request-validation',
-  BODY_PARSING: 'validation.body-parsing',
-  ENVIRONMENT_CHECK: 'validation.environment-check',
-  
+  REQUEST_VALIDATION: "validation.request-validation",
+  BODY_PARSING: "validation.body-parsing",
+  ENVIRONMENT_CHECK: "validation.environment-check",
+
   // API operations
-  API_REQUEST_HANDLER: 'api.request-handler',
-  RESPONSE_CREATION: 'api.response-creation'
+  API_REQUEST_HANDLER: "api.request-handler",
+  RESPONSE_CREATION: "api.response-creation",
 } as const;
 
 /**
@@ -52,9 +52,9 @@ export interface SpanAttributes {
  */
 export class SaltyTracer {
   private static instance: SaltyTracer;
-  
+
   private constructor() {}
-  
+
   static getInstance(): SaltyTracer {
     if (!SaltyTracer.instance) {
       SaltyTracer.instance = new SaltyTracer();
@@ -72,38 +72,40 @@ export class SaltyTracer {
   async trace<T>(
     spanName: string,
     operation: () => Promise<T> | T,
-    attributes: SpanAttributes = {}
+    attributes: SpanAttributes = {},
   ): Promise<T> {
     const startTime = performance.now();
-    
+
     // Add common attributes
     const spanAttributes = {
-      'salty.version': VERSION,
-      'salty.operation': spanName,
-      ...attributes
+      "salty.version": VERSION,
+      "salty.operation": spanName,
+      ...attributes,
     };
 
     try {
       // Execute the operation
       const result = await operation();
-      
+
       // Calculate duration
       const duration = performance.now() - startTime;
-      
+
       // Log the span completion (since we can't directly access OTel API in Deno Deploy)
-      this.logSpan(spanName, 'completed', duration, spanAttributes);
-      
+      this.logSpan(spanName, "completed", duration, spanAttributes);
+
       return result;
     } catch (error) {
       const duration = performance.now() - startTime;
-      
+
       // Log the span error
-      this.logSpan(spanName, 'error', duration, {
+      this.logSpan(spanName, "error", duration, {
         ...spanAttributes,
-        'error.message': error instanceof Error ? error.message : String(error),
-        'error.type': error instanceof Error ? error.constructor.name : 'Unknown'
+        "error.message": error instanceof Error ? error.message : String(error),
+        "error.type": error instanceof Error
+          ? error.constructor.name
+          : "Unknown",
       });
-      
+
       throw error;
     }
   }
@@ -118,31 +120,33 @@ export class SaltyTracer {
   traceSync<T>(
     spanName: string,
     operation: () => T,
-    attributes: SpanAttributes = {}
+    attributes: SpanAttributes = {},
   ): T {
     const startTime = performance.now();
-    
+
     const spanAttributes = {
-      'salty.version': VERSION,
-      'salty.operation': spanName,
-      ...attributes
+      "salty.version": VERSION,
+      "salty.operation": spanName,
+      ...attributes,
     };
 
     try {
       const result = operation();
       const duration = performance.now() - startTime;
-      
-      this.logSpan(spanName, 'completed', duration, spanAttributes);
+
+      this.logSpan(spanName, "completed", duration, spanAttributes);
       return result;
     } catch (error) {
       const duration = performance.now() - startTime;
-      
-      this.logSpan(spanName, 'error', duration, {
+
+      this.logSpan(spanName, "error", duration, {
         ...spanAttributes,
-        'error.message': error instanceof Error ? error.message : String(error),
-        'error.type': error instanceof Error ? error.constructor.name : 'Unknown'
+        "error.message": error instanceof Error ? error.message : String(error),
+        "error.type": error instanceof Error
+          ? error.constructor.name
+          : "Unknown",
       });
-      
+
       throw error;
     }
   }
@@ -156,9 +160,9 @@ export class SaltyTracer {
    */
   private logSpan(
     spanName: string,
-    status: 'completed' | 'error',
+    status: "completed" | "error",
     duration: number,
-    attributes: SpanAttributes
+    attributes: SpanAttributes,
   ): void {
     // Create a structured log entry that follows OpenTelemetry conventions
     const spanLog = {
@@ -167,12 +171,12 @@ export class SaltyTracer {
         name: spanName,
         status,
         duration_ms: Math.round(duration * 1000) / 1000, // Round to 3 decimal places
-        attributes
+        attributes,
       },
       telemetry: {
-        type: 'span',
-        service: this.getServiceFromSpanName(spanName)
-      }
+        type: "span",
+        service: this.getServiceFromSpanName(spanName),
+      },
     };
 
     // Log in a format that might be picked up by EA's telemetry
@@ -185,11 +189,11 @@ export class SaltyTracer {
    * @returns Service name
    */
   private getServiceFromSpanName(spanName: string): string {
-    if (spanName.startsWith('crypto.')) return TELEMETRY_SERVICE.CRYPTO;
-    if (spanName.startsWith('security.')) return TELEMETRY_SERVICE.SECURITY;
-    if (spanName.startsWith('validation.')) return TELEMETRY_SERVICE.VALIDATION;
-    if (spanName.startsWith('api.')) return TELEMETRY_SERVICE.API;
-    return 'salty-unknown';
+    if (spanName.startsWith("crypto.")) return TELEMETRY_SERVICE.CRYPTO;
+    if (spanName.startsWith("security.")) return TELEMETRY_SERVICE.SECURITY;
+    if (spanName.startsWith("validation.")) return TELEMETRY_SERVICE.VALIDATION;
+    if (spanName.startsWith("api.")) return TELEMETRY_SERVICE.API;
+    return "salty-unknown";
   }
 
   /**
@@ -211,11 +215,11 @@ export class SaltyTracer {
   wrapFunction<TArgs extends any[], TReturn>(
     spanName: string,
     fn: (...args: TArgs) => Promise<TReturn> | TReturn,
-    getAttributes?: (...args: TArgs) => SpanAttributes
+    getAttributes?: (...args: TArgs) => SpanAttributes,
   ) {
     return async (...args: TArgs): Promise<TReturn> => {
       const attributes = getAttributes ? getAttributes(...args) : {};
-      
+
       return this.trace(spanName, () => fn(...args), attributes);
     };
   }
@@ -226,20 +230,24 @@ export class SaltyTracer {
    * @param value - Metric value
    * @param attributes - Metric attributes
    */
-  recordMetric(name: string, value: number, attributes: SpanAttributes = {}): void {
+  recordMetric(
+    name: string,
+    value: number,
+    attributes: SpanAttributes = {},
+  ): void {
     const metricLog = {
       timestamp: new Date().toISOString(),
       metric: {
         name,
         value,
         attributes: {
-          'salty.version': VERSION,
-          ...attributes
-        }
+          "salty.version": VERSION,
+          ...attributes,
+        },
       },
       telemetry: {
-        type: 'metric'
-      }
+        type: "metric",
+      },
     };
 
     console.log(`[METRIC] ${JSON.stringify(metricLog)}`);
@@ -256,13 +264,13 @@ export class SaltyTracer {
       event: {
         name,
         attributes: {
-          'salty.version': VERSION,
-          ...attributes
-        }
+          "salty.version": VERSION,
+          ...attributes,
+        },
       },
       telemetry: {
-        type: 'event'
-      }
+        type: "event",
+      },
     };
 
     console.log(`[EVENT] ${JSON.stringify(eventLog)}`);
@@ -282,59 +290,75 @@ export const TracingHelpers = {
    * Trace a crypto operation
    */
   traceCrypto: <T>(
-    operation: 'encrypt' | 'decrypt' | 'key-derivation',
+    operation: "encrypt" | "decrypt" | "key-derivation",
     fn: () => Promise<T> | T,
-    attributes: SpanAttributes = {}
-  ) => tracer.trace(
-    operation === 'key-derivation' ? SPAN_NAMES.KEY_DERIVATION :
-    operation === 'encrypt' ? SPAN_NAMES.ENCRYPT_OPERATION :
-    SPAN_NAMES.DECRYPT_OPERATION,
-    fn,
-    { 'crypto.operation': operation, ...attributes }
-  ),
+    attributes: SpanAttributes = {},
+  ) =>
+    tracer.trace(
+      operation === "key-derivation"
+        ? SPAN_NAMES.KEY_DERIVATION
+        : operation === "encrypt"
+        ? SPAN_NAMES.ENCRYPT_OPERATION
+        : SPAN_NAMES.DECRYPT_OPERATION,
+      fn,
+      { "crypto.operation": operation, ...attributes },
+    ),
 
   /**
    * Trace a security check
    */
   traceSecurity: <T>(
-    operation: 'rate-limit' | 'api-key' | 'input-sanitization' | 'suspicious-activity',
+    operation:
+      | "rate-limit"
+      | "api-key"
+      | "input-sanitization"
+      | "suspicious-activity",
     fn: () => Promise<T> | T,
-    attributes: SpanAttributes = {}
-  ) => tracer.trace(
-    operation === 'rate-limit' ? SPAN_NAMES.RATE_LIMIT_CHECK :
-    operation === 'api-key' ? SPAN_NAMES.API_KEY_VALIDATION :
-    operation === 'input-sanitization' ? SPAN_NAMES.INPUT_SANITIZATION :
-    SPAN_NAMES.SUSPICIOUS_ACTIVITY_CHECK,
-    fn,
-    { 'security.operation': operation, ...attributes }
-  ),
+    attributes: SpanAttributes = {},
+  ) =>
+    tracer.trace(
+      operation === "rate-limit"
+        ? SPAN_NAMES.RATE_LIMIT_CHECK
+        : operation === "api-key"
+        ? SPAN_NAMES.API_KEY_VALIDATION
+        : operation === "input-sanitization"
+        ? SPAN_NAMES.INPUT_SANITIZATION
+        : SPAN_NAMES.SUSPICIOUS_ACTIVITY_CHECK,
+      fn,
+      { "security.operation": operation, ...attributes },
+    ),
 
   /**
    * Trace a validation operation
    */
   traceValidation: <T>(
-    operation: 'request' | 'body-parsing' | 'environment',
+    operation: "request" | "body-parsing" | "environment",
     fn: () => Promise<T> | T,
-    attributes: SpanAttributes = {}
-  ) => tracer.trace(
-    operation === 'request' ? SPAN_NAMES.REQUEST_VALIDATION :
-    operation === 'body-parsing' ? SPAN_NAMES.BODY_PARSING :
-    SPAN_NAMES.ENVIRONMENT_CHECK,
-    fn,
-    { 'validation.operation': operation, ...attributes }
-  ),
+    attributes: SpanAttributes = {},
+  ) =>
+    tracer.trace(
+      operation === "request"
+        ? SPAN_NAMES.REQUEST_VALIDATION
+        : operation === "body-parsing"
+        ? SPAN_NAMES.BODY_PARSING
+        : SPAN_NAMES.ENVIRONMENT_CHECK,
+      fn,
+      { "validation.operation": operation, ...attributes },
+    ),
 
   /**
    * Trace an API operation
    */
   traceAPI: <T>(
-    operation: 'request-handler' | 'response-creation',
+    operation: "request-handler" | "response-creation",
     fn: () => Promise<T> | T,
-    attributes: SpanAttributes = {}
-  ) => tracer.trace(
-    operation === 'request-handler' ? SPAN_NAMES.API_REQUEST_HANDLER :
-    SPAN_NAMES.RESPONSE_CREATION,
-    fn,
-    { 'api.operation': operation, ...attributes }
-  )
+    attributes: SpanAttributes = {},
+  ) =>
+    tracer.trace(
+      operation === "request-handler"
+        ? SPAN_NAMES.API_REQUEST_HANDLER
+        : SPAN_NAMES.RESPONSE_CREATION,
+      fn,
+      { "api.operation": operation, ...attributes },
+    ),
 };

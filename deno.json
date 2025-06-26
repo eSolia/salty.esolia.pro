@@ -30,19 +30,19 @@
   "tasks": {
     "dev": "deno run --allow-net --allow-read --allow-env --watch server.ts",
     "start": "deno run --allow-net --allow-read --allow-env server.ts",
-    
+
     "_comment_releases": "// Release management via Nagare library (using Lume-style import trick)",
     "nagare": "deno run -A run-nagare.ts",
     "release": "deno task nagare",
     "release:patch": "deno task nagare patch",
-    "release:minor": "deno task nagare minor", 
+    "release:minor": "deno task nagare minor",
     "release:major": "deno task nagare major",
     "rollback": "deno task nagare rollback",
-    
+
     "_comment_utilities": "// Utility tasks",
     "version": "deno run --allow-read version-check.ts",
     "docs": "deno task nagare docs",
-    "docs:serve": "deno task nagare docs --serve", 
+    "docs:serve": "deno task nagare docs --serve",
     "changelog": "deno task nagare changelog --preview",
     "validate": "deno task nagare validate"
   },

@@ -1,9 +1,13 @@
 <!-- VERSION_BADGE_START -->
+
 [![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/esolia/salty.esolia.pro/releases/tag/v1.1.0)
+
 <!-- VERSION_BADGE_END -->
 
 <!-- BUILD_BADGE_START -->
+
 [![Build Date](https://img.shields.io/badge/build-2025--06--24-green.svg)](https://github.com/esolia/salty.esolia.pro)
+
 <!-- BUILD_BADGE_END -->
 
 # Salty: Browser-Native Secure Text Encryption
@@ -13,99 +17,113 @@ Salty (<https://salty.esolia.pro>) is a comprehensive, web-based application des
 ## Features
 
 ### Core Encryption Features
-* **Browser-Native Encryption**: Utilizes the Web Crypto API for strong, client-side encryption (AES-GCM-256) and key derivation (PBKDF2-SHA512 with 600,000 iterations)
-* **Shared Key Security**: Securely encrypt and decrypt messages using a shared passphrase
-* **Automatic Detection**: Intelligently detects whether the input payload is plaintext (to be encrypted) or a Salty-encrypted cipher (to be decrypted)
-* **basE91 Encoding**: Encrypted output is encoded using basE91, providing a compact and portable format
-* **URL Parameter Support**: Pre-populate payload via URL parameters for database integration workflows
+
+- **Browser-Native Encryption**: Utilizes the Web Crypto API for strong, client-side encryption (AES-GCM-256) and key derivation (PBKDF2-SHA512 with 600,000 iterations)
+- **Shared Key Security**: Securely encrypt and decrypt messages using a shared passphrase
+- **Automatic Detection**: Intelligently detects whether the input payload is plaintext (to be encrypted) or a Salty-encrypted cipher (to be decrypted)
+- **basE91 Encoding**: Encrypted output is encoded using basE91, providing a compact and portable format
+- **URL Parameter Support**: Pre-populate payload via URL parameters for database integration workflows
 
 ### Security Features
-* **Rate Limiting**: 20 requests per hour per IP address to prevent abuse
-* **Input Validation**: Comprehensive sanitization and size limits (1MB payload, 1KB key)
-* **Security Headers**: Content Security Policy, HSTS, XSS protection, and more
-* **API Authentication**: Optional API key protection for server endpoints
-* **Structured Logging**: Security event tracking and performance monitoring
-* **Request Size Limits**: Protection against oversized payloads
+
+- **Rate Limiting**: 20 requests per hour per IP address to prevent abuse
+- **Input Validation**: Comprehensive sanitization and size limits (1MB payload, 1KB key)
+- **Security Headers**: Content Security Policy, HSTS, XSS protection, and more
+- **API Authentication**: Optional API key protection for server endpoints
+- **Structured Logging**: Security event tracking and performance monitoring
+- **Request Size Limits**: Protection against oversized payloads
 
 ### User Experience Features
-* **Responsive UI**: Designed with Tailwind CSS for clean and adaptive user experience across devices
-* **Multi-language Support**: Available in English and Japanese with proper font support (IBM Plex Sans JP)
-* **Clipboard Integration**: Easy one-click copying of encrypted or decrypted text to the clipboard
-* **Real-time Feedback**: User-friendly messages and error handling
-* **Modal Help System**: Comprehensive documentation accessible within the application
+
+- **Responsive UI**: Designed with Tailwind CSS for clean and adaptive user experience across devices
+- **Multi-language Support**: Available in English and Japanese with proper font support (IBM Plex Sans JP)
+- **Clipboard Integration**: Easy one-click copying of encrypted or decrypted text to the clipboard
+- **Real-time Feedback**: User-friendly messages and error handling
+- **Modal Help System**: Comprehensive documentation accessible within the application
 
 ## Technologies Used
 
 ### Backend
-* **Deno**: Powers the server-side backend with native TypeScript support
-* **TypeScript**: Used for type-safe server-side development with comprehensive interfaces
-* **Deno Deploy**: Cloud deployment platform with automatic HTTPS and global distribution
+
+- **Deno**: Powers the server-side backend with native TypeScript support
+- **TypeScript**: Used for type-safe server-side development with comprehensive interfaces
+- **Deno Deploy**: Cloud deployment platform with automatic HTTPS and global distribution
 
 ### Security & Monitoring
-* **Structured Logging**: Comprehensive logging system with categories, levels, and security event tracking
-* **OpenTelemetry-style Tracing**: Custom telemetry integration for performance monitoring
-* **Centralized Version Management**: Single source of truth for version information and metadata
+
+- **Structured Logging**: Comprehensive logging system with categories, levels, and security event tracking
+- **OpenTelemetry-style Tracing**: Custom telemetry integration for performance monitoring
+- **Centralized Version Management**: Single source of truth for version information and metadata
 
 ### Frontend
-* **Web Crypto API**: Browser's native cryptographic interface for secure operations
-* **basE91**: Efficient binary-to-text encoding scheme optimized for compactness
-* **HTML, CSS (Tailwind CSS)**: Modern styling framework for responsive design
-* **ES6 Modules**: Native browser module system with server-side TypeScript transpilation
+
+- **Web Crypto API**: Browser's native cryptographic interface for secure operations
+- **basE91**: Efficient binary-to-text encoding scheme optimized for compactness
+- **HTML, CSS (Tailwind CSS)**: Modern styling framework for responsive design
+- **ES6 Modules**: Native browser module system with server-side TypeScript transpilation
 
 ### Cryptographic Specifications
-* **Key Derivation**: PBKDF2 with SHA-512, 600,000 iterations, 256-bit output
-* **Encryption**: AES-GCM with 12-byte IV, 128-bit authentication tag
-* **Encoding**: basE91 for maximum portability and compactness
+
+- **Key Derivation**: PBKDF2 with SHA-512, 600,000 iterations, 256-bit output
+- **Encryption**: AES-GCM with 12-byte IV, 128-bit authentication tag
+- **Encoding**: basE91 for maximum portability and compactness
 
 ## Security Confirmation
 
 ### Encryption & Key Derivation
 
 **Key Derivation (`salty_key()`)**
-* ✅ PBKDF2 with SHA-512: Strong, industry-standard hash function
-* ✅ 600,000 iterations: Excellent resistance against brute-force attacks
-* ✅ 32-byte key (256-bit): Optimal for AES-GCM encryption
-* ✅ Cryptographically secure salt: Server-configured hex salt
+
+- ✅ PBKDF2 with SHA-512: Strong, industry-standard hash function
+- ✅ 600,000 iterations: Excellent resistance against brute-force attacks
+- ✅ 32-byte key (256-bit): Optimal for AES-GCM encryption
+- ✅ Cryptographically secure salt: Server-configured hex salt
 
 **Encryption (`salty_encrypt()`)**
-* ✅ AES-GCM with 12-byte IV: Secure and authenticated encryption
-* ✅ Randomly generated IV: Best practice for semantic security
-* ✅ 128-bit authentication tag: Standard and secure tag length
-* ✅ IV + ciphertext concatenation: Correct format for decryption
+
+- ✅ AES-GCM with 12-byte IV: Secure and authenticated encryption
+- ✅ Randomly generated IV: Best practice for semantic security
+- ✅ 128-bit authentication tag: Standard and secure tag length
+- ✅ IV + ciphertext concatenation: Correct format for decryption
 
 **Decryption (`salty_decrypt()`)**
-* ✅ Proper IV and ciphertext extraction with length validation
-* ✅ AES-GCM with correct parameters matching encryption
-* ✅ Graceful error handling for invalid ciphertext or wrong keys
-* ✅ Null return for failed operations
+
+- ✅ Proper IV and ciphertext extraction with length validation
+- ✅ AES-GCM with correct parameters matching encryption
+- ✅ Graceful error handling for invalid ciphertext or wrong keys
+- ✅ Null return for failed operations
 
 **basE91 Encoding/Decoding**
-* ✅ Standards-compliant implementation following original basE91 specification
-* ✅ Correct character tables and bitwise operations
-* ✅ Robust error handling for invalid input
+
+- ✅ Standards-compliant implementation following original basE91 specification
+- ✅ Correct character tables and bitwise operations
+- ✅ Robust error handling for invalid input
 
 ## Getting Started
 
 ### Prerequisites
 
-* [Deno](https://deno.land/manual/getting_started/installation) installed locally (for development/testing)
-* A Deno Deploy account (for production deployment)
-* A `SALT_HEX` environment variable: 32-character hexadecimal representation of 16 cryptographically secure random bytes
-* A base64 `API_KEY` environment variable (optional, for API authentication)
+- [Deno](https://deno.land/manual/getting_started/installation) installed locally (for development/testing)
+- A Deno Deploy account (for production deployment)
+- A `SALT_HEX` environment variable: 32-character hexadecimal representation of 16 cryptographically secure random bytes
+- A base64 `API_KEY` environment variable (optional, for API authentication)
 
 ### Environment Variable Generation
 
 **Generate SALT_HEX** (using OpenSSL - recommended):
+
 ```bash
 openssl rand -hex 16 | tr '[:lower:]' '[:upper:]'
 ```
 
 **Generate API_KEY** (using OpenSSL):
+
 ```bash
 openssl rand -base64 32
 ```
 
 **Alternative using Deno**:
+
 ```typescript
 // For SALT_HEX
 deno eval "console.log(Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('').toUpperCase())"
@@ -156,10 +174,10 @@ deno eval "console.log(btoa(String.fromCharCode(...crypto.getRandomValues(new Ui
 2. **Link to your GitHub repository** main branch
 3. **Set entry point** to `server.ts`
 4. **Configure Environment Variables** in project settings:
-   
+
    **Required:**
    - `SALT_HEX`: Your generated 32-character hexadecimal salt (required for cryptographic operations)
-   
+
    **Optional:**
    - `API_KEY`: Your generated base64 API key (enables API authentication; if not set, API endpoints are unprotected)
    - `LOG_LEVEL`: Logging verbosity level (defaults to INFO)
@@ -180,11 +198,13 @@ deno eval "console.log(btoa(String.fromCharCode(...crypto.getRandomValues(new Ui
 ### Environment Variable Examples
 
 **Minimal Production Setup:**
+
 ```
 SALT_HEX=073E58F04F052C4759D50366656BAF55
 ```
 
 **Full Production Setup with Monitoring:**
+
 ```
 SALT_HEX=073E58F04F052C4759D50366656BAF55
 API_KEY=54cz+XMiorw1VjZZ3p4Xm/RdMwDOGV/mkorEgyyN1OI=
@@ -195,6 +215,7 @@ NODE_ENV=production
 ```
 
 **Development Setup:**
+
 ```
 SALT_HEX=073E58F04F052C4759D50366656BAF55
 LOG_LEVEL=DEBUG
@@ -216,6 +237,7 @@ Different log levels control what information is captured:
 ### Webhook Integration
 
 When `WEBHOOK_URL` is configured, the following events trigger webhook notifications:
+
 - Missing or invalid `SALT_HEX` configuration
 - System startup failures
 - Critical security events
@@ -228,6 +250,7 @@ The webhook payload includes structured information about the event, timestamp, 
 ### Web Interface
 
 **Encryption Process:**
+
 1. Open Salty in your web browser
 2. Enter your plaintext message into the "Payload" textarea
 3. Provide a strong key (passphrase) in the "Key" input field
@@ -237,6 +260,7 @@ The webhook payload includes structured information about the event, timestamp, 
    - **Compressed version**: Continuous string for length-restricted contexts
 
 **Decryption Process:**
+
 1. Paste the Salty-encrypted message into the "Payload" textarea
 2. Enter the exact same key used for encryption
 3. Click "Go" (or "実行") to decrypt the message
@@ -247,12 +271,14 @@ The webhook payload includes structured information about the event, timestamp, 
 The server provides RESTful API endpoints for programmatic encryption/decryption:
 
 **Endpoint Configuration:**
+
 - **Base URL**: `https://your-deployment-url.deno.dev/api/`
 - **Method**: POST for both encrypt and decrypt
 - **Content-Type**: `application/json` (required)
 - **Authentication**: `X-API-Key` header (if API_KEY environment variable is set)
 
 **Request Format:**
+
 ```json
 {
   "payload": "text to encrypt OR basE91 cipher to decrypt",
@@ -261,6 +287,7 @@ The server provides RESTful API endpoints for programmatic encryption/decryption
 ```
 
 **Response Format:**
+
 ```json
 {
   "success": true,
@@ -271,7 +298,8 @@ The server provides RESTful API endpoints for programmatic encryption/decryption
 
 **Example Usage:**
 
-*Encryption:*
+_Encryption:_
+
 ```bash
 curl -X POST \
      -H "Content-Type: application/json" \
@@ -280,7 +308,8 @@ curl -X POST \
      https://your-deployment.deno.dev/api/encrypt
 ```
 
-*Decryption:*
+_Decryption:_
+
 ```bash
 curl -X POST \
      -H "Content-Type: application/json" \
@@ -294,6 +323,7 @@ curl -X POST \
 Salty supports workflow integration where encrypted payloads can be pre-populated via URL parameters:
 
 **URL Format:**
+
 ```
 https://your-deployment.deno.dev/en/?payload=ENCODED_CIPHER_TEXT
 ```
@@ -306,6 +336,7 @@ URLEncode(Replace(Replace(Replace(Replace(Replace(Replace([Encrypted Payload], "
 ```
 
 **Security Workflow:**
+
 1. Encrypt sensitive data using the API
 2. Generate URL with payload parameter using database formula
 3. Send URL via one communication channel (email)
@@ -317,6 +348,7 @@ URLEncode(Replace(Replace(Replace(Replace(Replace(Replace([Encrypted Payload], "
 **Health Endpoint**: `GET /health`
 
 Returns comprehensive system status including:
+
 - Application version and build information
 - Security configuration status
 - Performance metrics and request statistics
@@ -330,16 +362,19 @@ Example response includes server uptime, request success rates, security event s
 ### Defense in Depth
 
 **Network Level:**
+
 - HTTPS enforcement via Deno Deploy
 - Rate limiting (20 requests/hour per IP)
 - Request size limits (1MB payload, 1KB key)
 
 **Application Level:**
+
 - Input validation and sanitization
 - SQL injection prevention through parameterized operations
 - Cross-site scripting (XSS) protection via Content Security Policy
 
 **Cryptographic Level:**
+
 - Client-side encryption (server never sees plaintext)
 - Industry-standard algorithms (AES-GCM, PBKDF2-SHA512)
 - Cryptographically secure random number generation
@@ -347,6 +382,7 @@ Example response includes server uptime, request success rates, security event s
 ### Security Headers
 
 Comprehensive security headers implemented:
+
 - **Content-Security-Policy**: Restrictive policy allowing only necessary resources
 - **Strict-Transport-Security**: HSTS with subdomain inclusion
 - **X-Content-Type-Options**: MIME type sniffing prevention
@@ -357,12 +393,14 @@ Comprehensive security headers implemented:
 ### Logging & Monitoring
 
 **Security Event Tracking:**
+
 - Failed authentication attempts
 - Rate limit violations
 - Input validation failures
 - Suspicious activity patterns
 
 **Performance Monitoring:**
+
 - Request response times
 - Endpoint usage statistics
 - Error rates and patterns
@@ -371,21 +409,25 @@ Comprehensive security headers implemented:
 ## Important Security Notes
 
 ### Key Management
+
 - **Strong Passphrases**: Use complex, unique keys for each encryption session
 - **Secure Distribution**: Never transmit keys alongside encrypted data
 - **Key Rotation**: Regularly update encryption keys for long-term usage
 
 ### Salt Security
+
 - **Unique per Deployment**: Each Salty instance must use a unique SALT_HEX
 - **Cryptographically Secure**: Generate salt using proper random number generators
 - **Environment Protection**: Store salt securely in environment variables
 
 ### Client-Side Processing
+
 - **Local Encryption**: All cryptographic operations occur in the user's browser
 - **Server Independence**: Server never processes plaintext data (except via API endpoints)
 - **Data Isolation**: No persistent storage of user data on server
 
 ### API Security
+
 - **HTTPS Required**: All API communications must use HTTPS
 - **API Key Protection**: Treat API keys as sensitive credentials
 - **Input Validation**: Server validates all API inputs regardless of client validation
@@ -395,6 +437,7 @@ Comprehensive security headers implemented:
 ### Telemetry & Observability
 
 The application includes comprehensive telemetry features:
+
 - Custom span tracing for crypto operations
 - Performance metric collection
 - Security event correlation
@@ -403,6 +446,7 @@ The application includes comprehensive telemetry features:
 ### Version Management
 
 Centralized version management system provides:
+
 - Semantic versioning with build metadata
 - Release notes and changelog tracking
 - Runtime environment information
@@ -411,6 +455,7 @@ Centralized version management system provides:
 ### Extensibility
 
 The modular architecture supports:
+
 - Custom logging backends
 - Additional security middleware
 - Extended telemetry integrations

@@ -1,415 +1,543 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-<title>Salty: ブラウザネイティブな安全なテキスト暗号化</title>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta property="og:title" content="Salty: Browser-Native Secure Text Encryption">
-<meta property="og:url" content="https://salty.esolia.pro/">
-<meta property="og:description" content="Salty: Browser-Native Secure Text Encryption">
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://kit.fontawesome.com/99c1e8e2fb.js" crossorigin="anonymous"></script>
-<!-- Fathom - beautiful, simple website analytics -->
-<script src="https://cdn.usefathom.com/script.js" data-site="SIBMOOOY" defer></script>
-<!-- / Fathom -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<style>
-  /* IBM Plex Sans JP font */
-  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@300;400;500;600;700&display=swap');
-  body {
-    font-family: 'IBM Plex Sans JP', sans-serif;
-  }
-  /* Custom styles for the message box */
-  .message-box {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #4CAF50; /* Green */
-    color: white;
-    padding: 15px 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    opacity: 0;
-    transition: opacity 0.5s ease-in-out;
-  }
-  .message-box.show {
-    opacity: 1;
-  }
-  .message-box.error {
-    background-color: #f44336; /* Red */
-  }
-
-  /* Modal styles */
-  .modal {
-    position: fixed;
-    z-index: 1001;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.4);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .modal-content {
-    background-color: #fefefe;
-    margin: auto;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    max-width: 90%;
-    max-height: 90%;
-    overflow-y: auto;
-    position: relative;
-  }
-  .close-button {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    position: absolute;
-    top: 10px;
-    right: 20px;
-  }
-  .close-button:hover,
-  .close-button:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-  }
-</style>
-</head>
-
-<body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
-
-<div id="messageBox" class="message-box"></div>
-
-<!-- Help Modal -->
-<div id="helpModal" class="modal hidden">
-  <div class="modal-content max-w-[65ch] mx-auto">
-    <span class="close-button">&times;</span>
-    <h1 class="text-3xl font-bold mb-4">Salty</h1>
-    <p class="italic mb-4">ブラウザネイティブな安全なテキスト暗号化</p>
-    <p class="mb-4">Saltyは、共有キーで強力に暗号化されたメッセージを簡単に送信できるようにします。ブラウザのWeb Crypto API（Web暗号化API）を介して暗号化機能を提供し、<a href="http://base91.sourceforge.net" target="_blank" class="text-sky-600 hover:underline">basE91</a>を使用して移植性を高めています。</p>
-    <p class="mb-4">Saltyを使えば、最大185文字のメッセージを暗号化でき、結果として得られる暗号文はツイート（約277文字）に収まるため、ツイートや文字数制限のある他の通信の暗号化に最適です。ただし、任意の長さのテキストでもどこでも使用できます。</p>
-    <h2 class="text-2xl font-semibold mb-3">謝辞</h2>
-    <p class="mb-4">Saltyは最新のTypeScript言語にて再開発されましたが、<a href="http://github.com/neatnik/salty" target="_blank" class="text-sky-600 hover:underline">NeatnikのPHP版Salty</a>に影響を受けています。</p>
-  </div>
-</div>
-
-<header class="bg-sky-800 text-white p-4 shadow-md">
-  <div class="container mx-auto flex justify-between items-center">
-    <p class="flex items-center space-x-2">
-      <a href="/" class="text-white hover:text-gray-300 font-bold text-lg rounded-md p-1 transition">
-        <img src="/img/symbol_white_bgtransparent.svg" alt="イソリア シンボル ロゴ" class="h-10 w-auto rounded-md">
-      </a>
-    </p>
-    <p class="flex items-center space-x-4">
-      <strong class="text-gray-300">表示言語:</strong>
-      <a href="/en/" class="text-white hover:text-gray-300 font-bold rounded-md p-2 hover:bg-gray-700 transition">English</a>
-      <a href="/" class="text-white hover:text-gray-300 font-bold rounded-md p-2 hover:bg-gray-700 transition">日本語</a>
-    </p>
-  </div>
-</header>
-
-<main class="container mx-auto p-6 flex-grow">
-  <h1 class="text-4xl font-bold text-center text-sky-700 mb-8 mt-4">Salty 安全なテキスト暗号化</h1>
-
-  <p class="max-w-[65ch] mx-auto text-center text-lg mb-8 leading-relaxed">
-    下記にペイロードとキーをご記入して、「実行」をクリックしてください。<br>ペイロードは、暗号化されていないテキスト、またはSaltyで暗号化（自動的に検出）することができます。
-  </p>
-
-  <form id="saltyForm" class="bg-white p-8 rounded-lg shadow-xl max-w-2xl mx-auto space-y-6 border border-blue-200">
-    <div>
-      <label for="payload" class="block text-lg font-semibold text-gray-700 mb-2">ペイロード</label>
-      <textarea name="payload" id="payload" rows="8"
-        class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 text-base resize-y"></textarea>
-    </div>
-
-    <div>
-      <label for="key" class="block text-lg font-semibold text-gray-700 mb-2">キー</label>
-      <input type="password" name="key" id="key"
-        class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 text-base"
-        placeholder="暗号化/復号のためのキーを入力">
-    </div>
-
-    <!-- Grouped Go and Reset buttons -->
-    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-6">
-      <button type="submit"
-        class="w-full sm:w-1/2 bg-emerald-500 text-white py-3 px-6 rounded-lg font-semibold text-xl shadow-md hover:bg-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-300 transition duration-300 ease-in-out transform hover:scale-105">
-        実行
-      </button>
-      <button type="button" id="resetFormBtn"
-        class="w-full sm:w-1/2 bg-amber-500 text-white py-3 px-6 rounded-lg font-semibold text-xl shadow-md hover:bg-amber-600 focus:outline-none focus:ring-4 focus:ring-amber-300 transition duration-300 ease-in-out transform hover:scale-105">
-        リセット
-      </button>
-    </div>
-  </form>
-
-  <div id="saltyResult" class="mt-12 bg-white p-8 rounded-lg shadow-xl max-w-2xl mx-auto border border-blue-200 hidden">
-    <!-- Results will be displayed here by JavaScript -->
-  </div>
-</main>
-
-<footer class="bg-sky-800 text-white p-6 mt-8 shadow-inner">
-  <div class="container mx-auto text-center">
-    <h4 class="text-xl font-semibold mb-3">株式会社イソリア</h4>
-    <p class="mb-2">〒105-7105 東京都港区東新橋一丁目５番２号<br>汐留シティセンター５階 （Work Styling）</p>
-    <p class="mb-4">Tel: 03-4577-3380 (代表)<br>Fax: 03-4577-3309</p>
-    <img src="/img/logo_horiz_white_bgtransparent.svg" alt="イソリア ロゴ" class="mx-auto mb-4 rounded-md"/>
-    <p>
-      <button type="button" id="aboutSaltyBtn"
-        class="bg-fuchsia-600 text-white py-2 px-5 rounded-lg hover:bg-fuchsia-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-fuchsia-400">
-        ソルティーについて
-      </button>
-    </p>
-  </div>
-</footer>
-
-<script type="module">
-  // Import cryptographic functions from salty.ts
-  import { salty_key, salty_encrypt, salty_decrypt, hexToUint8Array } from '/salty.ts';
-
-  // This will be replaced by the server upon serving the HTML file.
-  const INJECTED_SALT_HEX = 'SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER';
-
-  const saltyForm = document.getElementById('saltyForm');
-  const payloadInput = document.getElementById('payload');
-  const keyInput = document.getElementById('key');
-  const saltyResultDiv = document.getElementById('saltyResult');
-  const messageBox = document.getElementById('messageBox');
-  const aboutSaltyBtn = document.getElementById('aboutSaltyBtn');
-  const helpModal = document.getElementById('helpModal');
-  const closeButton = helpModal.querySelector('.close-button');
-  const resetFormBtn = document.getElementById('resetFormBtn'); // Get the new reset button
-
-  /**
-   * Displays a temporary message box for user feedback.
-   * @param {string} message The message to display.
-   * @param {boolean} isError True if it's an error message, false for success/info.
-   */
-  function showMessageBox(message, isError = false) {
-    messageBox.textContent = message;
-    messageBox.className = 'message-box show'; // Reset classes
-    if (isError) {
-      messageBox.classList.add('error');
-    }
-    setTimeout(() => {
-      messageBox.classList.remove('show');
-    }, 3000); // Hide after 3 seconds
-  }
-
-  /**
-   * Copies text to the clipboard.
-   * Reads the text from a data attribute on the clicked element.
-   * @param {Event} event The click event.
-   */
-  window.copyToClipboard = function(event) { // Attached to window object
-    const textToCopy = event.currentTarget.dataset.textToCopy;
-    if (!textToCopy) {
-        showMessageBox('コピーするテキストがありません。', true);
-        return;
-    }
-
-    const textarea = document.createElement('textarea');
-    textarea.value = textToCopy;
-    textarea.style.position = 'fixed'; // Avoid scrolling to bottom
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.focus(); // Ensure textarea is focused
-    textarea.select();
-    try {
-      const successful = document.execCommand('copy');
-      if (successful) {
-        showMessageBox('クリップボードにコピーしました！');
-      } else {
-        showMessageBox('クリップボードへのコピーに失敗しました。', true);
+  <head>
+    <title>Salty: ブラウザネイティブな安全なテキスト暗号化</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+      property="og:title"
+      content="Salty: Browser-Native Secure Text Encryption"
+    >
+    <meta property="og:url" content="https://salty.esolia.pro/">
+    <meta
+      property="og:description"
+      content="Salty: Browser-Native Secure Text Encryption"
+    >
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script
+      src="https://kit.fontawesome.com/99c1e8e2fb.js"
+      crossorigin="anonymous"
+    ></script>
+    <!-- Fathom - beautiful, simple website analytics -->
+    <script
+      src="https://cdn.usefathom.com/script.js"
+      data-site="SIBMOOOY"
+      defer
+    ></script>
+    <!-- / Fathom -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <style>
+      /* IBM Plex Sans JP font */
+      @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@300;400;500;600;700&display=swap");
+      body {
+        font-family: "IBM Plex Sans JP", sans-serif;
       }
-    } catch (err) {
-      showMessageBox('クリップボードへのコピーに失敗しました。', true);
-    }
-    document.body.removeChild(textarea);
-  };
+      /* Custom styles for the message box */
+      .message-box {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #4caf50; /* Green */
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+      }
+      .message-box.show {
+        opacity: 1;
+      }
+      .message-box.error {
+        background-color: #f44336; /* Red */
+      }
 
-  // Function to format and display output
-  function displayResult(type, content) {
-    let html = '';
-    saltyResultDiv.innerHTML = ''; // Clear previous results
-    saltyResultDiv.classList.remove('hidden');
+      /* Modal styles */
+      .modal {
+        position: fixed;
+        z-index: 1001;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .modal-content {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        max-width: 90%;
+        max-height: 90%;
+        overflow-y: auto;
+        position: relative;
+      }
+      .close-button {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        position: absolute;
+        top: 10px;
+        right: 20px;
+      }
+      .close-button:hover,
+      .close-button:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+    </style>
+  </head>
 
-    if (type === 'plaintext') {
-      html += `<p class="text-sm text-gray-500 mb-2"><span class="font-bold text-green-600">自動検出: プレーンテキスト</span></p>`;
-      html += `<h3 class="text-2xl font-semibold text-sky-700 mb-4">共有可能暗号テキスト</h3>`;
-      html += `<div class="relative bg-amber-50 p-4 rounded-lg border border-blue-200 mb-4">
-                  <p class="output uncompressed break-all text-gray-800">${escapeHtml(content.encryptedFormatted)}</p>
-                  <button onclick="window.copyToClipboard(event)" data-text-to-copy="${escapeHtml(content.encryptedFormatted)}"
+  <body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
+    <div id="messageBox" class="message-box"></div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal hidden">
+      <div class="modal-content max-w-[65ch] mx-auto">
+        <span class="close-button">&times;</span>
+        <h1 class="text-3xl font-bold mb-4">Salty</h1>
+        <p class="italic mb-4">ブラウザネイティブな安全なテキスト暗号化</p>
+        <p class="mb-4">
+          Saltyは、共有キーで強力に暗号化されたメッセージを簡単に送信できるようにします。ブラウザのWeb
+          Crypto API（Web暗号化API）を介して暗号化機能を提供し、<a
+            href="http://base91.sourceforge.net"
+            target="_blank"
+            class="text-sky-600 hover:underline"
+          >basE91</a>を使用して移植性を高めています。
+        </p>
+        <p class="mb-4">
+          Saltyを使えば、最大185文字のメッセージを暗号化でき、結果として得られる暗号文はツイート（約277文字）に収まるため、ツイートや文字数制限のある他の通信の暗号化に最適です。ただし、任意の長さのテキストでもどこでも使用できます。
+        </p>
+        <h2 class="text-2xl font-semibold mb-3">謝辞</h2>
+        <p class="mb-4">
+          Saltyは最新のTypeScript言語にて再開発されましたが、<a
+            href="http://github.com/neatnik/salty"
+            target="_blank"
+            class="text-sky-600 hover:underline"
+          >NeatnikのPHP版Salty</a>に影響を受けています。
+        </p>
+      </div>
+    </div>
+
+    <header class="bg-sky-800 text-white p-4 shadow-md">
+      <div class="container mx-auto flex justify-between items-center">
+        <p class="flex items-center space-x-2">
+          <a
+            href="/"
+            class="text-white hover:text-gray-300 font-bold text-lg rounded-md p-1 transition"
+          >
+            <img
+              src="/img/symbol_white_bgtransparent.svg"
+              alt="イソリア シンボル ロゴ"
+              class="h-10 w-auto rounded-md"
+            >
+          </a>
+        </p>
+        <p class="flex items-center space-x-4">
+          <strong class="text-gray-300">表示言語:</strong>
+          <a
+            href="/en/"
+            class="text-white hover:text-gray-300 font-bold rounded-md p-2 hover:bg-gray-700 transition"
+          >English</a>
+          <a
+            href="/"
+            class="text-white hover:text-gray-300 font-bold rounded-md p-2 hover:bg-gray-700 transition"
+          >日本語</a>
+        </p>
+      </div>
+    </header>
+
+    <main class="container mx-auto p-6 flex-grow">
+      <h1 class="text-4xl font-bold text-center text-sky-700 mb-8 mt-4">
+        Salty 安全なテキスト暗号化
+      </h1>
+
+      <p class="max-w-[65ch] mx-auto text-center text-lg mb-8 leading-relaxed">
+        下記にペイロードとキーをご記入して、「実行」をクリックしてください。<br>ペイロードは、暗号化されていないテキスト、またはSaltyで暗号化（自動的に検出）することができます。
+      </p>
+
+      <form
+        id="saltyForm"
+        class="bg-white p-8 rounded-lg shadow-xl max-w-2xl mx-auto space-y-6 border border-blue-200"
+      >
+        <div>
+          <label
+            for="payload"
+            class="block text-lg font-semibold text-gray-700 mb-2"
+          >ペイロード</label>
+          <textarea
+            name="payload"
+            id="payload"
+            rows="8"
+            class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 text-base resize-y"
+          ></textarea>
+        </div>
+
+        <div>
+          <label
+            for="key"
+            class="block text-lg font-semibold text-gray-700 mb-2"
+          >キー</label>
+          <input
+            type="password"
+            name="key"
+            id="key"
+            class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 text-base"
+            placeholder="暗号化/復号のためのキーを入力"
+          >
+        </div>
+
+        <!-- Grouped Go and Reset buttons -->
+        <div
+          class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-6"
+        >
+          <button
+            type="submit"
+            class="w-full sm:w-1/2 bg-emerald-500 text-white py-3 px-6 rounded-lg font-semibold text-xl shadow-md hover:bg-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-300 transition duration-300 ease-in-out transform hover:scale-105"
+          >
+            実行
+          </button>
+          <button
+            type="button"
+            id="resetFormBtn"
+            class="w-full sm:w-1/2 bg-amber-500 text-white py-3 px-6 rounded-lg font-semibold text-xl shadow-md hover:bg-amber-600 focus:outline-none focus:ring-4 focus:ring-amber-300 transition duration-300 ease-in-out transform hover:scale-105"
+          >
+            リセット
+          </button>
+        </div>
+      </form>
+
+      <div
+        id="saltyResult"
+        class="mt-12 bg-white p-8 rounded-lg shadow-xl max-w-2xl mx-auto border border-blue-200 hidden"
+      >
+        <!-- Results will be displayed here by JavaScript -->
+      </div>
+    </main>
+
+    <footer class="bg-sky-800 text-white p-6 mt-8 shadow-inner">
+      <div class="container mx-auto text-center">
+        <h4 class="text-xl font-semibold mb-3">株式会社イソリア</h4>
+        <p class="mb-2">
+          〒105-7105 東京都港区東新橋一丁目５番２号<br>汐留シティセンター５階
+          （Work Styling）
+        </p>
+        <p class="mb-4">Tel: 03-4577-3380 (代表)<br>Fax: 03-4577-3309</p>
+        <img
+          src="/img/logo_horiz_white_bgtransparent.svg"
+          alt="イソリア ロゴ"
+          class="mx-auto mb-4 rounded-md"
+        />
+        <p>
+          <button
+            type="button"
+            id="aboutSaltyBtn"
+            class="bg-fuchsia-600 text-white py-2 px-5 rounded-lg hover:bg-fuchsia-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-fuchsia-400"
+          >
+            ソルティーについて
+          </button>
+        </p>
+      </div>
+    </footer>
+
+    <script type="module">
+      // Import cryptographic functions from salty.ts
+      import {
+        hexToUint8Array,
+        salty_decrypt,
+        salty_encrypt,
+        salty_key,
+      } from "/salty.ts";
+
+      // This will be replaced by the server upon serving the HTML file.
+      const INJECTED_SALT_HEX =
+        "SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER";
+
+      const saltyForm = document.getElementById("saltyForm");
+      const payloadInput = document.getElementById("payload");
+      const keyInput = document.getElementById("key");
+      const saltyResultDiv = document.getElementById("saltyResult");
+      const messageBox = document.getElementById("messageBox");
+      const aboutSaltyBtn = document.getElementById("aboutSaltyBtn");
+      const helpModal = document.getElementById("helpModal");
+      const closeButton = helpModal.querySelector(".close-button");
+      const resetFormBtn = document.getElementById("resetFormBtn"); // Get the new reset button
+
+      /**
+       * Displays a temporary message box for user feedback.
+       * @param {string} message The message to display.
+       * @param {boolean} isError True if it's an error message, false for success/info.
+       */
+      function showMessageBox(message, isError = false) {
+        messageBox.textContent = message;
+        messageBox.className = "message-box show"; // Reset classes
+        if (isError) {
+          messageBox.classList.add("error");
+        }
+        setTimeout(() => {
+          messageBox.classList.remove("show");
+        }, 3000); // Hide after 3 seconds
+      }
+
+      /**
+       * Copies text to the clipboard.
+       * Reads the text from a data attribute on the clicked element.
+       * @param {Event} event The click event.
+       */
+      window.copyToClipboard = function (event) { // Attached to window object
+        const textToCopy = event.currentTarget.dataset.textToCopy;
+        if (!textToCopy) {
+          showMessageBox("コピーするテキストがありません。", true);
+          return;
+        }
+
+        const textarea = document.createElement("textarea");
+        textarea.value = textToCopy;
+        textarea.style.position = "fixed"; // Avoid scrolling to bottom
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus(); // Ensure textarea is focused
+        textarea.select();
+        try {
+          const successful = document.execCommand("copy");
+          if (successful) {
+            showMessageBox("クリップボードにコピーしました！");
+          } else {
+            showMessageBox(
+              "クリップボードへのコピーに失敗しました。",
+              true,
+            );
+          }
+        } catch (err) {
+          showMessageBox(
+            "クリップボードへのコピーに失敗しました。",
+            true,
+          );
+        }
+        document.body.removeChild(textarea);
+      };
+
+      // Function to format and display output
+      function displayResult(type, content) {
+        let html = "";
+        saltyResultDiv.innerHTML = ""; // Clear previous results
+        saltyResultDiv.classList.remove("hidden");
+
+        if (type === "plaintext") {
+          html +=
+            `<p class="text-sm text-gray-500 mb-2"><span class="font-bold text-green-600">自動検出: プレーンテキスト</span></p>`;
+          html +=
+            `<h3 class="text-2xl font-semibold text-sky-700 mb-4">共有可能暗号テキスト</h3>`;
+          html +=
+            `<div class="relative bg-amber-50 p-4 rounded-lg border border-blue-200 mb-4">
+                  <p class="output uncompressed break-all text-gray-800">${
+              escapeHtml(content.encryptedFormatted)
+            }</p>
+                  <button onclick="window.copyToClipboard(event)" data-text-to-copy="${
+              escapeHtml(content.encryptedFormatted)
+            }"
                           class="absolute top-2 right-2 bg-amber-200 text-sky-800 px-3 py-1 rounded-md text-xs hover:bg-amber-300 transition">
                     コピー
                   </button>
                </div>`;
 
-      html += `<h3 class="text-2xl font-semibold text-sky-700 mb-4">共有可能暗号テキスト（圧縮版）</h3>`;
-      html += `<div class="relative bg-amber-50 p-4 rounded-lg border border-blue-200">
-                  <p class="output breakable compressed text-gray-800 break-words">${escapeHtml(content.encryptedCompressed)}</p>
-                  <button onclick="window.copyToClipboard(event)" data-text-to-copy="${escapeHtml(content.encryptedCompressed)}"
+          html +=
+            `<h3 class="text-2xl font-semibold text-sky-700 mb-4">共有可能暗号テキスト（圧縮版）</h3>`;
+          html +=
+            `<div class="relative bg-amber-50 p-4 rounded-lg border border-blue-200">
+                  <p class="output breakable compressed text-gray-800 break-words">${
+              escapeHtml(content.encryptedCompressed)
+            }</p>
+                  <button onclick="window.copyToClipboard(event)" data-text-to-copy="${
+              escapeHtml(content.encryptedCompressed)
+            }"
                           class="absolute top-2 right-2 bg-amber-200 text-sky-800 px-3 py-1 rounded-md text-xs hover:bg-amber-300 transition">
                     コピー
                   </button>
                </div>
                <p class="text-sm text-gray-500 mt-2">${content.encryptedCompressed.length} chars</p>`;
-
-    } else if (type === 'encrypted') {
-      html += `<p class="text-sm text-gray-500 mb-2"><span class="font-bold text-purple-600">自動検出: Salty暗号化テキスト</span></p>`;
-      html += `<h3 class="text-2xl font-semibold text-sky-700 mb-4">復号の結果</h3>`;
-      html += `<div class="relative bg-green-50 p-4 rounded-lg border border-green-200">
-                  <p class="output decrypted break-all text-gray-800">${escapeHtml(content.decrypted)}</p>
-                  <button onclick="window.copyToClipboard(event)" data-text-to-copy="${escapeHtml(content.decrypted)}"
+        } else if (type === "encrypted") {
+          html +=
+            `<p class="text-sm text-gray-500 mb-2"><span class="font-bold text-purple-600">自動検出: Salty暗号化テキスト</span></p>`;
+          html +=
+            `<h3 class="text-2xl font-semibold text-sky-700 mb-4">復号の結果</h3>`;
+          html +=
+            `<div class="relative bg-green-50 p-4 rounded-lg border border-green-200">
+                  <p class="output decrypted break-all text-gray-800">${
+              escapeHtml(content.decrypted)
+            }</p>
+                  <button onclick="window.copyToClipboard(event)" data-text-to-copy="${
+              escapeHtml(content.decrypted)
+            }"
                           class="absolute top-2 right-2 bg-green-200 text-green-800 px-3 py-1 rounded-md text-xs hover:bg-green-300 transition">
                     コピー
                   </button>
                </div>`;
-    } else if (type === 'error') {
-        html += `<p class="text-sm text-red-500 mb-2"><span class="font-bold">エラー</span></p>`;
-        html += `<div class="bg-red-50 p-4 rounded-lg border border-red-200 text-red-700">
+        } else if (type === "error") {
+          html +=
+            `<p class="text-sm text-red-500 mb-2"><span class="font-bold">エラー</span></p>`;
+          html +=
+            `<div class="bg-red-50 p-4 rounded-lg border border-red-200 text-red-700">
                     <p>${escapeHtml(content)}</p>
                  </div>`;
-    }
-    saltyResultDiv.innerHTML = html;
-  }
-
-  // Basic HTML escaping
-  function escapeHtml(text) {
-    const map = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#039;',
-      '`': '&#96;' // Escape backtick for safety in template literals
-    };
-    return text.replace(/[&<>"'`]/g, function(m) { return map[m]; });
-  }
-
-  // Function to get query parameter by name
-  function getQueryParam(name) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(name);
-  }
-
-  // Event listener for form submission
-  saltyForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const payload = payloadInput.value;
-    const key = keyInput.value;
-
-    if (!payload || !key) {
-      displayResult('error', 'ペイロードとキーの両方を入力してください。');
-      return;
-    }
-
-    try {
-      const cryptoKey = await salty_key(key, INJECTED_SALT_HEX);
-
-      // Step 1: Clean the input by removing potential Salty headers and spaces
-      let cleanedPayload = payload
-        .replace(/-- BEGIN SALTY ENCRYPTED MESSAGE --/g, '')
-        .replace(/-- END SALTY ENCRYPTED MESSAGE --/g, '')
-        .replace(/\n|\r| /g, '');
-
-      let decryptedText = null;
-      try {
-        decryptedText = await salty_decrypt(cleanedPayload, cryptoKey);
-      } catch (e) {
-        console.warn("Decryption attempt threw an error (likely invalid ciphertext format for Web Crypto API):", e);
-        // If salty_decrypt throws, it's definitely not valid ciphertext for the key, proceed to encrypt.
+        }
+        saltyResultDiv.innerHTML = html;
       }
 
-      if (decryptedText !== null && decryptedText !== '') { // Also check for non-empty decrypted text
-        // If decryption was successful and returned non-empty text, display it as decrypted.
-        displayResult('encrypted', { decrypted: decryptedText });
-      } else {
-        // If decryption failed or returned null/empty, assume it was plaintext and encrypt it.
-        // Use the original payload for encryption, not the cleaned one.
-        const encrypted = await salty_encrypt(payload, cryptoKey);
-
-        const encryptedFormatted = '-- BEGIN SALTY ENCRYPTED MESSAGE --\n' +
-                                    encrypted.match(/.{1,2}/g)?.join(' ') +
-                                    '\n-- END SALTY ENCRYPTED MESSAGE --';
-
-        displayResult('plaintext', {
-          encryptedFormatted: encryptedFormatted,
-          encryptedCompressed: encrypted
+      // Basic HTML escaping
+      function escapeHtml(text) {
+        const map = {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;",
+          "`": "&#96;", // Escape backtick for safety in template literals
+        };
+        return text.replace(/[&<>"'`]/g, function (m) {
+          return map[m];
         });
       }
-    } catch (e) {
-      console.error("Overall operation failed:", e);
-      displayResult('error', 'エラーが発生しました: ' + (e.message || '不明なエラー'));
-    }
-  });
 
-  // Event listener for the reset button
-  resetFormBtn.addEventListener('click', () => {
-    payloadInput.value = '';
-    keyInput.value = '';
-    saltyResultDiv.classList.add('hidden');
-    
-    // Clear URL parameters
-    const cleanUrl = window.location.pathname;
-    window.history.replaceState({}, document.title, cleanUrl);
-    
-    showMessageBox('フォームをリセットしました。');
-  });
-
-
-  // Handle the "About Salty" button click to open modal
-  aboutSaltyBtn.addEventListener('click', () => {
-    helpModal.classList.remove('hidden');
-  });
-
-  // Handle closing the modal
-  closeButton.addEventListener('click', () => {
-    helpModal.classList.add('hidden');
-  });
-
-  // Close modal if user clicks outside of it
-  window.addEventListener('click', (event) => {
-    if (event.target === helpModal) {
-      helpModal.classList.add('hidden');
-    }
-  });
-
-  // NEW: Check for URL parameters on page load
-  document.addEventListener('DOMContentLoaded', () => {
-    const urlPayload = getQueryParam('payload');
-    if (urlPayload) {
-      try {
-        // Simple URL decoding (since database now uses standard URLEncode)
-        const decodedPayload = decodeURIComponent(urlPayload);
-        
-        payloadInput.value = decodedPayload;
-        console.log('Payload populated from URL parameter:', decodedPayload.substring(0, 20) + '...');
-        
-        // Show a message that payload was loaded
-        // showMessageBox('Payload loaded from URL parameter'); // For English
-        showMessageBox('URLパラメータからペイロードが読み込まれました'); // For Japanese
-        
-      } catch (error) {
-        console.error('Error decoding payload parameter:', error);
-        // showMessageBox('Invalid payload parameter in URL', true); // For English
-        showMessageBox('URLパラメータのペイロードが無効です', true); // For Japanese
+      // Function to get query parameter by name
+      function getQueryParam(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
       }
-    }
-    
-    // Intentionally NOT loading key from URL for security reasons
-    // Keys should be transmitted separately (email, phone, etc.)
-  });
 
-</script>
+      // Event listener for form submission
+      saltyForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const payload = payloadInput.value;
+        const key = keyInput.value;
 
-</body>
+        if (!payload || !key) {
+          displayResult(
+            "error",
+            "ペイロードとキーの両方を入力してください。",
+          );
+          return;
+        }
+
+        try {
+          const cryptoKey = await salty_key(key, INJECTED_SALT_HEX);
+
+          // Step 1: Clean the input by removing potential Salty headers and spaces
+          let cleanedPayload = payload
+            .replace(/-- BEGIN SALTY ENCRYPTED MESSAGE --/g, "")
+            .replace(/-- END SALTY ENCRYPTED MESSAGE --/g, "")
+            .replace(/\n|\r| /g, "");
+
+          let decryptedText = null;
+          try {
+            decryptedText = await salty_decrypt(
+              cleanedPayload,
+              cryptoKey,
+            );
+          } catch (e) {
+            console.warn(
+              "Decryption attempt threw an error (likely invalid ciphertext format for Web Crypto API):",
+              e,
+            );
+            // If salty_decrypt throws, it's definitely not valid ciphertext for the key, proceed to encrypt.
+          }
+
+          if (decryptedText !== null && decryptedText !== "") { // Also check for non-empty decrypted text
+            // If decryption was successful and returned non-empty text, display it as decrypted.
+            displayResult("encrypted", { decrypted: decryptedText });
+          } else {
+            // If decryption failed or returned null/empty, assume it was plaintext and encrypt it.
+            // Use the original payload for encryption, not the cleaned one.
+            const encrypted = await salty_encrypt(payload, cryptoKey);
+
+            const encryptedFormatted =
+              "-- BEGIN SALTY ENCRYPTED MESSAGE --\n" +
+              encrypted.match(/.{1,2}/g)?.join(" ") +
+              "\n-- END SALTY ENCRYPTED MESSAGE --";
+
+            displayResult("plaintext", {
+              encryptedFormatted: encryptedFormatted,
+              encryptedCompressed: encrypted,
+            });
+          }
+        } catch (e) {
+          console.error("Overall operation failed:", e);
+          displayResult(
+            "error",
+            "エラーが発生しました: " + (e.message || "不明なエラー"),
+          );
+        }
+      });
+
+      // Event listener for the reset button
+      resetFormBtn.addEventListener("click", () => {
+        payloadInput.value = "";
+        keyInput.value = "";
+        saltyResultDiv.classList.add("hidden");
+
+        // Clear URL parameters
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+
+        showMessageBox("フォームをリセットしました。");
+      });
+
+      // Handle the "About Salty" button click to open modal
+      aboutSaltyBtn.addEventListener("click", () => {
+        helpModal.classList.remove("hidden");
+      });
+
+      // Handle closing the modal
+      closeButton.addEventListener("click", () => {
+        helpModal.classList.add("hidden");
+      });
+
+      // Close modal if user clicks outside of it
+      window.addEventListener("click", (event) => {
+        if (event.target === helpModal) {
+          helpModal.classList.add("hidden");
+        }
+      });
+
+      // NEW: Check for URL parameters on page load
+      document.addEventListener("DOMContentLoaded", () => {
+        const urlPayload = getQueryParam("payload");
+        if (urlPayload) {
+          try {
+            // Simple URL decoding (since database now uses standard URLEncode)
+            const decodedPayload = decodeURIComponent(urlPayload);
+
+            payloadInput.value = decodedPayload;
+            console.log(
+              "Payload populated from URL parameter:",
+              decodedPayload.substring(0, 20) + "...",
+            );
+
+            // Show a message that payload was loaded
+            // showMessageBox('Payload loaded from URL parameter'); // For English
+            showMessageBox(
+              "URLパラメータからペイロードが読み込まれました",
+            ); // For Japanese
+          } catch (error) {
+            console.error("Error decoding payload parameter:", error);
+            // showMessageBox('Invalid payload parameter in URL', true); // For English
+            showMessageBox("URLパラメータのペイロードが無効です", true); // For Japanese
+          }
+        }
+
+        // Intentionally NOT loading key from URL for security reasons
+        // Keys should be transmitted separately (email, phone, etc.)
+      });
+    </script>
+  </body>
 </html>
