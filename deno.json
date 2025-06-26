@@ -47,7 +47,7 @@
   },
   "imports": {
     "@std/semver": "https://deno.land/std@0.208.0/semver/mod.ts",
-    "nagare/": "jsr:/@rick/nagare@^0.7.0/"
+    "nagare/": "jsr:/@rick/nagare@^0.8.0/"
   },
   "compilerOptions": {
     "lib": ["deno.window"],
