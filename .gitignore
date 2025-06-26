@@ -1,1 +1,5 @@
 deno.lock
+# Development scratch files
+scratch/
+*.local.*
+_temp_*
