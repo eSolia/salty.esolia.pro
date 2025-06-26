@@ -4,7 +4,7 @@
     "start": "deno run --allow-net --allow-read --allow-env server.ts",
     
     "_comment_releases": "// Release management via Nagare library (using Lume-style import trick)",
-    "nagare": "deno run -A -e \"import { cli } from 'jsr:@rick/nagare/cli'; await cli(Deno.args);\"",
+    "nagare": "deno run -A run-nagare.ts",
     "release": "deno task nagare",
     "release:patch": "deno task nagare patch",
     "release:minor": "deno task nagare minor", 
