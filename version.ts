@@ -6,14 +6,14 @@
 /**
  * Application version information
  */
-export const VERSION = "1.2.0";
+export const VERSION = "1.2.1";
 
 /**
  * Build and deployment metadata
  */
 export const BUILD_INFO = {
-  buildDate: "2025-06-26T08:57:05.186Z",
-  gitCommit: "3f9be05",
+  buildDate: "2025-06-26T11:05:28.349Z",
+  gitCommit: "f8badfb",
   buildEnvironment: "production",
   versionComponents: {
     major: {{versionComponents.major}},
@@ -26,21 +26,17 @@ export const BUILD_INFO = {
 // ... rest of your template
 
 export const RELEASE_NOTES = {
-  "version": "1.2.0",
+  "version": "1.2.1",
   "date": "2025-06-26",
-  "added": [
-    "add scratch directory for dev experiments (5c1c790)",
-    "add release library nagare (161c422)"
-  ],
+  "added": [],
   "changed": [
-    "bump nagare version (a13e68f)",
-    "add br to top Jp message for clean look (ea4daed)"
+    "improve deno.json adding metadata and lint rules (f8badfb)",
+    "bump nagare to 0.7.0 (f64329b)"
   ],
   "deprecated": [],
   "removed": [],
   "fixed": [
-    "add deno wrapper to fix eval problem (3f9be05)",
-    "run nagare more directly (4fa0412)"
+    "make regex more precise (0bffed5)"
   ],
   "security": []
 } as const;
