@@ -1,3 +1,11 @@
+<!-- VERSION_BADGE_START -->
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/esolia/salty.esolia.pro/releases/tag/v1.1.0)
+<!-- VERSION_BADGE_END -->
+
+<!-- BUILD_BADGE_START -->
+[![Build Date](https://img.shields.io/badge/build-2025--06--24-green.svg)](https://github.com/esolia/salty.esolia.pro)
+<!-- BUILD_BADGE_END -->
+
 # Salty: Browser-Native Secure Text Encryption
 
 Salty (<https://salty.esolia.pro>) is a comprehensive, web-based application designed for secure text encryption and decryption using a shared key. It leverages the browser's built-in Web Crypto API for robust cryptographic operations, ensuring that sensitive data is processed client-side. The application employs basE91 encoding for portability, making the encrypted output suitable for various communication channels, including those with length limitations.
