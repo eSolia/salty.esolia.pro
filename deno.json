@@ -1,4 +1,31 @@
 {
+  "name": "@esolia/salty",
+  "version": "1.2.0",
+  "description": "Browser-native secure text encryption using Web Crypto API with basE91 encoding",
+  "author": "Rick Cogley, eSolia Inc. <rick.cogley@esolia.co.jp>",
+  "license": "MIT",
+  "homepage": "https://salty.esolia.pro",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/esolia/salty.esolia.pro.git"
+  },
+  "keywords": [
+    "encryption",
+    "security",
+    "crypto",
+    "webcrypto",
+    "base91",
+    "aes-gcm",
+    "pbkdf2",
+    "browser",
+    "typescript",
+    "deno",
+    "privacy",
+    "text-encryption",
+    "secure-messaging",
+    "esolia",
+    "salty"
+  ],
   "tasks": {
     "dev": "deno run --allow-net --allow-read --allow-env --watch server.ts",
     "start": "deno run --allow-net --allow-read --allow-env server.ts",
@@ -12,7 +39,7 @@
     "rollback": "deno task nagare rollback",
     
     "_comment_utilities": "// Utility tasks",
-    "1.2.0",
+    "version": "deno run --allow-read version-check.ts",
     "docs": "deno task nagare docs",
     "docs:serve": "deno task nagare docs --serve", 
     "changelog": "deno task nagare changelog --preview",
@@ -28,8 +55,10 @@
   },
   "lint": {
     "rules": {
-      "tags": ["recommended"]
-    }
+      "tags": ["recommended"],
+      "exclude": ["no-inferrable-types"]
+    },
+    "exclude": ["docs/", "scratch/"]
   },
   "fmt": {
     "useTabs": false,
@@ -38,5 +67,9 @@
     "semiColons": true,
     "singleQuote": false,
     "proseWrap": "preserve"
+  },
+  "test": {
+    "include": ["**/*_test.ts", "**/*.test.ts"],
+    "exclude": ["docs/", "scratch/"]
   }
 }
