@@ -6,14 +6,14 @@
 /**
  * Application version information
  */
-export const VERSION = "1.2.1";
+export const VERSION = "1.2.2";
 
 /**
  * Build and deployment metadata
  */
 export const BUILD_INFO = {
-  buildDate: "2025-06-26T11:05:28.349Z",
-  gitCommit: "f8badfb",
+  buildDate: "2025-06-26T12:47:14.798Z",
+  gitCommit: "5afc743",
   buildEnvironment: "production",
   versionComponents: {
     major: {{versionComponents.major}},
@@ -26,17 +26,18 @@ export const BUILD_INFO = {
 // ... rest of your template
 
 export const RELEASE_NOTES = {
-  "version": "1.2.1",
+  "version": "1.2.2",
   "date": "2025-06-26",
   "added": [],
   "changed": [
-    "improve deno.json adding metadata and lint rules (f8badfb)",
-    "bump nagare to 0.7.0 (f64329b)"
+    "bump nagare to 0.8.0 (a61f7a9)"
   ],
   "deprecated": [],
   "removed": [],
   "fixed": [
-    "make regex more precise (0bffed5)"
+    "specify export in deno.json as server.ts (5afc743)",
+    "remove namespace reference (d9db864)",
+    "add back the version key (4497599)"
   ],
   "security": []
 } as const;

@@ -1,6 +1,6 @@
 {
   "name": "@esolia/salty",
-  "version": "1.2.1",
+"1.2.2",
   "exports": "./server.ts",
   "description": "Browser-native secure text encryption using Web Crypto API with basE91 encoding",
   "author": "Rick Cogley, eSolia Inc. <rick.cogley@esolia.co.jp>",
