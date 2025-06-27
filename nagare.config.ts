@@ -178,8 +178,12 @@ export class VersionUtils {
   updateFiles: [
     {
       path: "./deno.json",
-      patterns: {
-        version: /^(\s*)"version":\s*"(\d+\.\d+\.\d+[^"]*)"/m,
+      updateFn: (content: string, data: any) => {
+        // Use a custom function to ensure the version is updated correctly
+        return content.replace(
+          /^(\s*"version":\s*")([^"]+)(")/m,
+          `$1${data.version}$3`,
+        );
       },
     },
     {
