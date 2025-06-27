@@ -1,6 +1,6 @@
 <!-- VERSION_BADGE_START -->
 
-[![Version](https://img.shields.io/badge/version-1.2.4-blue.svg)](https://github.com/esolia/salty.esolia.pro/releases/tag/v1.1.0)
+[![Version](https://img.shields.io/badge/version-1.2.5-blue.svg)](https://github.com/esolia/salty.esolia.pro/releases/tag/v1.1.0)
 
 <!-- VERSION_BADGE_END -->
 
