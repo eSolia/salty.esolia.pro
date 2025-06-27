@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.4] - 2025-06-27
+
+### Changed
+- migrate to Nagare 1.0.1 with Vento templates and fix TypeScript errors (a853d50)
+- remove release and rollback (69c7140)
+
+### Fixed
+- correct Vento template syntax for release notes generation (af1a253)
+- make version regex less broad (6f8aa8f)
+
 ## [1.2.3] - 2025-06-26
 
 ### Changed
