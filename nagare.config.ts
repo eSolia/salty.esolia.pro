@@ -114,13 +114,13 @@ export const SECURITY_INFO = {
  */
 export const RELEASE_NOTES = {
   version: VERSION,
-  releaseDate: "{{ releaseDate }}",
+  releaseDate: "{{ releaseNotes.date }}",
   changes: {
-    added: [{{ for item of changes.added }}"{{ item }}"{{ if !$loop.last }},{{ /if }}{{ /for }}],
-    improved: [{{ for item of changes.improved }}"{{ item }}"{{ if !$loop.last }},{{ /if }}{{ /for }}],
-    removed: [{{ for item of changes.removed }}"{{ item }}"{{ if !$loop.last }},{{ /if }}{{ /for }}],
-    fixed: [{{ for item of changes.fixed }}"{{ item }}"{{ if !$loop.last }},{{ /if }}{{ /for }}],
-    security: [{{ for item of changes.security }}"{{ item }}"{{ if !$loop.last }},{{ /if }}{{ /for }}]
+    added: [{{> (releaseNotes.added || []).map(item => \`"\${item}"\`).join(', ') }}],
+    improved: [{{> (releaseNotes.changed || []).map(item => \`"\${item}"\`).join(', ') }}],
+    removed: [{{> (releaseNotes.removed || []).map(item => \`"\${item}"\`).join(', ') }}],
+    fixed: [{{> (releaseNotes.fixed || []).map(item => \`"\${item}"\`).join(', ') }}],
+    security: [{{> (releaseNotes.security || []).map(item => \`"\${item}"\`).join(', ') }}]
   }
 } as const;
 
