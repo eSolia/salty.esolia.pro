@@ -48,7 +48,7 @@
   },
   "imports": {
     "@std/semver": "https://deno.land/std@0.208.0/semver/mod.ts",
-    "nagare/": "jsr:/@rick/nagare@^0.8.0/"
+    "nagare/": "jsr:/@rick/nagare@^1.0.1/"
   },
   "compilerOptions": {
     "lib": ["deno.window"],
@@ -67,10 +67,12 @@
     "indentWidth": 2,
     "semiColons": true,
     "singleQuote": false,
-    "proseWrap": "preserve"
+    "proseWrap": "preserve",
+    "exclude": ["docs/", "scratch/"]
   },
   "test": {
     "include": ["**/*_test.ts", "**/*.test.ts"],
     "exclude": ["docs/", "scratch/"]
-  }
+  },
+  "exclude": ["./scratch/**/*", "./docs/**/*"]
 }

@@ -181,40 +181,34 @@ class RateLimiter {
    * @returns True if the request is allowed, false if rate limit exceeded
    */
   static checkRateLimit(clientIP: string): boolean {
-    return TracingHelpers.traceSecurity("rate-limit", () => {
-      const now = Date.now();
-      const entry = rateLimitStore.get(clientIP);
+    const now = Date.now();
+    const entry = rateLimitStore.get(clientIP);
 
-      if (!entry || (now - entry.windowStart) > RATE_LIMIT_WINDOW) {
-        // New window or first request
-        rateLimitStore.set(clientIP, {
-          count: 1,
-          windowStart: now,
-        });
-        return true;
-      }
-
-      if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
-        logger.security(
-          SecurityEvent.RATE_LIMIT_EXCEEDED,
-          `Rate limit exceeded for IP: ${clientIP}`,
-          {
-            clientIP,
-            count: entry.count,
-            windowStart: entry.windowStart,
-            limit: RATE_LIMIT_MAX_REQUESTS,
-          },
-        );
-        return false;
-      }
-
-      entry.count++;
+    if (!entry || (now - entry.windowStart) > RATE_LIMIT_WINDOW) {
+      // New window or first request
+      rateLimitStore.set(clientIP, {
+        count: 1,
+        windowStart: now,
+      });
       return true;
-    }, {
-      "client.ip": clientIP,
-      "rate_limit.window_ms": RATE_LIMIT_WINDOW,
-      "rate_limit.max_requests": RATE_LIMIT_MAX_REQUESTS,
-    });
+    }
+
+    if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
+      logger.security(
+        SecurityEvent.RATE_LIMIT_EXCEEDED,
+        `Rate limit exceeded for IP: ${clientIP}`,
+        {
+          clientIP,
+          count: entry.count,
+          windowStart: entry.windowStart,
+          limit: RATE_LIMIT_MAX_REQUESTS,
+        },
+      );
+      return false;
+    }
+
+    entry.count++;
+    return true;
   }
 
   /**
@@ -280,41 +274,36 @@ function validateApiRequest(request: Request): void {
  * @throws ApiError if API key is missing or invalid
  */
 function validateApiKey(request: Request): void {
-  return TracingHelpers.traceSecurity("api-key", () => {
-    const expectedApiKey = Deno.env.get("API_KEY");
+  const expectedApiKey = Deno.env.get("API_KEY");
 
-    if (expectedApiKey) {
-      const providedApiKey = request.headers.get("X-API-Key");
+  if (expectedApiKey) {
+    const providedApiKey = request.headers.get("X-API-Key");
 
-      if (!providedApiKey) {
-        logger.security(
-          SecurityEvent.API_KEY_MISSING,
-          "API request missing required API key",
-          {
-            clientIP: SecurityUtils.getClientIP(request),
-            endpoint: new URL(request.url).pathname,
-          },
-        );
-        throw new ApiError("API key required", 401, "API_KEY_MISSING");
-      }
-
-      if (providedApiKey !== expectedApiKey) {
-        logger.security(
-          SecurityEvent.API_KEY_INVALID,
-          "API request with invalid API key",
-          {
-            clientIP: SecurityUtils.getClientIP(request),
-            endpoint: new URL(request.url).pathname,
-            providedKeyLength: providedApiKey.length,
-          },
-        );
-        throw new ApiError("Invalid API key", 401, "API_KEY_INVALID");
-      }
+    if (!providedApiKey) {
+      logger.security(
+        SecurityEvent.API_KEY_MISSING,
+        "API request missing required API key",
+        {
+          clientIP: SecurityUtils.getClientIP(request),
+          endpoint: new URL(request.url).pathname,
+        },
+      );
+      throw new ApiError("API key required", 401, "API_KEY_MISSING");
     }
-  }, {
-    "client.ip": SecurityUtils.getClientIP(request),
-    "api_key.required": !!Deno.env.get("API_KEY"),
-  });
+
+    if (providedApiKey !== expectedApiKey) {
+      logger.security(
+        SecurityEvent.API_KEY_INVALID,
+        "API request with invalid API key",
+        {
+          clientIP: SecurityUtils.getClientIP(request),
+          endpoint: new URL(request.url).pathname,
+          providedKeyLength: providedApiKey.length,
+        },
+      );
+      throw new ApiError("Invalid API key", 401, "API_KEY_INVALID");
+    }
+  }
 }
 
 /**
@@ -520,17 +509,17 @@ async function handleApiRequest(
         }, { "client.ip": clientIP });
       }
 
-      // Rate limiting check (already traced in RateLimiter.checkRateLimit)
+      // Rate limiting check
       if (!RateLimiter.checkRateLimit(clientIP)) {
         throw new ApiError("Rate limit exceeded", 429, "RATE_LIMIT_EXCEEDED");
       }
 
-      // Validate request (already traced)
+      // Validate request
       TracingHelpers.traceValidation("request", () => {
         validateApiRequest(request);
       }, { "http.method": request.method });
 
-      // API key validation (already traced)
+      // API key validation
       validateApiKey(request);
 
       // Body validation (already traced)
@@ -595,6 +584,7 @@ async function handleApiRequest(
             if (decrypted === null) {
               logger.error(
                 `Decryption returned null - basE91 decode likely failed`,
+                undefined,
                 {
                   payloadLength: payload.length,
                   payloadSample: String(payload).substring(0, 50),
@@ -636,13 +626,17 @@ async function handleApiRequest(
             : "Unknown",
         });
 
+        const errorMessage = cryptoError instanceof Error
+          ? cryptoError.message
+          : String(cryptoError);
+
         logger.security(
           SecurityEvent.CRYPTO_FAILURE,
           `Crypto operation failed: ${operation}`,
           {
             operation,
             clientIP,
-            error: cryptoError.message,
+            error: errorMessage,
             payloadLength: payload.length,
             keyLength: key.length,
             requestId,
@@ -650,7 +644,7 @@ async function handleApiRequest(
         );
 
         throw new ApiError(
-          `${operation} operation failed: ${cryptoError.message}`,
+          `${operation} operation failed: ${errorMessage}`,
           400,
           `${operation.toUpperCase()}_FAILED`,
         );
@@ -855,7 +849,7 @@ async function serveFile(pathname: string): Promise<Response> {
           console.log("[DEBUG] No salt placeholder found in this HTML file");
         }
 
-        fileContent = new TextEncoder().encode(htmlContent);
+        fileContent = new Uint8Array(new TextEncoder().encode(htmlContent));
       }
     } else if (filePath.endsWith(".svg")) {
       headers.set("Content-Type", "image/svg+xml");

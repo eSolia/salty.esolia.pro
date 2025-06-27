@@ -8,9 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.3] - 2025-06-26
 
 ### Changed
+
 - deno fmt (104b009)
 
 ### Fixed
+
 - implement capture group properly (d211fad)
 - manual fix for regex-clobbered version (5320d39)
 
