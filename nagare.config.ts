@@ -179,7 +179,7 @@ export class VersionUtils {
     {
       path: "./deno.json",
       patterns: {
-        version: /^(\s*)"version":\s*"([^"]+)"/m,
+        version: /^(\s*)"version":\s*"(\d+\.\d+\.\d+[^"]*)"/m,
       },
     },
     {
