@@ -9,20 +9,14 @@ const hasConfig = args.some((arg, i) =>
   (arg === "--config" || arg === "-c") && args[i + 1]
 );
 
-// If no config specified, add it with absolute path
+// If no config specified, add it
 if (!hasConfig) {
-  // Get absolute path to config file
-  const configPath = await Deno.realPath("./nagare.config.ts").catch(() => {
-    // If realPath fails, construct it manually
-    return `${Deno.cwd()}/nagare.config.ts`;
-  });
-
   // Insert --config after the command (if any)
   const commandIndex = args.findIndex((arg) => !arg.startsWith("-"));
   if (commandIndex >= 0) {
-    args.splice(commandIndex + 1, 0, "--config", configPath);
+    args.splice(commandIndex + 1, 0, "--config", "./nagare.config.ts");
   } else {
-    args.unshift("--config", configPath);
+    args.unshift("--config", "./nagare.config.ts");
   }
 }
 
