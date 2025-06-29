@@ -8,9 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.5] - 2025-06-27
 
 ### Changed
+
 - deno fmt (aee056f)
 
 ### Fixed
+
 - use custom updateFn for deno.json version (df67cbd)
 
 ## [1.2.4] - 2025-06-27
