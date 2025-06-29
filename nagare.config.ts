@@ -176,8 +176,8 @@ export class VersionUtils {
 
   // Much simpler with Nagare 1.1.0 - just list the files!
   updateFiles: [
-    { path: "./deno.json" },     // Auto-detected and handled by built-in handler
-    { path: "./README.md" },     // Auto-detected and handled by built-in handler
+    { path: "./deno.json" }, // Auto-detected and handled by built-in handler
+    { path: "./README.md" }, // Auto-detected and handled by built-in handler
   ],
 
   // Configure GitHub release
