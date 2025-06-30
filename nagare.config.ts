@@ -1,5 +1,5 @@
-import { TemplateFormat } from "nagare/types";
-import type { NagareConfig } from "nagare/types";
+import { TemplateFormat } from "@rick/nagare/types";
+import type { NagareConfig } from "@rick/nagare/types";
 
 export default {
   project: {
