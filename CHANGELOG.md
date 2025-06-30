@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-06-30
+
+### Added
+- switch to launcher (0d68c04)
+- bump nagare to 1.1.0 which simplifies config (52649f6)
+
+### Changed
+- remove unused file (a0b4e0f)
+- bump nagare version (6d5de47)
+- Revert "fix(nagare): add forward slash" (888192c)
+- deno fmt (5ff2261)
+
+### Fixed
+- specify full jsr package name (2d23981)
+- make nagare alias import directly (e11227e)
+- spawn new deno process (9c01b74)
+- pass fully qualified url (7da45d0)
+- simplify wrapper (903c254)
+- explicitly provide a file URL for the configuration file (e691435)
+- make wrapper use an absolute path for the config file (7e00ab8)
+- simplify wrapper (7d2b3a7)
+- add forward slash (d98948a)
+- use deno realPath to specify config (72e50d1)
+- force config inside wrapper (2c3f157)
+- pass config via deno task (b8b42ee)
+- use absolute path (3a7b314)
+- specify config file (b5194b5)
+- add debug logging (9d50842)
+- use import map (0874223)
+- change import map to simplify (86839fc)
+
 ## [1.2.5] - 2025-06-27
 
 ### Changed
