@@ -270,3 +270,87 @@ Include "InfoSec:" prefix in commit messages when changes affect:
 9. **Git Merging**: When merging master changes to an active branch, make sure both branches are
    pulled and up to date first
 10. **Security Documentation**: Document all security-related decisions and their rationale for ISO 27001 compliance
+
+## Programming Paradigm & Code Consistency
+
+Salty follows a **hybrid programming paradigm** combining object-oriented and functional programming. See [PROGRAMMING-PARADIGM.md](./PROGRAMMING-PARADIGM.md) for detailed analysis.
+
+### Key Coding Patterns to Follow
+
+#### 1. Cryptographic Operations - Use Pure Functions
+
+All cryptographic operations MUST be implemented as pure functions with no side effects:
+
+```typescript
+// ✅ Good - Pure function
+export function salty_encrypt(
+  message: string,
+  key: CryptoKey,
+): Promise<string> {
+  // No side effects, predictable output
+}
+
+// ❌ Bad - Stateful encryption
+class Encryptor {
+  private state: any;
+  encrypt(message: string): Promise<string> {/* uses this.state */}
+}
+```
+
+#### 2. Infrastructure Components - Use Classes
+
+Logging, tracing, and utilities should use classes with proper encapsulation:
+
+```typescript
+// ✅ Good - Class for stateful components
+class Logger {
+  private config: LoggerConfig;
+  private metrics: PerformanceMetrics;
+
+  info(message: string): void {/* ... */}
+}
+
+// ✅ Good - Static utility class
+class SecurityUtils {
+  static createSecurityHeaders(): Headers {/* ... */}
+}
+```
+
+#### 3. Error Handling - Use Custom Error Classes
+
+Extend Error class for domain-specific errors:
+
+```typescript
+// ✅ Good
+class ApiError extends Error {
+  constructor(message: string, public statusCode: number, public code: string) {
+    super(message);
+  }
+}
+```
+
+#### 4. Type Safety - Use TypeScript Features
+
+- Use interfaces for data contracts
+- Use enums for constants
+- Use generics for reusable components
+- Use `as const` for immutable objects
+
+#### 5. Async Patterns
+
+Always use async/await over callbacks or raw promises:
+
+```typescript
+// ✅ Good
+async function processRequest(req: Request): Promise<Response> {
+  const data = await validateRequest(req);
+  return createResponse(data);
+}
+```
+
+#### 6. Module Organization
+
+- One primary export per file
+- Group related types/interfaces at the top
+- Use named exports over default exports
+- Keep files focused on a single responsibility
