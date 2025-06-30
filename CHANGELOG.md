@@ -8,16 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.3.0] - 2025-06-30
 
 ### Added
+
 - switch to launcher (0d68c04)
 - bump nagare to 1.1.0 which simplifies config (52649f6)
 
 ### Changed
+
 - remove unused file (a0b4e0f)
 - bump nagare version (6d5de47)
 - Revert "fix(nagare): add forward slash" (888192c)
 - deno fmt (5ff2261)
 
 ### Fixed
+
 - specify full jsr package name (2d23981)
 - make nagare alias import directly (e11227e)
 - spawn new deno process (9c01b74)

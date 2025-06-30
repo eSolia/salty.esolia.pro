@@ -1,0 +1,52 @@
+# Security Policy for Salty
+
+## Scope
+
+This security policy applies to:
+- The Salty web application hosted at https://salty.esolia.pro
+- The Salty API endpoints at https://salty.esolia.pro/api/*
+- The Salty source code repository at https://github.com/esolia/salty.esolia.pro
+
+## Reporting Security Vulnerabilities
+
+We welcome responsible disclosure of security vulnerabilities. Please report them to:
+- Email: admin@esolia.co.jp
+- Subject: "Salty Security Vulnerability"
+
+## What to Report
+
+We are interested in:
+- Cryptographic implementation flaws
+- Authentication/authorization bypasses
+- Input validation vulnerabilities
+- Cross-site scripting (XSS)
+- Information disclosure
+- Any vulnerability that could compromise user data
+
+## What NOT to Report
+
+Please do not report:
+- Denial of Service (DoS) attacks
+- Social engineering attempts
+- Physical security issues
+- Vulnerabilities in third-party services
+
+## Response Timeline
+
+- Initial response: Within 48 hours
+- Status update: Within 7 days
+- Resolution target: Within 30 days for critical issues
+
+## Recognition
+
+We appreciate security researchers who help us maintain a secure application. With your permission, we will acknowledge your contribution in our release notes.
+
+## Safe Harbor
+
+We will not pursue legal action against researchers who:
+- Act in good faith
+- Do not access or modify user data
+- Do not disrupt our services
+- Provide adequate time for patching
+
+Last updated: 2025-06-30

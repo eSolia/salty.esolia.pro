@@ -101,20 +101,36 @@ class SecurityUtils {
     const headers = new Headers();
 
     // Content Security Policy - Secure configuration with necessary inline scripts allowed
-    headers.set(
-      "Content-Security-Policy",
-      [
-        "default-src 'self'",
-        "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com",
-        "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://kit.fontawesome.com https://cdn.usefathom.com",
-        "img-src 'self' data: https:",
-        "connect-src 'self' https://cdn.usefathom.com",
-        "font-src 'self' https://fonts.gstatic.com https://kit.fontawesome.com",
-        "object-src 'none'",
-        "base-uri 'self'",
-        "frame-ancestors 'none'",
-      ].join("; "),
-    );
+    const cspDirectives = [
+      "default-src 'self'",
+      "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com",
+      "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://kit.fontawesome.com https://cdn.usefathom.com",
+      "img-src 'self' data: https:",
+      "connect-src 'self' https://cdn.usefathom.com",
+      "font-src 'self' https://fonts.gstatic.com https://kit.fontawesome.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "frame-ancestors 'none'",
+    ];
+
+    // Add CSP reporting if endpoint is configured
+    const cspReportUri = Deno.env.get("CSP_REPORT_URI");
+    if (cspReportUri) {
+      cspDirectives.push(`report-uri ${cspReportUri}`);
+      cspDirectives.push(`report-to csp-endpoint`);
+
+      // Add Report-To header for modern browsers
+      headers.set(
+        "Report-To",
+        JSON.stringify({
+          group: "csp-endpoint",
+          max_age: 86400,
+          endpoints: [{ url: cspReportUri }],
+        }),
+      );
+    }
+
+    headers.set("Content-Security-Policy", cspDirectives.join("; "));
 
     // Security headers
     headers.set("X-Content-Type-Options", "nosniff");
@@ -131,6 +147,40 @@ class SecurityUtils {
       "Strict-Transport-Security",
       "max-age=31536000; includeSubDomains",
     );
+
+    return headers;
+  }
+
+  /**
+   * Creates CORS headers for API endpoints
+   * @param request - The incoming HTTP request (optional, for preflight)
+   * @returns Headers object with CORS headers configured
+   */
+  static createCorsHeaders(request?: Request): Headers {
+    const headers = new Headers();
+
+    // Get allowed origins from environment or use default
+    const allowedOrigins = Deno.env.get("CORS_ALLOWED_ORIGINS")?.split(",") || [
+      "https://salty.esolia.pro",
+      "http://localhost:8000",
+    ];
+
+    // Check if request origin is allowed
+    const origin = request?.headers.get("origin");
+    if (origin && allowedOrigins.includes(origin)) {
+      headers.set("Access-Control-Allow-Origin", origin);
+    } else if (allowedOrigins.includes("*")) {
+      headers.set("Access-Control-Allow-Origin", "*");
+    } else {
+      // Default to the first allowed origin if no match
+      headers.set("Access-Control-Allow-Origin", allowedOrigins[0]);
+    }
+
+    // CORS headers
+    headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+    headers.set("Access-Control-Allow-Headers", "Content-Type, X-API-Key");
+    headers.set("Access-Control-Max-Age", "86400"); // 24 hours
+    headers.set("Access-Control-Allow-Credentials", "false");
 
     return headers;
   }
@@ -435,12 +485,14 @@ async function validateRequestBody(request: Request): Promise<EncryptRequest> {
  * @param success - Whether the operation was successful
  * @param data - Response data (for successful operations)
  * @param error - Error message (for failed operations)
+ * @param request - The original request (for CORS headers)
  * @returns HTTP Response object with proper headers and status code
  */
 function createApiResponse(
   success: boolean,
   data?: string,
   error?: string,
+  request?: Request,
 ): Response {
   const response: ApiResponse = {
     success,
@@ -457,6 +509,12 @@ function createApiResponse(
 
   const headers = SecurityUtils.createSecurityHeaders();
   headers.set("Content-Type", "application/json");
+
+  // Add CORS headers for API responses
+  const corsHeaders = SecurityUtils.createCorsHeaders(request);
+  for (const [key, value] of corsHeaders.entries()) {
+    headers.set(key, value);
+  }
 
   return new Response(
     JSON.stringify(response),
@@ -654,7 +712,7 @@ async function handleApiRequest(
       const response = await TracingHelpers.traceAPI(
         "response-creation",
         () => {
-          return createApiResponse(true, result);
+          return createApiResponse(true, result, undefined, request);
         },
         {
           "response.success": true,
@@ -714,7 +772,7 @@ async function handleApiRequest(
         const errorResponse = TracingHelpers.traceAPI(
           "response-creation",
           () => {
-            return createApiResponse(false, undefined, error.message);
+            return createApiResponse(false, undefined, error.message, request);
           },
           {
             "response.success": false,
@@ -758,7 +816,12 @@ async function handleApiRequest(
           : "Unknown",
       });
 
-      return createApiResponse(false, undefined, "Internal server error");
+      return createApiResponse(
+        false,
+        undefined,
+        "Internal server error",
+        request,
+      );
     }
   }, {
     "api.operation": operation,
@@ -812,6 +875,22 @@ async function serveFile(pathname: string): Promise<Response> {
         throw new Error("Invalid file path");
       }
       filePath = `./img/${fileName}`;
+    } // Handle .well-known files (security.txt, etc.)
+    else if (pathname.startsWith("/.well-known/")) {
+      const fileName = pathname.replace("/.well-known/", "");
+      // Security check: prevent directory traversal
+      if (
+        fileName.includes("..") || fileName.includes("/") ||
+        fileName.includes("\\")
+      ) {
+        throw new Error("Invalid file path");
+      }
+      // Only allow specific files
+      const allowedWellKnownFiles = ["security.txt", "security-policy"];
+      if (!allowedWellKnownFiles.includes(fileName)) {
+        throw new Error("File not found");
+      }
+      filePath = `./.well-known/${fileName}`;
     } // Handle other potential static files (LICENSE, README.md for reference)
     else if (pathname === "/LICENSE") {
       filePath = "./LICENSE";
@@ -861,6 +940,12 @@ async function serveFile(pathname: string): Promise<Response> {
       headers.set("Content-Type", "text/markdown; charset=utf-8");
     } else if (filePath === "./LICENSE") {
       headers.set("Content-Type", "text/plain; charset=utf-8");
+    } else if (
+      filePath.endsWith("security.txt") || filePath.endsWith("security-policy")
+    ) {
+      headers.set("Content-Type", "text/plain; charset=utf-8");
+      // Security.txt should not be cached for long
+      headers.set("Cache-Control", "public, max-age=3600"); // 1 hour
     }
 
     return new Response(fileContent, { headers });
@@ -884,6 +969,26 @@ async function handleRequest(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const pathname = url.pathname;
 
+  // Handle CORS preflight requests for API endpoints
+  if (
+    request.method === "OPTIONS" &&
+    (pathname === "/api/encrypt" || pathname === "/api/decrypt")
+  ) {
+    const headers = SecurityUtils.createSecurityHeaders();
+    const corsHeaders = SecurityUtils.createCorsHeaders(request);
+    for (const [key, value] of corsHeaders.entries()) {
+      headers.set(key, value);
+    }
+
+    logger.info("CORS preflight request handled", {
+      endpoint: pathname,
+      origin: request.headers.get("origin"),
+      method: request.headers.get("access-control-request-method"),
+    }, LogCategory.API);
+
+    return new Response(null, { status: 204, headers });
+  }
+
   // API endpoints
   if (pathname === "/api/encrypt") {
     return handleApiRequest(request, "encrypt");
@@ -891,6 +996,38 @@ async function handleRequest(request: Request): Promise<Response> {
 
   if (pathname === "/api/decrypt") {
     return handleApiRequest(request, "decrypt");
+  }
+
+  // CSP violation reporting endpoint
+  if (pathname === "/api/csp-report" && request.method === "POST") {
+    try {
+      const report = await request.json();
+
+      logger.security(
+        SecurityEvent.CSP_VIOLATION,
+        "CSP violation reported",
+        {
+          documentUri: report["csp-report"]?.["document-uri"],
+          violatedDirective: report["csp-report"]?.["violated-directive"],
+          blockedUri: report["csp-report"]?.["blocked-uri"],
+          lineNumber: report["csp-report"]?.["line-number"],
+          columnNumber: report["csp-report"]?.["column-number"],
+          sourceFile: report["csp-report"]?.["source-file"],
+          referrer: report["csp-report"]?.["referrer"],
+          clientIP: SecurityUtils.getClientIP(request),
+        },
+      );
+
+      // Return 204 No Content for successful report
+      return new Response(null, { status: 204 });
+    } catch (error) {
+      logger.error("Failed to process CSP report", error as Error, {
+        clientIP: SecurityUtils.getClientIP(request),
+      }, LogCategory.SECURITY);
+
+      // Still return success to avoid retries
+      return new Response(null, { status: 204 });
+    }
   }
 
   // Health check endpoint with enhanced metrics

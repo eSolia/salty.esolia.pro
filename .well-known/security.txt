@@ -1,0 +1,10 @@
+# Security information for salty.esolia.pro
+# Per RFC 9116: https://www.rfc-editor.org/rfc/rfc9116.html
+
+Contact: mailto:admin@esolia.co.jp
+Expires: 2025-12-31T23:59:59.000Z
+Encryption: https://esolia.com/pgp-key.asc
+Acknowledgments: https://github.com/esolia/salty.esolia.pro/blob/main/SECURITY.md#responsible-disclosure
+Preferred-Languages: en, ja
+Canonical: https://salty.esolia.pro/.well-known/security.txt
+Policy: https://salty.esolia.pro/.well-known/security-policy
