@@ -13,8 +13,8 @@ export default {
 
   versionFile: {
     path: "./version.ts",
-    template: TemplateFormat.CUSTOM, // Use the enum value
-    customTemplate: `/**
+    template: TemplateFormat.TYPESCRIPT_EXTENDED, // Use built-in extended template
+    /*customTemplate: `/**
  * @fileoverview Centralized version and metadata information for Salty
  * @description Single source of truth for all version-related information
  * 
@@ -161,7 +161,7 @@ export class VersionUtils {
     return "stable";
   }
 }
-`,
+`,*/
   },
 
   // Much simpler with Nagare 1.1.0 - just list the files!
