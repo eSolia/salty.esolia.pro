@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.2] - 2025-07-01
+
+### Changed
+- bump actions/dependency-review-action from 3 to 4 (a1c213b)
+- bump denoland/setup-deno from 1 to 2 (e407502)
+- bump actions/cache from 3 to 4 (86c6f8d)
+- bump actions/upload-artifact from 3 to 4 (61d5b9e)
+- bump github/codeql-action from 2 to 3 (66a6ed7)
+
 ## [2.1.1] - 2025-07-01
 
 ### Added
