@@ -152,6 +152,35 @@ Multiple security layers protect the application:
 
 ## 🔍 Security Testing
 
+### Automated Security Scanning
+
+Salty employs multiple automated security scanning tools:
+
+1. **GitHub CodeQL**: Semantic code analysis for security vulnerabilities
+   - Runs on every push and PR
+   - Weekly scheduled scans
+   - Covers JavaScript/TypeScript security patterns
+
+2. **Microsoft DevSkim**: Security linter for source code
+   - Identifies security anti-patterns
+   - Runs on every push and PR
+   - Weekly scheduled scans on Tuesdays
+
+3. **Pattern Checker**: Custom security pattern detection
+   - Scans for dangerous regex patterns (ReDoS)
+   - Detects weak cryptographic usage
+   - Identifies potential injection vulnerabilities
+
+4. **Dependency Review**: Automated dependency vulnerability scanning
+   - Runs on every PR
+   - Checks for known vulnerabilities in dependencies
+   - Enforced for all merges to main
+
+5. **Security Test Suite**: Comprehensive security-focused tests
+   - Cryptographic operation validation
+   - Input validation testing
+   - Attack scenario simulation
+
 ### Recommended Testing Procedures
 
 1. **Input Validation Testing**:
