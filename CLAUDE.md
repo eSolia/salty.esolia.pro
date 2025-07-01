@@ -2,6 +2,20 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Important: Security Documentation
+
+When making any security-related changes to Salty, you MUST update the Security Changelog in SECURITY.md. This includes:
+- New security features or utilities
+- Security configuration changes
+- New security tests or scanning tools
+- Security header modifications
+- Cryptographic changes
+- Input validation improvements
+- Rate limiting changes
+- Any security bug fixes
+
+The Security Changelog is located in SECURITY.md under the "📝 Security Changelog" section.
+
 ## Common Development Commands
 
 ### Development

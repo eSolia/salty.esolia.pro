@@ -253,6 +253,38 @@ Our application tracks and monitors:
 
 ## 📝 Security Changelog
 
+### Version 2.0.0
+
+- Added comprehensive security validation utilities (security-utils.ts)
+  - Input validation functions for XSS, SQL injection, path traversal prevention
+  - Shell metacharacter detection
+  - Base91 and hex validation
+  - URL and content-type validation
+  - Built-in rate limiting capabilities
+- Implemented security-focused test suites
+  - Cryptographic security tests (timing attacks, edge cases, ReDoS)
+  - Validation function tests with attack scenarios
+- Added GitHub Actions security workflows
+  - CodeQL semantic analysis (weekly + on push/PR)
+  - Microsoft DevSkim security linter (weekly + on push/PR)
+  - Dependency vulnerability scanning
+  - Daily security test runs
+- Created pattern checker script for dangerous code patterns
+  - ReDoS vulnerability detection
+  - Weak cryptographic usage detection
+  - Injection vulnerability identification
+- Enhanced logger with security audit trail
+  - Security event tracking with risk scoring
+  - Audit log export for compliance
+  - Suspicious activity detection improvements
+- Added security configuration interface (security-config.ts)
+  - Centralized security settings
+  - Environment-based configurations
+  - Strict mode options
+- Implemented SECURITY-INSIGHTS.yml for machine-readable security practices
+- Configured Dependabot for automated dependency updates
+- Added security.txt and security policy files in .well-known
+
 ### Version 1.3.0
 
 - Enhanced security logging with webhook notifications
