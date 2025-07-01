@@ -116,7 +116,7 @@ async function checkPatterns(): Promise<void> {
 
   // Recursively find all TypeScript files
   const files = await findTypeScriptFiles(".");
-  
+
   console.log(`Found ${files.length} TypeScript files to check\n`);
 
   // Check each file
@@ -125,9 +125,9 @@ async function checkPatterns(): Promise<void> {
   }
 
   // Report results
-  const errors = results.filter(r => r.severity === "error");
-  const warnings = results.filter(r => r.severity === "warning");
-  const infos = results.filter(r => r.severity === "info");
+  const errors = results.filter((r) => r.severity === "error");
+  const warnings = results.filter((r) => r.severity === "warning");
+  const infos = results.filter((r) => r.severity === "info");
 
   if (errors.length > 0) {
     console.error(`\n❌ Found ${errors.length} error(s):\n`);
@@ -190,9 +190,9 @@ async function findTypeScriptFiles(dir: string): Promise<string[]> {
   try {
     for await (const entry of Deno.readDir(dir)) {
       const path = `${dir}/${entry.name}`;
-      
+
       // Skip if matches skip pattern
-      if (SKIP_PATTERNS.some(pattern => pattern.test(path))) {
+      if (SKIP_PATTERNS.some((pattern) => pattern.test(path))) {
         continue;
       }
 
@@ -217,7 +217,10 @@ async function findTypeScriptFiles(dir: string): Promise<string[]> {
 /**
  * Check a single file for patterns
  */
-async function checkFile(filePath: string, results: PatternCheck[]): Promise<void> {
+async function checkFile(
+  filePath: string,
+  results: PatternCheck[],
+): Promise<void> {
   const content = await Deno.readTextFile(filePath);
   const lines = content.split("\n");
 
@@ -230,11 +233,13 @@ async function checkFile(filePath: string, results: PatternCheck[]): Promise<voi
     }
 
     // Skip security pattern definitions (these are patterns we check FOR, not vulnerabilities)
-    if (filePath.includes("security-utils") && (
-      line.includes("DANGEROUS_PATTERNS") || 
-      line.includes("SHELL_METACHARACTERS") ||
-      line.trim().startsWith("/") && line.trim().endsWith(",") // Pattern in array
-    )) {
+    if (
+      filePath.includes("security-utils") && (
+        line.includes("DANGEROUS_PATTERNS") ||
+        line.includes("SHELL_METACHARACTERS") ||
+        line.trim().startsWith("/") && line.trim().endsWith(",") // Pattern in array
+      )
+    ) {
       return;
     }
 
@@ -257,29 +262,35 @@ async function checkFile(filePath: string, results: PatternCheck[]): Promise<voi
 
     // Check for regex literals (improved detection)
     // Avoid matching division operators and URLs
-    const regexLiteral = /(?:^|[^<])\/([^\/\n*]+)\/([gimuy]*)\s*[,;)\]}]|(?:=|:|\()\s*\/([^\/\n*]+)\/([gimuy]*)/g;
+    const regexLiteral =
+      /(?:^|[^<])\/([^\/\n*]+)\/([gimuy]*)\s*[,;)\]}]|(?:=|:|\()\s*\/([^\/\n*]+)\/([gimuy]*)/g;
     let match;
     while ((match = regexLiteral.exec(line)) !== null) {
       const pattern = match[1] || match[3];
       const flags = match[2] || match[4];
 
       // Skip if it looks like a URL or file path
-      if (pattern.includes('http') || pattern.includes('.com') || pattern.includes('.ts') || pattern.includes('.js')) {
+      if (
+        pattern.includes("http") || pattern.includes(".com") ||
+        pattern.includes(".ts") || pattern.includes(".js")
+      ) {
         continue;
       }
 
       // Skip known safe patterns in security-utils.ts
-      if (filePath.includes("security-utils") && (
-        pattern === "on\\w+\\s*=" || // Event handler pattern
-        pattern.includes("A-Za-z0-9") // Base91 pattern
-      )) {
+      if (
+        filePath.includes("security-utils") && (
+          pattern === "on\\w+\\s*=" || // Event handler pattern
+          pattern.includes("A-Za-z0-9") // Base91 pattern
+        )
+      ) {
         continue;
       }
 
       // Check if it's a valid regex
       try {
         new RegExp(pattern, flags);
-        
+
         // Check for ReDoS vulnerable patterns
         if (checkReDoS(pattern)) {
           results.push({
@@ -351,7 +362,7 @@ function checkReDoS(pattern: string): boolean {
   if (/\(([^|)]+)\|([^|)]+)\)[*+]/.test(pattern)) {
     // Check if alternatives can match same input
     const match = pattern.match(/\(([^|)]+)\|([^|)]+)\)[*+]/);
-    if (match && match[1].includes('.') && match[2].includes('.')) {
+    if (match && match[1].includes(".") && match[2].includes(".")) {
       return true;
     }
   }
@@ -376,10 +387,12 @@ async function checkCryptoSecurity(files: string[]): Promise<void> {
   let hasIssues = false;
 
   // Check salty.ts specifically
-  const saltyFile = files.find(f => f.includes("salty.ts") && !f.includes("test"));
+  const saltyFile = files.find((f) =>
+    f.includes("salty.ts") && !f.includes("test")
+  );
   if (saltyFile) {
     const content = await Deno.readTextFile(saltyFile);
-    
+
     // Check for proper crypto usage
     if (!content.includes("crypto.subtle")) {
       console.error("  ❌ Not using Web Crypto API");
@@ -407,7 +420,9 @@ async function checkCryptoSecurity(files: string[]): Promise<void> {
     if (iterMatch) {
       const iterations = parseInt(iterMatch[1]);
       if (iterations < 100000) {
-        console.error(`  ❌ PBKDF2 iterations too low: ${iterations} (minimum: 100000)`);
+        console.error(
+          `  ❌ PBKDF2 iterations too low: ${iterations} (minimum: 100000)`,
+        );
         hasIssues = true;
       } else {
         console.log(`  ✅ PBKDF2 iterations: ${iterations}`);
@@ -418,7 +433,7 @@ async function checkCryptoSecurity(files: string[]): Promise<void> {
   // Check for hardcoded secrets
   for (const file of files) {
     const content = await Deno.readTextFile(file);
-    
+
     // Skip test files for this check
     if (file.includes("test")) continue;
 

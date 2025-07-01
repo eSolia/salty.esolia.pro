@@ -58,7 +58,8 @@ const SHELL_METACHARACTERS = /[;&|`$(){}[\]<>\\'"]/;
 /**
  * SQL injection patterns
  */
-const SQL_PATTERNS = /(\b(union|select|insert|update|delete|drop|create|alter|exec|script)\b|--|\/\*|\*\/|xp_|sp_)/i;
+const SQL_PATTERNS =
+  /(\b(union|select|insert|update|delete|drop|create|alter|exec|script)\b|--|\/\*|\*\/|xp_|sp_)/i;
 
 /**
  * Path traversal patterns
@@ -73,7 +74,7 @@ const PATH_TRAVERSAL_PATTERNS = /\.\.[\/\\]|\.\.%2[fF]|\.\.%5[cC]/;
  */
 export function validateAgainstPatterns(
   input: string,
-  context: string
+  context: string,
 ): boolean {
   if (typeof input !== "string") {
     return false;
@@ -89,7 +90,7 @@ export function validateAgainstPatterns(
           context,
           inputLength: input.length,
           sample: input.substring(0, 50),
-        }
+        },
       );
       return false;
     }
@@ -126,7 +127,7 @@ export function validateNoPathTraversal(path: string): boolean {
     logger.security(
       SecurityEvent.MALFORMED_INPUT,
       "Path traversal attempt detected",
-      { path, pattern: PATH_TRAVERSAL_PATTERNS.toString() }
+      { path, pattern: PATH_TRAVERSAL_PATTERNS.toString() },
     );
     return false;
   }
@@ -136,7 +137,7 @@ export function validateNoPathTraversal(path: string): boolean {
     logger.security(
       SecurityEvent.MALFORMED_INPUT,
       "Absolute path not allowed",
-      { path }
+      { path },
     );
     return false;
   }
@@ -197,14 +198,14 @@ export function validateHex(input: string): boolean {
  */
 export function validateEnvironmentVariable(
   name: string,
-  value: string
+  value: string,
 ): boolean {
   // Check for command injection in env vars
   if (SHELL_METACHARACTERS.test(value)) {
     logger.security(
       SecurityEvent.MALFORMED_INPUT,
       "Dangerous characters in environment variable",
-      { name, valueLength: value.length }
+      { name, valueLength: value.length },
     );
     return false;
   }
@@ -217,7 +218,8 @@ export function validateEnvironmentVariable(
       // Base64 pattern
       return /^[A-Za-z0-9+/]+=*$/.test(value);
     case "LOG_LEVEL":
-      return ["DEBUG", "INFO", "WARN", "ERROR", "SECURITY", "CRITICAL"].includes(value);
+      return ["DEBUG", "INFO", "WARN", "ERROR", "SECURITY", "CRITICAL"]
+        .includes(value);
     case "LOG_FORMAT":
       return ["json", "text"].includes(value);
     case "NODE_ENV":
@@ -237,11 +239,11 @@ export function validateEnvironmentVariable(
 export function createSecurityAuditLog(
   event: SecurityEvent,
   message: string,
-  details: Record<string, any>
+  details: Record<string, any>,
 ): Record<string, any> {
   // Sanitize details to prevent log injection
   const sanitizedDetails: Record<string, any> = {};
-  
+
   for (const [key, value] of Object.entries(details)) {
     if (typeof value === "string") {
       // Remove newlines and control characters from log entries
@@ -296,17 +298,17 @@ function getSecurityEventSeverity(event: SecurityEvent): number {
  */
 export function validateURL(
   url: string,
-  allowedSchemes: string[] = ["https"]
+  allowedSchemes: string[] = ["https"],
 ): boolean {
   try {
     const parsed = new URL(url);
-    
+
     // Check scheme
     if (!allowedSchemes.includes(parsed.protocol.replace(":", ""))) {
       logger.security(
         SecurityEvent.MALFORMED_INPUT,
         "Invalid URL scheme",
-        { url, scheme: parsed.protocol, allowed: allowedSchemes }
+        { url, scheme: parsed.protocol, allowed: allowedSchemes },
       );
       return false;
     }
@@ -316,7 +318,7 @@ export function validateURL(
       logger.security(
         SecurityEvent.MALFORMED_INPUT,
         "Dangerous URL scheme detected",
-        { url, scheme: parsed.protocol }
+        { url, scheme: parsed.protocol },
       );
       return false;
     }
@@ -333,7 +335,7 @@ export function validateURL(
       logger.security(
         SecurityEvent.MALFORMED_INPUT,
         "Private/local URL not allowed",
-        { url, hostname }
+        { url, hostname },
       );
       return false;
     }
@@ -352,7 +354,7 @@ export function validateURL(
  */
 export function validateContentType(
   contentType: string | null,
-  allowedTypes: string[]
+  allowedTypes: string[],
 ): boolean {
   if (!contentType) {
     return false;
@@ -360,10 +362,8 @@ export function validateContentType(
 
   // Extract base content type (without parameters)
   const baseType = contentType.split(";")[0].trim().toLowerCase();
-  
-  return allowedTypes.some(allowed => 
-    baseType === allowed.toLowerCase()
-  );
+
+  return allowedTypes.some((allowed) => baseType === allowed.toLowerCase());
 }
 
 /**
@@ -383,7 +383,7 @@ export class SecurityRateLimiter {
 
   constructor(
     private maxRequests: number,
-    private windowMs: number
+    private windowMs: number,
   ) {}
 
   /**
@@ -401,7 +401,7 @@ export class SecurityRateLimiter {
         count: 1,
         resetAt: now + this.windowMs,
       });
-      
+
       return {
         allowed: true,
         remaining: this.maxRequests - 1,
@@ -418,7 +418,7 @@ export class SecurityRateLimiter {
     }
 
     limit.count++;
-    
+
     return {
       allowed: true,
       remaining: this.maxRequests - limit.count,
@@ -465,7 +465,7 @@ export function escapeHtml(input: string): string {
 export function validateJSONStructure(input: string): boolean {
   // Basic structure check without parsing
   const trimmed = input.trim();
-  
+
   // Check if it starts and ends with object or array delimiters
   if (
     (trimmed.startsWith("{") && trimmed.endsWith("}")) ||
@@ -475,7 +475,7 @@ export function validateJSONStructure(input: string): boolean {
     const jsonPattern = /^[\s\r\n]*[\[\{][\s\S]*[\]\}][\s\r\n]*$/;
     return jsonPattern.test(input);
   }
-  
+
   return false;
 }
 
@@ -489,8 +489,10 @@ export async function hashForLogging(data: string): Promise<string> {
   const dataBuffer = encoder.encode(data);
   const hashBuffer = await crypto.subtle.digest("SHA-256", dataBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-  
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join(
+    "",
+  );
+
   // Return first 8 chars for identification
   return `sha256:${hashHex.substring(0, 8)}...`;
 }

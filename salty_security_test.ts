@@ -3,14 +3,19 @@
  * @description Tests for security vulnerabilities, edge cases, and attack vectors
  */
 
-import { assertEquals, assertNotEquals, assertRejects } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import {
-  hexToUint8Array,
+  assertEquals,
+  assertNotEquals,
+  assertRejects,
+  assertThrows,
+} from "https://deno.land/std@0.208.0/assert/mod.ts";
+import {
   base91_decode,
   base91_encode,
-  salty_key,
-  salty_encrypt,
+  hexToUint8Array,
   salty_decrypt,
+  salty_encrypt,
+  salty_key,
 } from "./salty.ts";
 
 // Test vectors for known good values
@@ -22,34 +27,37 @@ Deno.test("Crypto Security - Key Derivation", async (t) => {
   await t.step("should derive consistent keys", async () => {
     const key1 = await salty_key(TEST_KEY, TEST_SALT_HEX);
     const key2 = await salty_key(TEST_KEY, TEST_SALT_HEX);
-    
+
     // Keys should be consistent for same input
     const exported1 = await crypto.subtle.exportKey("raw", key1);
     const exported2 = await crypto.subtle.exportKey("raw", key2);
-    
+
     assertEquals(new Uint8Array(exported1), new Uint8Array(exported2));
   });
 
-  await t.step("should derive different keys for different passwords", async () => {
-    const key1 = await salty_key("password1", TEST_SALT_HEX);
-    const key2 = await salty_key("password2", TEST_SALT_HEX);
-    
-    const exported1 = await crypto.subtle.exportKey("raw", key1);
-    const exported2 = await crypto.subtle.exportKey("raw", key2);
-    
-    assertNotEquals(new Uint8Array(exported1), new Uint8Array(exported2));
-  });
+  await t.step(
+    "should derive different keys for different passwords",
+    async () => {
+      const key1 = await salty_key("password1", TEST_SALT_HEX);
+      const key2 = await salty_key("password2", TEST_SALT_HEX);
+
+      const exported1 = await crypto.subtle.exportKey("raw", key1);
+      const exported2 = await crypto.subtle.exportKey("raw", key2);
+
+      assertNotEquals(new Uint8Array(exported1), new Uint8Array(exported2));
+    },
+  );
 
   await t.step("should derive different keys for different salts", async () => {
     const salt1 = "0123456789ABCDEF0123456789ABCDEF";
     const salt2 = "FEDCBA9876543210FEDCBA9876543210";
-    
+
     const key1 = await salty_key(TEST_KEY, salt1);
     const key2 = await salty_key(TEST_KEY, salt2);
-    
+
     const exported1 = await crypto.subtle.exportKey("raw", key1);
     const exported2 = await crypto.subtle.exportKey("raw", key2);
-    
+
     assertNotEquals(new Uint8Array(exported1), new Uint8Array(exported2));
   });
 
@@ -57,12 +65,12 @@ Deno.test("Crypto Security - Key Derivation", async (t) => {
     // Empty password
     const key1 = await salty_key("", TEST_SALT_HEX);
     assertEquals(key1.algorithm.name, "AES-GCM");
-    
+
     // Very long password
     const longPassword = "a".repeat(10000);
     const key2 = await salty_key(longPassword, TEST_SALT_HEX);
     assertEquals(key2.algorithm.name, "AES-GCM");
-    
+
     // Unicode password
     const unicodePassword = "密码🔐パスワード";
     const key3 = await salty_key(unicodePassword, TEST_SALT_HEX);
@@ -73,13 +81,13 @@ Deno.test("Crypto Security - Key Derivation", async (t) => {
     await assertRejects(
       async () => await salty_key(TEST_KEY, "not-hex"),
       Error,
-      "Invalid hex string"
+      "Invalid hex string",
     );
-    
+
     await assertRejects(
       async () => await salty_key(TEST_KEY, "12345"), // Odd length
       Error,
-      "Invalid hex string"
+      "Invalid hex string",
     );
   });
 });
@@ -87,20 +95,23 @@ Deno.test("Crypto Security - Key Derivation", async (t) => {
 Deno.test("Crypto Security - Encryption", async (t) => {
   const key = await salty_key(TEST_KEY, TEST_SALT_HEX);
 
-  await t.step("should produce different ciphertexts for same plaintext", async () => {
-    const cipher1 = await salty_encrypt(TEST_MESSAGE, key);
-    const cipher2 = await salty_encrypt(TEST_MESSAGE, key);
-    
-    // Due to random IV, ciphertexts should be different
-    assertNotEquals(cipher1, cipher2);
-    
-    // But both should decrypt to same plaintext
-    const plain1 = await salty_decrypt(cipher1, key);
-    const plain2 = await salty_decrypt(cipher2, key);
-    
-    assertEquals(plain1, TEST_MESSAGE);
-    assertEquals(plain2, TEST_MESSAGE);
-  });
+  await t.step(
+    "should produce different ciphertexts for same plaintext",
+    async () => {
+      const cipher1 = await salty_encrypt(TEST_MESSAGE, key);
+      const cipher2 = await salty_encrypt(TEST_MESSAGE, key);
+
+      // Due to random IV, ciphertexts should be different
+      assertNotEquals(cipher1, cipher2);
+
+      // But both should decrypt to same plaintext
+      const plain1 = await salty_decrypt(cipher1, key);
+      const plain2 = await salty_decrypt(cipher2, key);
+
+      assertEquals(plain1, TEST_MESSAGE);
+      assertEquals(plain2, TEST_MESSAGE);
+    },
+  );
 
   await t.step("should handle edge case messages", async () => {
     const testCases = [
@@ -117,16 +128,20 @@ Deno.test("Crypto Security - Encryption", async (t) => {
     for (const message of testCases) {
       const encrypted = await salty_encrypt(message, key);
       const decrypted = await salty_decrypt(encrypted, key);
-      assertEquals(decrypted, message, `Failed for message: ${message.substring(0, 50)}`);
+      assertEquals(
+        decrypted,
+        message,
+        `Failed for message: ${message.substring(0, 50)}`,
+      );
     }
   });
 
   await t.step("should maintain message integrity", async () => {
     const encrypted = await salty_encrypt(TEST_MESSAGE, key);
-    
+
     // Tamper with the ciphertext
     const tampered = encrypted.slice(0, -4) + "XXXX";
-    
+
     // Decryption should fail
     const result = await salty_decrypt(tampered, key);
     assertEquals(result, null);
@@ -135,7 +150,7 @@ Deno.test("Crypto Security - Encryption", async (t) => {
   await t.step("should fail with wrong key", async () => {
     const encrypted = await salty_encrypt(TEST_MESSAGE, key);
     const wrongKey = await salty_key("wrong-password", TEST_SALT_HEX);
-    
+
     const result = await salty_decrypt(encrypted, wrongKey);
     assertEquals(result, null);
   });
@@ -182,12 +197,12 @@ Deno.test("Crypto Security - Base91 Encoding", async (t) => {
     // Empty input
     assertEquals(base91_encode(new Uint8Array(0)), "");
     assertEquals(base91_decode(""), null);
-    
+
     // Single byte
     const single = new Uint8Array([42]);
     const encoded = base91_encode(single);
     assertEquals(base91_decode(encoded), single);
-    
+
     // Large input
     const large = crypto.getRandomValues(new Uint8Array(10000));
     const encodedLarge = base91_encode(large);
@@ -199,20 +214,21 @@ Deno.test("Crypto Security - Hex Conversion", async (t) => {
   await t.step("should handle valid hex strings", () => {
     assertEquals(hexToUint8Array("00"), new Uint8Array([0]));
     assertEquals(hexToUint8Array("FF"), new Uint8Array([255]));
-    assertEquals(hexToUint8Array("0123456789ABCDEF"), 
-      new Uint8Array([1, 35, 69, 103, 137, 171, 205, 239]));
-    assertEquals(hexToUint8Array("abcdef"), 
-      new Uint8Array([171, 205, 239]));
+    assertEquals(
+      hexToUint8Array("0123456789ABCDEF"),
+      new Uint8Array([1, 35, 69, 103, 137, 171, 205, 239]),
+    );
+    assertEquals(hexToUint8Array("abcdef"), new Uint8Array([171, 205, 239]));
   });
 
   await t.step("should handle edge cases", () => {
     // Odd length - should pad with leading zero
     assertEquals(hexToUint8Array("1"), new Uint8Array([1]));
     assertEquals(hexToUint8Array("123"), new Uint8Array([1, 35]));
-    
+
     // Empty string
     assertThrows(() => hexToUint8Array(""), Error, "Invalid hex string");
-    
+
     // Invalid characters
     assertThrows(() => hexToUint8Array("XYZ"), Error, "Invalid hex string");
     assertThrows(() => hexToUint8Array("12 34"), Error, "Invalid hex string");
@@ -224,7 +240,7 @@ Deno.test("Crypto Security - Attack Scenarios", async (t) => {
   await t.step("should resist timing attacks on decryption", async () => {
     const key = await salty_key(TEST_KEY, TEST_SALT_HEX);
     const validCipher = await salty_encrypt(TEST_MESSAGE, key);
-    
+
     // Create various invalid ciphertexts
     const invalidCiphers = [
       "completely-invalid",
@@ -241,69 +257,77 @@ Deno.test("Crypto Security - Attack Scenarios", async (t) => {
     }
   });
 
-  await t.step("should not leak information through error messages", async () => {
-    const key = await salty_key(TEST_KEY, TEST_SALT_HEX);
-    
-    // Various malformed inputs should all fail silently
-    const malformedInputs = [
-      null,
-      undefined,
-      123,
-      {},
-      [],
-      new Uint8Array([1, 2, 3]),
-    ];
+  await t.step(
+    "should not leak information through error messages",
+    async () => {
+      const key = await salty_key(TEST_KEY, TEST_SALT_HEX);
 
-    for (const input of malformedInputs) {
-      try {
-        const result = await salty_decrypt(input as any, key);
-        assertEquals(result, null);
-      } catch (e) {
-        // Should not throw, but if it does, check error doesn't leak info
-        assertEquals(e.message.includes("key"), false);
-        assertEquals(e.message.includes("password"), false);
-        assertEquals(e.message.includes("salt"), false);
+      // Various malformed inputs should all fail silently
+      const malformedInputs = [
+        null,
+        undefined,
+        123,
+        {},
+        [],
+        new Uint8Array([1, 2, 3]),
+      ];
+
+      for (const input of malformedInputs) {
+        try {
+          const result = await salty_decrypt(input as any, key);
+          assertEquals(result, null);
+        } catch (e) {
+          // Should not throw, but if it does, check error doesn't leak info
+          if (e instanceof Error) {
+            assertEquals(e.message.includes("key"), false);
+            assertEquals(e.message.includes("password"), false);
+            assertEquals(e.message.includes("salt"), false);
+          }
+        }
       }
-    }
-  });
+    },
+  );
 
   await t.step("should handle resource exhaustion attempts", async () => {
     const key = await salty_key(TEST_KEY, TEST_SALT_HEX);
-    
+
     // Very large message (10MB)
     const largeMessage = "x".repeat(10 * 1024 * 1024);
-    
+
     // Should handle gracefully (may be slow but shouldn't crash)
     const encrypted = await salty_encrypt(largeMessage, key);
     const decrypted = await salty_decrypt(encrypted, key);
-    
+
     assertEquals(decrypted, largeMessage);
   });
 
-  await t.step("should maintain security with concurrent operations", async () => {
-    const key = await salty_key(TEST_KEY, TEST_SALT_HEX);
-    
-    // Run multiple encryptions concurrently
-    const promises = Array(10).fill(0).map(async (_, i) => {
-      const message = `Message ${i}`;
-      const encrypted = await salty_encrypt(message, key);
-      const decrypted = await salty_decrypt(encrypted, key);
-      return { message, decrypted };
-    });
+  await t.step(
+    "should maintain security with concurrent operations",
+    async () => {
+      const key = await salty_key(TEST_KEY, TEST_SALT_HEX);
 
-    const results = await Promise.all(promises);
-    
-    // Each should decrypt correctly
-    for (const { message, decrypted } of results) {
-      assertEquals(decrypted, message);
-    }
-  });
+      // Run multiple encryptions concurrently
+      const promises = Array(10).fill(0).map(async (_, i) => {
+        const message = `Message ${i}`;
+        const encrypted = await salty_encrypt(message, key);
+        const decrypted = await salty_decrypt(encrypted, key);
+        return { message, decrypted };
+      });
+
+      const results = await Promise.all(promises);
+
+      // Each should decrypt correctly
+      for (const { message, decrypted } of results) {
+        assertEquals(decrypted, message);
+      }
+    },
+  );
 });
 
 Deno.test("Crypto Security - Compliance Checks", async (t) => {
   await t.step("should use approved algorithms", async () => {
     const key = await salty_key(TEST_KEY, TEST_SALT_HEX);
-    
+
     // Check key properties
     assertEquals(key.type, "secret");
     assertEquals(key.algorithm.name, "AES-GCM");
@@ -319,7 +343,7 @@ Deno.test("Crypto Security - Compliance Checks", async (t) => {
     const start = performance.now();
     await salty_key(TEST_KEY, TEST_SALT_HEX);
     const duration = performance.now() - start;
-    
+
     // Should take some time (but not too long)
     assertEquals(duration > 10, true); // At least 10ms
     assertEquals(duration < 5000, true); // Less than 5 seconds
@@ -328,11 +352,11 @@ Deno.test("Crypto Security - Compliance Checks", async (t) => {
   await t.step("should use proper IV size", async () => {
     const key = await salty_key(TEST_KEY, TEST_SALT_HEX);
     const encrypted = await salty_encrypt(TEST_MESSAGE, key);
-    
+
     // Decode to check IV size
     const decoded = base91_decode(encrypted);
     assertNotEquals(decoded, null);
-    
+
     // First 12 bytes should be IV for AES-GCM
     assertEquals(decoded!.length >= 12 + 16, true); // IV + tag minimum
   });

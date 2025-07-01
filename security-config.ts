@@ -160,7 +160,8 @@ export const defaultSecurityConfig: SecurityConfig = {
   headers: {
     csp: {
       enabled: true,
-      policy: "default-src 'self'; script-src 'self' https://cdn.tailwindcss.com https://kit.fontawesome.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://kit.fontawesome.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';",
+      policy:
+        "default-src 'self'; script-src 'self' https://cdn.tailwindcss.com https://kit.fontawesome.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://kit.fontawesome.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';",
       reportUri: "/api/csp-report",
     },
     cors: {
@@ -278,7 +279,7 @@ export const strictSecurityConfig: SecurityConfig = {
  */
 export function loadSecurityConfig(): SecurityConfig {
   const env = Deno.env.get("NODE_ENV") || "production";
-  
+
   switch (env) {
     case "development":
       return developmentSecurityConfig;
@@ -292,23 +293,25 @@ export function loadSecurityConfig(): SecurityConfig {
 /**
  * Validate security configuration
  */
-export function validateSecurityConfig(config: Partial<SecurityConfig>): SecurityConfig {
+export function validateSecurityConfig(
+  config: Partial<SecurityConfig>,
+): SecurityConfig {
   const merged = { ...defaultSecurityConfig, ...config };
-  
+
   // Validate rate limiting
   if (merged.rateLimiting.requestsPerMinute < 1) {
     throw new Error("Rate limit requests per minute must be at least 1");
   }
-  
+
   // Validate encryption
   if (merged.encryption.pbkdf2Iterations < 100000) {
     throw new Error("PBKDF2 iterations must be at least 100,000");
   }
-  
+
   // Validate key size
   if (![128, 192, 256].includes(merged.encryption.keySize)) {
     throw new Error("Key size must be 128, 192, or 256 bits");
   }
-  
+
   return merged;
 }

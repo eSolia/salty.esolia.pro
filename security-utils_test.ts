@@ -3,22 +3,25 @@
  * @description Comprehensive test suite for security validation functions
  */
 
-import { assertEquals, assertThrows } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import {
+  assertEquals,
+  assertThrows,
+} from "https://deno.land/std@0.208.0/assert/mod.ts";
+import {
+  escapeHtml,
+  hashForLogging,
+  sanitizeString,
+  SecurityRateLimiter,
   validateAgainstPatterns,
+  validateBase91,
+  validateContentType,
+  validateEnvironmentVariable,
+  validateHex,
+  validateJSONStructure,
+  validateNoPathTraversal,
   validateNoShellMetacharacters,
   validateNoSQLPatterns,
-  validateNoPathTraversal,
-  sanitizeString,
-  validateBase91,
-  validateHex,
-  validateEnvironmentVariable,
   validateURL,
-  validateContentType,
-  SecurityRateLimiter,
-  escapeHtml,
-  validateJSONStructure,
-  hashForLogging,
 } from "./security-utils.ts";
 
 Deno.test("Security Utils - Pattern Validation", async (t) => {
@@ -29,7 +32,10 @@ Deno.test("Security Utils - Pattern Validation", async (t) => {
   });
 
   await t.step("should detect Function constructor", () => {
-    assertEquals(validateAgainstPatterns("new Function('code')", "test"), false);
+    assertEquals(
+      validateAgainstPatterns("new Function('code')", "test"),
+      false,
+    );
     assertEquals(validateAgainstPatterns("Function('code')", "test"), false);
     assertEquals(validateAgainstPatterns("function() {}", "test"), true);
   });
@@ -41,7 +47,10 @@ Deno.test("Security Utils - Pattern Validation", async (t) => {
   });
 
   await t.step("should detect XSS patterns", () => {
-    assertEquals(validateAgainstPatterns("<script>alert(1)</script>", "test"), false);
+    assertEquals(
+      validateAgainstPatterns("<script>alert(1)</script>", "test"),
+      false,
+    );
     assertEquals(validateAgainstPatterns("javascript:void(0)", "test"), false);
     assertEquals(validateAgainstPatterns("onclick='alert(1)'", "test"), false);
     assertEquals(validateAgainstPatterns("on click", "test"), true);
@@ -143,9 +152,18 @@ Deno.test("Security Utils - Hex Validation", async (t) => {
 
 Deno.test("Security Utils - Environment Variable Validation", async (t) => {
   await t.step("should validate SALT_HEX", () => {
-    assertEquals(validateEnvironmentVariable("SALT_HEX", "0123456789ABCDEF0123456789ABCDEF"), true);
+    assertEquals(
+      validateEnvironmentVariable(
+        "SALT_HEX",
+        "0123456789ABCDEF0123456789ABCDEF",
+      ),
+      true,
+    );
     assertEquals(validateEnvironmentVariable("SALT_HEX", "invalid"), false);
-    assertEquals(validateEnvironmentVariable("SALT_HEX", "0123456789ABCDEF"), false); // Wrong length
+    assertEquals(
+      validateEnvironmentVariable("SALT_HEX", "0123456789ABCDEF"),
+      false,
+    ); // Wrong length
   });
 
   await t.step("should validate API_KEY", () => {
@@ -175,7 +193,10 @@ Deno.test("Security Utils - Environment Variable Validation", async (t) => {
   await t.step("should block shell metacharacters in env vars", () => {
     assertEquals(validateEnvironmentVariable("CUSTOM", "safe-value"), true);
     assertEquals(validateEnvironmentVariable("CUSTOM", "rm -rf /"), false);
-    assertEquals(validateEnvironmentVariable("CUSTOM", "value; echo bad"), false);
+    assertEquals(
+      validateEnvironmentVariable("CUSTOM", "value; echo bad"),
+      false,
+    );
   });
 });
 
@@ -188,7 +209,10 @@ Deno.test("Security Utils - URL Validation", async (t) => {
 
   await t.step("should reject dangerous schemes", () => {
     assertEquals(validateURL("javascript:alert(1)"), false);
-    assertEquals(validateURL("data:text/html,<script>alert(1)</script>"), false);
+    assertEquals(
+      validateURL("data:text/html,<script>alert(1)</script>"),
+      false,
+    );
     assertEquals(validateURL("file:///etc/passwd"), false);
     assertEquals(validateURL("ftp://example.com"), false);
   });
@@ -210,10 +234,24 @@ Deno.test("Security Utils - URL Validation", async (t) => {
 
 Deno.test("Security Utils - Content Type Validation", async (t) => {
   await t.step("should validate content types", () => {
-    assertEquals(validateContentType("application/json", ["application/json"]), true);
-    assertEquals(validateContentType("application/json; charset=utf-8", ["application/json"]), true);
-    assertEquals(validateContentType("text/plain", ["text/plain", "application/json"]), true);
-    assertEquals(validateContentType("APPLICATION/JSON", ["application/json"]), true);
+    assertEquals(
+      validateContentType("application/json", ["application/json"]),
+      true,
+    );
+    assertEquals(
+      validateContentType("application/json; charset=utf-8", [
+        "application/json",
+      ]),
+      true,
+    );
+    assertEquals(
+      validateContentType("text/plain", ["text/plain", "application/json"]),
+      true,
+    );
+    assertEquals(
+      validateContentType("APPLICATION/JSON", ["application/json"]),
+      true,
+    );
   });
 
   await t.step("should reject invalid content types", () => {
@@ -226,7 +264,7 @@ Deno.test("Security Utils - Content Type Validation", async (t) => {
 Deno.test("Security Utils - Rate Limiter", async (t) => {
   await t.step("should allow requests within limit", () => {
     const limiter = new SecurityRateLimiter(3, 1000);
-    
+
     assertEquals(limiter.check("test-key").allowed, true);
     assertEquals(limiter.check("test-key").allowed, true);
     assertEquals(limiter.check("test-key").allowed, true);
@@ -236,18 +274,18 @@ Deno.test("Security Utils - Rate Limiter", async (t) => {
 
   await t.step("should reset after window", async () => {
     const limiter = new SecurityRateLimiter(1, 100);
-    
+
     assertEquals(limiter.check("test-key-2").allowed, true);
     assertEquals(limiter.check("test-key-2").allowed, false);
-    
-    await new Promise(resolve => setTimeout(resolve, 150));
-    
+
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
     assertEquals(limiter.check("test-key-2").allowed, true);
   });
 
   await t.step("should track separate keys", () => {
     const limiter = new SecurityRateLimiter(2, 1000);
-    
+
     assertEquals(limiter.check("key1").allowed, true);
     assertEquals(limiter.check("key2").allowed, true);
     assertEquals(limiter.check("key1").allowed, true);
@@ -259,10 +297,14 @@ Deno.test("Security Utils - Rate Limiter", async (t) => {
 
 Deno.test("Security Utils - HTML Escaping", async (t) => {
   await t.step("should escape HTML entities", () => {
-    assertEquals(escapeHtml("<script>alert('XSS')</script>"), 
-      "&lt;script&gt;alert(&#x27;XSS&#x27;)&lt;&#x2F;script&gt;");
-    assertEquals(escapeHtml('"><img src=x onerror=alert(1)>'), 
-      "&quot;&gt;&lt;img src=x onerror=alert(1)&gt;");
+    assertEquals(
+      escapeHtml("<script>alert('XSS')</script>"),
+      "&lt;script&gt;alert(&#x27;XSS&#x27;)&lt;&#x2F;script&gt;",
+    );
+    assertEquals(
+      escapeHtml('"><img src=x onerror=alert(1)>'),
+      "&quot;&gt;&lt;img src=x onerror=alert(1)&gt;",
+    );
     assertEquals(escapeHtml("safe text"), "safe text");
     assertEquals(escapeHtml("&<>\"'/"), "&amp;&lt;&gt;&quot;&#x27;&#x2F;");
   });
@@ -271,18 +313,21 @@ Deno.test("Security Utils - HTML Escaping", async (t) => {
 Deno.test("Security Utils - JSON Structure Validation", async (t) => {
   await t.step("should validate JSON structure", () => {
     assertEquals(validateJSONStructure('{"key": "value"}'), true);
-    assertEquals(validateJSONStructure('[1, 2, 3]'), true);
-    assertEquals(validateJSONStructure('  { "nested": { "data": true } }  '), true);
-    assertEquals(validateJSONStructure('[]'), true);
-    assertEquals(validateJSONStructure('{}'), true);
+    assertEquals(validateJSONStructure("[1, 2, 3]"), true);
+    assertEquals(
+      validateJSONStructure('  { "nested": { "data": true } }  '),
+      true,
+    );
+    assertEquals(validateJSONStructure("[]"), true);
+    assertEquals(validateJSONStructure("{}"), true);
   });
 
   await t.step("should reject invalid JSON structure", () => {
-    assertEquals(validateJSONStructure('not json'), false);
-    assertEquals(validateJSONStructure('{incomplete'), false);
-    assertEquals(validateJSONStructure('incomplete}'), false);
-    assertEquals(validateJSONStructure(''), false);
-    assertEquals(validateJSONStructure('null'), false);
+    assertEquals(validateJSONStructure("not json"), false);
+    assertEquals(validateJSONStructure("{incomplete"), false);
+    assertEquals(validateJSONStructure("incomplete}"), false);
+    assertEquals(validateJSONStructure(""), false);
+    assertEquals(validateJSONStructure("null"), false);
     assertEquals(validateJSONStructure('"string"'), false);
   });
 });
@@ -296,9 +341,12 @@ Deno.test("Security Utils - Hash for Logging", async (t) => {
     assertEquals(hash1.length, 15); // "sha256:" + 8 chars + "..."
   });
 
-  await t.step("should create different hashes for different inputs", async () => {
-    const hash1 = await hashForLogging("data1");
-    const hash2 = await hashForLogging("data2");
-    assertEquals(hash1 !== hash2, true);
-  });
+  await t.step(
+    "should create different hashes for different inputs",
+    async () => {
+      const hash1 = await hashForLogging("data1");
+      const hash2 = await hashForLogging("data2");
+      assertEquals(hash1 !== hash2, true);
+    },
+  );
 });

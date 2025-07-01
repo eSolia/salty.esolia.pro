@@ -663,8 +663,9 @@ export class Logger {
       totalRiskScore += entry.riskScore || 0;
     }
 
-    summary.averageRiskScore =
-      summary.totalEvents > 0 ? totalRiskScore / summary.totalEvents : 0;
+    summary.averageRiskScore = summary.totalEvents > 0
+      ? totalRiskScore / summary.totalEvents
+      : 0;
 
     return summary;
   }

@@ -29,7 +29,9 @@ if (totalChanges > 0) {
   if (fixed.length > 0) console.log(`   🐛 Fixed: ${fixed.length}`);
   if (security.length > 0) console.log(`   🔒 Security: ${security.length}`);
   if (removed.length > 0) console.log(`   🗑️  Removed: ${removed.length}`);
-  if (deprecated.length > 0) console.log(`   ⚠️  Deprecated: ${deprecated.length}`);
+  if (deprecated.length > 0) {
+    console.log(`   ⚠️  Deprecated: ${deprecated.length}`);
+  }
 } else {
   console.log(`📝 No detailed change information available`);
 }

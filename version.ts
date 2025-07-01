@@ -36,7 +36,7 @@ export const TECH_SPECS = {
     "PBKDF2-SHA512 key derivation",
     "600,000 iterations",
     "basE91 encoding",
-    "Web Crypto API"
+    "Web Crypto API",
   ],
   securityFeatures: [
     "Rate limiting (20 requests/hour)",
@@ -44,7 +44,7 @@ export const TECH_SPECS = {
     "Security headers (CSP, HSTS, XSS)",
     "API authentication",
     "Structured logging",
-    "Request size limits"
+    "Request size limits",
   ],
   endpoints: [
     "/",
@@ -52,14 +52,14 @@ export const TECH_SPECS = {
     "/api/encrypt",
     "/api/decrypt",
     "/health",
-    "/salty.ts"
-  ]
+    "/salty.ts",
+  ],
 } as const;
 
 export const SECURITY_INFO = {
   rateLimiting: {
     window: "1 hour",
-    maxRequests: 20
+    maxRequests: 20,
   },
   maxPayloadSize: "1MB",
   maxKeySize: "1KB",
@@ -69,8 +69,8 @@ export const SECURITY_INFO = {
     "X-Content-Type-Options",
     "X-Frame-Options",
     "X-XSS-Protection",
-    "Referrer-Policy"
-  ]
+    "Referrer-Policy",
+  ],
 } as const;
 
 export class VersionUtils {
@@ -90,7 +90,7 @@ export class VersionUtils {
       buildDate: BUILD_INFO.buildDate,
       commit: BUILD_INFO.gitCommit,
       environment: BUILD_INFO.buildEnvironment,
-      components: BUILD_INFO.versionComponents
+      components: BUILD_INFO.versionComponents,
     };
   }
 
@@ -110,12 +110,12 @@ export const RELEASE_NOTES = {
   "version": "2.0.0",
   "date": "2025-07-01",
   "added": [
-    "add comprehensive security documentation and enhancements (a4fd1fc)"
+    "add comprehensive security documentation and enhancements (a4fd1fc)",
   ],
   "changed": [
     "InfoSec: implement comprehensive security infrastructure (5fc60fb)",
     "upgrade nagare from 1.1.1 to 1.7.3 (659bf89)",
-    "add programming paradigm documentation and coding guidelines (45ab0b3)"
+    "add programming paradigm documentation and coding guidelines (45ab0b3)",
   ],
   "deprecated": [],
   "removed": [],
@@ -123,7 +123,7 @@ export const RELEASE_NOTES = {
     "use standard TYPESCRIPT template format (2156044)",
     "simplify nagare.config.ts to use built-in TYPESCRIPT_EXTENDED template (46caf28)",
     "switch to built-in TYPESCRIPT_EXTENDED template to avoid validation issues (ee5db83)",
-    "remove dynamic Deno version access from template to avoid nagare validation error (cb8cc9c)"
+    "remove dynamic Deno version access from template to avoid nagare validation error (cb8cc9c)",
   ],
-  "security": []
+  "security": [],
 } as const;

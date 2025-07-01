@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Important: Security Documentation
 
 When making any security-related changes to Salty, you MUST update the Security Changelog in SECURITY.md. This includes:
+
 - New security features or utilities
 - Security configuration changes
 - New security tests or scanning tools
@@ -56,8 +57,38 @@ deno fmt
 # Lint code
 deno lint
 
-# Type check
-deno check server.ts
+# Type check ALL TypeScript files
+deno check **/*.ts
+# Or alternatively:
+deno check *.ts scripts/*.ts
+```
+
+### Preflight Checks Before Release
+
+ALWAYS perform these checks before any release:
+
+```bash
+# 1. Format all code
+deno fmt
+
+# 2. Run linter
+deno lint
+
+# 3. Type check ALL TypeScript files (not just server.ts!)
+deno check **/*.ts
+
+# 4. Run all tests
+deno test
+
+# 5. Run security-specific tests
+deno test --allow-env --allow-read security-utils_test.ts
+deno test --allow-env salty_security_test.ts
+
+# 6. Check for uncommitted changes
+git status
+
+# 7. Verify version.ts exports match server.ts imports
+grep "import.*version.ts" server.ts
 ```
 
 ## High-Level Architecture

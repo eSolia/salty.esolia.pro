@@ -7,7 +7,7 @@ on:
     branches: [main]
   schedule:
     # Run weekly on Monday at 3 AM UTC
-    - cron: '0 3 * * 1'
+    - cron: "0 3 * * 1"
 
 permissions:
   actions: read
@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: ['javascript']
+        language: ["javascript"]
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
 
     steps:
@@ -36,7 +36,7 @@ jobs:
           languages: ${{ matrix.language }}
           # Specify queries to run
           queries: security-extended,security-and-quality
-          
+
       - name: Setup Deno
         uses: denoland/setup-deno@v1
         with:
