@@ -4,6 +4,7 @@
  */
 
 import {
+  assert,
   assertEquals,
   assertNotEquals,
   assertRejects,
