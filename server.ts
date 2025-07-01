@@ -162,6 +162,7 @@ class SecurityUtils {
     // Get allowed origins from environment or use default
     const allowedOrigins = Deno.env.get("CORS_ALLOWED_ORIGINS")?.split(",") || [
       "https://salty.esolia.pro",
+      // devskim: ignore DS137138 - localhost is needed for local development CORS
       "http://localhost:8000",
     ];
 
@@ -1040,23 +1041,29 @@ async function handleRequest(request: Request): Promise<Response> {
 
     const metrics = logger.getMetrics();
     const securitySummary = logger.getSecuritySummary();
+    
+    // Defensive checks for metrics
+    const uptime = metrics?.uptime || 0;
+    const startTime = uptime > 0 
+      ? new Date(Date.now() - uptime * 1000).toISOString()
+      : new Date().toISOString();
 
     const healthData = {
       status: "healthy",
       timestamp: new Date().toISOString(),
       version: VERSION,
-      buildInfo: VersionUtils.getDetailedInfo(),
+      buildInfo: VersionUtils?.getDetailedInfo ? VersionUtils.getDetailedInfo() : null,
       server: {
-        runtime: `Deno ${Deno.version.deno}`,
-        platform: TECH_SPECS.platform,
-        uptime: metrics.uptime,
-        startTime: new Date(Date.now() - metrics.uptime * 1000).toISOString(),
+        runtime: `Deno ${Deno.version?.deno || "unknown"}`,
+        platform: TECH_SPECS?.platform || "unknown",
+        uptime: uptime,
+        startTime: startTime,
       },
       security: {
-        rateLimiting: SECURITY_INFO.rateLimiting,
-        headersApplied: SECURITY_INFO.securityHeaders.length,
+        rateLimiting: SECURITY_INFO?.rateLimiting || {},
+        headersApplied: SECURITY_INFO?.securityHeaders?.length || 0,
         apiKeyRequired: !!Deno.env.get("API_KEY"),
-        securityEvents: securitySummary,
+        securityEvents: securitySummary || {},
       },
       environment: {
         saltConfigured: !!Deno.env.get("SALT_HEX"),
@@ -1064,28 +1071,28 @@ async function handleRequest(request: Request): Promise<Response> {
         nodeEnv: Deno.env.get("NODE_ENV") || "production",
         logLevel: Deno.env.get("LOG_LEVEL") || "INFO",
       },
-      endpoints: TECH_SPECS.endpoints,
+      endpoints: TECH_SPECS?.endpoints || [],
       crypto: {
-        features: TECH_SPECS.cryptoFeatures,
+        features: TECH_SPECS?.cryptoFeatures || [],
         webCryptoAvailable: !!globalThis.crypto?.subtle,
       },
       metrics: {
         requests: {
-          total: metrics.totalRequests,
-          successful: metrics.successfulRequests,
-          failed: metrics.failedRequests,
-          successRate: metrics.totalRequests > 0
+          total: metrics?.totalRequests || 0,
+          successful: metrics?.successfulRequests || 0,
+          failed: metrics?.failedRequests || 0,
+          successRate: (metrics?.totalRequests || 0) > 0
             ? Math.round(
-              (metrics.successfulRequests / metrics.totalRequests) * 100,
+              ((metrics?.successfulRequests || 0) / (metrics?.totalRequests || 1)) * 100,
             )
             : 0,
         },
         performance: {
-          averageResponseTime: Math.round(metrics.averageResponseTime),
-          metricsResetTime: metrics.resetTime,
+          averageResponseTime: Math.round(metrics?.averageResponseTime || 0),
+          metricsResetTime: metrics?.resetTime || new Date().toISOString(),
         },
-        endpoints: Object.fromEntries(metrics.endpointStats),
-        security: securitySummary,
+        endpoints: metrics?.endpointStats ? Object.fromEntries(metrics.endpointStats) : {},
+        security: securitySummary || {},
       },
     };
 

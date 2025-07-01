@@ -328,6 +328,7 @@ export function validateURL(
     // Check for localhost/private IPs (SSRF prevention)
     const hostname = parsed.hostname.toLowerCase();
     if (
+      // devskim: ignore DS137138 - These are security checks to block local URLs, not debug code
       hostname === "localhost" ||
       hostname === "127.0.0.1" ||
       hostname.startsWith("192.168.") ||

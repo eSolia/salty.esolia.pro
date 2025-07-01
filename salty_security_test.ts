@@ -191,7 +191,7 @@ Deno.test("Crypto Security - Base91 Encoding", async (t) => {
       } else {
         // Invalid chars are skipped, may still produce output
         // The important thing is it doesn't crash
-        assertEquals(result !== undefined, true);
+        assert(result !== undefined);
       }
     }
   });
