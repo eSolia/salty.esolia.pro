@@ -6,7 +6,7 @@
  *              and code that could lead to ReDoS or other security issues
  */
 
-import { logger } from "../logger.ts";
+// import { logger } from "../logger.ts"; // Not needed for standalone script
 
 interface PatternCheck {
   file: string;

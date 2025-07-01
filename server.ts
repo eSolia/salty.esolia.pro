@@ -211,7 +211,7 @@ class SecurityUtils {
    * @param details - Additional details about the event
    * @deprecated Use logger.security() instead
    */
-  static logSecurityEvent(event: string, details: Record<string, any>): void {
+  static logSecurityEvent(event: string, details: Record<string, unknown>): void {
     // Legacy method - redirect to new logger
     logger.security(
       event as SecurityEvent,
@@ -362,7 +362,7 @@ function validateApiKey(request: Request): void {
  * @returns Validated and sanitized request data
  * @throws ApiError if validation fails
  */
-async function validateRequestBody(request: Request): Promise<EncryptRequest> {
+function validateRequestBody(request: Request): Promise<EncryptRequest> {
   return TracingHelpers.traceValidation("body-parsing", async () => {
     let body;
 
@@ -539,7 +539,7 @@ function createApiResponse(
  * @param operation - Whether to 'encrypt' or 'decrypt' the payload
  * @returns HTTP Response with the operation result or error
  */
-async function handleApiRequest(
+function handleApiRequest(
   request: Request,
   operation: "encrypt" | "decrypt",
 ): Promise<Response> {
@@ -562,7 +562,7 @@ async function handleApiRequest(
       const hasValidApiKey = !!request.headers.get("X-API-Key") &&
         !!Deno.env.get("API_KEY");
       if (!hasValidApiKey) {
-        await TracingHelpers.traceSecurity("suspicious-activity", async () => {
+        await TracingHelpers.traceSecurity("suspicious-activity", () => {
           logger.detectSuspiciousActivity(clientIP);
         }, { "client.ip": clientIP });
       }

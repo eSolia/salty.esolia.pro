@@ -212,12 +212,12 @@ export class SaltyTracer {
    * @param getAttributes - Function to extract attributes from arguments
    * @returns Traced version of the function
    */
-  wrapFunction<TArgs extends any[], TReturn>(
+  wrapFunction<TArgs extends unknown[], TReturn>(
     spanName: string,
     fn: (...args: TArgs) => Promise<TReturn> | TReturn,
     getAttributes?: (...args: TArgs) => SpanAttributes,
   ) {
-    return async (...args: TArgs): Promise<TReturn> => {
+    return (...args: TArgs): Promise<TReturn> => {
       const attributes = getAttributes ? getAttributes(...args) : {};
 
       return this.trace(spanName, () => fn(...args), attributes);

@@ -159,6 +159,7 @@ export function sanitizeString(input: string, maxLength: number): string {
   // Remove null bytes and control characters
   let sanitized = input
     .replace(/\0/g, "") // Remove null bytes
+    // deno-lint-ignore no-control-regex
     .replace(/[\x00-\x1F\x7F]/g, ""); // Remove control characters
 
   // Truncate to maximum length
@@ -239,16 +240,17 @@ export function validateEnvironmentVariable(
 export function createSecurityAuditLog(
   event: SecurityEvent,
   message: string,
-  details: Record<string, any>,
-): Record<string, any> {
+  details: Record<string, unknown>,
+): Record<string, unknown> {
   // Sanitize details to prevent log injection
-  const sanitizedDetails: Record<string, any> = {};
+  const sanitizedDetails: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(details)) {
     if (typeof value === "string") {
       // Remove newlines and control characters from log entries
       sanitizedDetails[key] = value
         .replace(/[\r\n]/g, " ")
+        // deno-lint-ignore no-control-regex
         .replace(/[\x00-\x1F\x7F]/g, "");
     } else {
       sanitizedDetails[key] = value;

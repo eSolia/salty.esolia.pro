@@ -7,17 +7,22 @@
 
 // Import the CLI function and types we need
 import { cli } from "@rick/nagare/cli";
-import type { NagareConfig } from "@rick/nagare/types";
+import type { NagareConfig as _NagareConfig } from "@rick/nagare/types";
 
 // Import config locally (this works because we're in local context)
 import config from "./nagare.config.ts";
 
+// Define a more specific type for global with import
+interface GlobalWithImport {
+  import: (specifier: string) => Promise<unknown>;
+}
+
 // Store original import function
-const g = globalThis as any;
+const g = globalThis as unknown as GlobalWithImport;
 const originalImport = g.import;
 
 // Override the import function to intercept config loads
-g.import = function (specifier: string): Promise<any> {
+g.import = function (specifier: string): Promise<unknown> {
   // Intercept attempts to import config files
   if (
     specifier.includes("nagare.config") ||

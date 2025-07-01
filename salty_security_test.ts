@@ -274,7 +274,7 @@ Deno.test("Crypto Security - Attack Scenarios", async (t) => {
 
       for (const input of malformedInputs) {
         try {
-          const result = await salty_decrypt(input as any, key);
+          const result = await salty_decrypt(input as string, key);
           assertEquals(result, null);
         } catch (e) {
           // Should not throw, but if it does, check error doesn't leak info
@@ -331,7 +331,7 @@ Deno.test("Crypto Security - Compliance Checks", async (t) => {
     // Check key properties
     assertEquals(key.type, "secret");
     assertEquals(key.algorithm.name, "AES-GCM");
-    assertEquals((key.algorithm as any).length, 256); // 256-bit key
+    assertEquals((key.algorithm as AesKeyAlgorithm).length, 256); // 256-bit key
     assertEquals(key.usages.includes("encrypt"), true);
     assertEquals(key.usages.includes("decrypt"), true);
   });

@@ -47,7 +47,7 @@ export interface LogEntry {
   /** Primary log message */
   message: string;
   /** Additional structured data */
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   /** Request ID for tracing */
   requestId?: string;
   /** Client IP address */
@@ -126,7 +126,7 @@ export interface SecurityAuditEntry {
   /** Result of the action */
   result: "success" | "failure" | "blocked";
   /** Additional context */
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   /** Risk score (0-100) */
   riskScore?: number;
 }
@@ -198,7 +198,7 @@ export class Logger {
     level: LogLevel,
     category: LogCategory,
     message: string,
-    data?: Record<string, any>,
+    data?: Record<string, unknown>,
     error?: Error,
   ): void {
     if (level < this.config.minLevel) return;
@@ -305,7 +305,7 @@ export class Logger {
    */
   debug(
     message: string,
-    data?: Record<string, any>,
+    data?: Record<string, unknown>,
     category = LogCategory.SYSTEM,
   ): void {
     this.log(LogLevel.DEBUG, category, message, data);
@@ -316,7 +316,7 @@ export class Logger {
    */
   info(
     message: string,
-    data?: Record<string, any>,
+    data?: Record<string, unknown>,
     category = LogCategory.SYSTEM,
   ): void {
     this.log(LogLevel.INFO, category, message, data);
@@ -327,7 +327,7 @@ export class Logger {
    */
   warn(
     message: string,
-    data?: Record<string, any>,
+    data?: Record<string, unknown>,
     category = LogCategory.SYSTEM,
   ): void {
     this.log(LogLevel.WARN, category, message, data);
@@ -339,7 +339,7 @@ export class Logger {
   error(
     message: string,
     error?: Error,
-    data?: Record<string, any>,
+    data?: Record<string, unknown>,
     category = LogCategory.SYSTEM,
   ): void {
     this.log(LogLevel.ERROR, category, message, data, error);
@@ -351,7 +351,7 @@ export class Logger {
   security(
     event: SecurityEvent,
     message: string,
-    data?: Record<string, any>,
+    data?: Record<string, unknown>,
   ): void {
     const enhancedData = {
       securityEvent: event,
@@ -372,7 +372,7 @@ export class Logger {
    */
   critical(
     message: string,
-    data?: Record<string, any>,
+    data?: Record<string, unknown>,
     category = LogCategory.SYSTEM,
   ): void {
     this.log(LogLevel.CRITICAL, category, message, data);
@@ -388,7 +388,7 @@ export class Logger {
     responseTime: number,
     clientIP: string,
     requestId: string,
-    data?: Record<string, any>,
+    data?: Record<string, unknown>,
   ): void {
     const endpoint = `${method} ${path}`;
     const isSuccess = statusCode >= 200 && statusCode < 400;
@@ -507,7 +507,7 @@ export class Logger {
     actor: string,
     action: string,
     result: "success" | "failure" | "blocked",
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
   ): void {
     const auditEntry: SecurityAuditEntry = {
       auditId: `audit_${++this.auditCounter}_${Date.now()}`,

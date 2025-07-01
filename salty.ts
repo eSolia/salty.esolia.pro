@@ -331,7 +331,7 @@ export async function salty_decrypt(
 
     // Decode the decrypted buffer back to a string
     return new TextDecoder().decode(decryptedBuffer);
-  } catch (e) {
+  } catch (_e) {
     // e.g., incorrect key, corrupted ciphertext
     return null;
   }

@@ -122,8 +122,8 @@ Deno.test("Security Utils - String Sanitization", async (t) => {
   });
 
   await t.step("should throw on non-string input", () => {
-    assertThrows(() => sanitizeString(null as any, 100), TypeError);
-    assertThrows(() => sanitizeString(123 as any, 100), TypeError);
+    assertThrows(() => sanitizeString(null as unknown as string, 100), TypeError);
+    assertThrows(() => sanitizeString(123 as unknown as string, 100), TypeError);
   });
 });
 
