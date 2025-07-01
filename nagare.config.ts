@@ -14,7 +14,7 @@ export default {
   versionFile: {
     path: "./version.ts",
     template: TemplateFormat.TYPESCRIPT, // Use built-in template
-    
+
     // Add Salty's custom exports
     additionalExports: [
       {
@@ -43,9 +43,21 @@ export default {
           endpoints: [
             { path: "/", description: "Japanese UI" },
             { path: "/en/", description: "English UI" },
-            { path: "/api/encrypt", method: "POST", description: "Encrypt endpoint" },
-            { path: "/api/decrypt", method: "POST", description: "Decrypt endpoint" },
-            { path: "/health", method: "GET", description: "Health check endpoint" },
+            {
+              path: "/api/encrypt",
+              method: "POST",
+              description: "Encrypt endpoint",
+            },
+            {
+              path: "/api/decrypt",
+              method: "POST",
+              description: "Decrypt endpoint",
+            },
+            {
+              path: "/health",
+              method: "GET",
+              description: "Health check endpoint",
+            },
           ],
         },
         asConst: true,
