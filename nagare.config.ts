@@ -63,7 +63,7 @@ export const APP_METADATA = {
  */
 export const TECH_SPECS = {
   platform: "Deno Deploy",
-  runtime: \`Deno \${Deno.version.deno}\`,
+  runtime: "Deno",
   cryptoFeatures: [
     "AES-GCM-256 encryption",
     "PBKDF2-SHA512 key derivation",
