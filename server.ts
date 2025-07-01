@@ -1041,10 +1041,10 @@ async function handleRequest(request: Request): Promise<Response> {
 
     const metrics = logger.getMetrics();
     const securitySummary = logger.getSecuritySummary();
-    
+
     // Defensive checks for metrics
     const uptime = metrics?.uptime || 0;
-    const startTime = uptime > 0 
+    const startTime = uptime > 0
       ? new Date(Date.now() - uptime * 1000).toISOString()
       : new Date().toISOString();
 
@@ -1052,7 +1052,9 @@ async function handleRequest(request: Request): Promise<Response> {
       status: "healthy",
       timestamp: new Date().toISOString(),
       version: VERSION,
-      buildInfo: VersionUtils?.getDetailedInfo ? VersionUtils.getDetailedInfo() : null,
+      buildInfo: VersionUtils?.getDetailedInfo
+        ? VersionUtils.getDetailedInfo()
+        : null,
       server: {
         runtime: `Deno ${Deno.version?.deno || "unknown"}`,
         platform: TECH_SPECS?.platform || "unknown",
@@ -1083,7 +1085,8 @@ async function handleRequest(request: Request): Promise<Response> {
           failed: metrics?.failedRequests || 0,
           successRate: (metrics?.totalRequests || 0) > 0
             ? Math.round(
-              ((metrics?.successfulRequests || 0) / (metrics?.totalRequests || 1)) * 100,
+              ((metrics?.successfulRequests || 0) /
+                (metrics?.totalRequests || 1)) * 100,
             )
             : 0,
         },
@@ -1091,7 +1094,9 @@ async function handleRequest(request: Request): Promise<Response> {
           averageResponseTime: Math.round(metrics?.averageResponseTime || 0),
           metricsResetTime: metrics?.resetTime || new Date().toISOString(),
         },
-        endpoints: metrics?.endpointStats ? Object.fromEntries(metrics.endpointStats) : {},
+        endpoints: metrics?.endpointStats
+          ? Object.fromEntries(metrics.endpointStats)
+          : {},
         security: securitySummary || {},
       },
     };
