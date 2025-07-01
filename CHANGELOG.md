@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2025-07-01
+
+### Added
+- add comprehensive security documentation and enhancements (a4fd1fc)
+
+### Changed
+- InfoSec: implement comprehensive security infrastructure (5fc60fb)
+- upgrade nagare from 1.1.1 to 1.7.3 (659bf89)
+- add programming paradigm documentation and coding guidelines (45ab0b3)
+
+### Fixed
+- use standard TYPESCRIPT template format (2156044)
+- simplify nagare.config.ts to use built-in TYPESCRIPT_EXTENDED template (46caf28)
+- switch to built-in TYPESCRIPT_EXTENDED template to avoid validation issues (ee5db83)
+- remove dynamic Deno version access from template to avoid nagare validation error (cb8cc9c)
+
 ## [1.3.0] - 2025-06-30
 
 ### Added
