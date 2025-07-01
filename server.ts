@@ -211,7 +211,10 @@ class SecurityUtils {
    * @param details - Additional details about the event
    * @deprecated Use logger.security() instead
    */
-  static logSecurityEvent(event: string, details: Record<string, unknown>): void {
+  static logSecurityEvent(
+    event: string,
+    details: Record<string, unknown>,
+  ): void {
     // Legacy method - redirect to new logger
     logger.security(
       event as SecurityEvent,

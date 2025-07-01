@@ -8,10 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.1] - 2025-07-01
 
 ### Changed
+
 - update security changelog for v2.0.0 and add reminder to CLAUDE.md (94cabf4)
 - InfoSec: add Microsoft DevSkim security linter workflow (6f8ce92)
 
 ### Fixed
+
 - resolve all lint warnings (any types and require-await) (3eaa3b9)
 - add missing assertThrows import and fix formatting (2776420)
 - update GitHub Actions to use upload-artifact@v4 (df2f0c9)

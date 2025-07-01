@@ -132,7 +132,7 @@ export class VersionUtils {
     return "stable";
   }
 }
-`
+`,
   },
 
   // Much simpler with Nagare 1.1.0+ - just list the files!
