@@ -118,7 +118,13 @@ export default {
   },
 
   updateFiles: [
-    { path: "./deno.json" }, // Auto-detected and handled by built-in handler
+    { 
+      path: "./deno.json",
+      // Use a safer pattern that only matches the top-level version field
+      patterns: {
+        version: /^(\s*)"version":\s*"([^"]+)"/m,
+      }
+    },
     { 
       path: "./README.md",
       // Custom update function to handle specific badge patterns with comment markers
