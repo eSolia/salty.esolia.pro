@@ -120,9 +120,20 @@ export default {
   updateFiles: [
     { 
       path: "./deno.json",
-      // Use a safer pattern that only matches the top-level version field
-      patterns: {
-        version: /^(\s*)"version":\s*"([^"]+)"/m,
+      // Custom update function to safely update only the top-level version field
+      updateFn: (content: string, data: any) => {
+        // Parse the JSON to safely update only the top-level version
+        try {
+          const config = JSON.parse(content);
+          config.version = data.version;
+          return JSON.stringify(config, null, 2);
+        } catch (error) {
+          // Fallback to regex if JSON parsing fails
+          return content.replace(
+            /^(\s*"version":\s*)"[^"]+"/m,
+            `$1"${data.version}"`
+          );
+        }
       }
     },
     { 
