@@ -8,7 +8,6 @@
 // Import the CLI function and types we need
 import { cli } from "@rick/nagare/cli";
 import type { NagareConfig } from "@rick/nagare/types";
-import { LogLevel } from "@rick/nagare/config";
 
 // Import config locally (this works because we're in local context)
 import config from "./nagare.config.ts";
