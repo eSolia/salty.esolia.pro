@@ -121,13 +121,13 @@ export default {
     {
       path: "./deno.json",
       // Custom update function to safely update only the top-level version field
-      updateFn: (content: string, data: any) => {
+      updateFn: (content: string, data: { version: string }) => {
         // Parse the JSON to safely update only the top-level version
         try {
           const config = JSON.parse(content);
           config.version = data.version;
           return JSON.stringify(config, null, 2);
-        } catch (error) {
+        } catch (_error) {
           // Fallback to regex if JSON parsing fails
           return content.replace(
             /^(\s*"version":\s*)"[^"]+"/m,
@@ -139,7 +139,10 @@ export default {
     {
       path: "./README.md",
       // Custom update function to handle specific badge patterns with comment markers
-      updateFn: (content: string, data: any) => {
+      updateFn: (
+        content: string,
+        data: { version: string; buildDate?: string },
+      ) => {
         let result = content;
 
         // Update version badge between comment markers
