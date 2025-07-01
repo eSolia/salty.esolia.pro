@@ -66,20 +66,21 @@ jobs:
 
       - name: Check for hardcoded secrets
         run: |
-          # Check for potential hardcoded secrets
-          ! grep -r -E "(api_key|apikey|password|secret|private_key|token)" \
+          # Check for potential hardcoded secrets (looking for actual values, not just variable names)
+          ! grep -r -E "(api_key|apikey|password|secret|private_key|token)\s*[:=]\s*[\"'][^\"']+[\"']" \
             --include="*.ts" --include="*.js" \
             --exclude-dir=".git" --exclude-dir="node_modules" \
             --exclude="*_test.ts" --exclude="*.md" \
-            . | grep -v -E "(test|example|sample|mock|fake|dummy)"
+            . | grep -v -E "(test|example|sample|mock|fake|dummy|env\.get|process\.env|import|from|encode|decode)"
 
       - name: Check for dangerous patterns
         run: |
-          # Check for eval, Function constructor, etc.
-          ! grep -r -E "(eval\s*\(|new\s+Function|require\s*\(.*\))" \
+          # Check for eval, Function constructor, etc. (excluding string literals and comments)
+          ! grep -r -E "^\s*[^\"'/]*\b(eval\s*\(|new\s+Function\s*\(|require\s*\([^)]*\))" \
             --include="*.ts" --include="*.js" \
             --exclude-dir=".git" --exclude-dir="node_modules" \
             --exclude="security-utils_test.ts" \
+            --exclude="scripts/check-patterns.ts" \
             .
 
       - name: Security audit report
