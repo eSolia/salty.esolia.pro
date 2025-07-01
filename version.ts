@@ -26,6 +26,86 @@ export const APP_INFO = {
   license: "MIT",
 } as const;
 export const APP_METADATA = {} as const;
+
+// Additional exports required by server.ts
+export const TECH_SPECS = {
+  platform: "Deno Deploy",
+  runtime: "Deno",
+  cryptoFeatures: [
+    "AES-GCM-256 encryption",
+    "PBKDF2-SHA512 key derivation",
+    "600,000 iterations",
+    "basE91 encoding",
+    "Web Crypto API"
+  ],
+  securityFeatures: [
+    "Rate limiting (20 requests/hour)",
+    "Input validation",
+    "Security headers (CSP, HSTS, XSS)",
+    "API authentication",
+    "Structured logging",
+    "Request size limits"
+  ],
+  endpoints: [
+    "/",
+    "/en/",
+    "/api/encrypt",
+    "/api/decrypt",
+    "/health",
+    "/salty.ts"
+  ]
+} as const;
+
+export const SECURITY_INFO = {
+  rateLimiting: {
+    window: "1 hour",
+    maxRequests: 20
+  },
+  maxPayloadSize: "1MB",
+  maxKeySize: "1KB",
+  securityHeaders: [
+    "Content-Security-Policy",
+    "Strict-Transport-Security",
+    "X-Content-Type-Options",
+    "X-Frame-Options",
+    "X-XSS-Protection",
+    "Referrer-Policy"
+  ]
+} as const;
+
+export class VersionUtils {
+  static getExtendedVersion(): string {
+    const { major, minor, patch, prerelease } = BUILD_INFO.versionComponents;
+    let version = `${major}.${minor}.${patch}`;
+    if (prerelease) {
+      version += `-${prerelease}`;
+    }
+    return `${version}+${BUILD_INFO.gitCommit}`;
+  }
+
+  static getDetailedInfo() {
+    return {
+      version: VERSION,
+      extended: this.getExtendedVersion(),
+      buildDate: BUILD_INFO.buildDate,
+      commit: BUILD_INFO.gitCommit,
+      environment: BUILD_INFO.buildEnvironment,
+      components: BUILD_INFO.versionComponents
+    };
+  }
+
+  static isPrerelease(): boolean {
+    return BUILD_INFO.versionComponents.prerelease !== null;
+  }
+
+  static getReleaseType(): string {
+    if (this.isPrerelease()) {
+      return BUILD_INFO.versionComponents.prerelease || "prerelease";
+    }
+    return "stable";
+  }
+}
+
 export const RELEASE_NOTES = {
   "version": "2.0.0",
   "date": "2025-07-01",
