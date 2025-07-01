@@ -13,7 +13,7 @@ export default {
 
   versionFile: {
     path: "./version.ts",
-    template: TemplateFormat.TYPESCRIPT_EXTENDED,
+    template: TemplateFormat.TYPESCRIPT,
   },
 
   // Much simpler with Nagare 1.1.0+ - just list the files!
