@@ -1,0 +1,81 @@
+# Security Insights Configuration
+# This file helps GitHub understand your project's security practices
+# https://github.com/ossf/security-insights-spec
+
+header:
+  schema-version: 1.0.0
+  last-updated: 2025-01-01
+  last-reviewed: 2025-01-01
+  project-url: https://github.com/RickCogley/salty.esolia.pro-dd
+  project-release: 1.3.0
+  changelog: https://github.com/RickCogley/salty.esolia.pro-dd/blob/main/CHANGELOG.md
+  license: https://github.com/RickCogley/salty.esolia.pro-dd/blob/main/LICENSE
+
+project-lifecycle:
+  status: active
+  roadmap: https://github.com/RickCogley/salty.esolia.pro-dd/blob/main/SECURITY.md
+
+contribution-policy:
+  accepts-pull-requests: true
+  accepts-automated-pull-requests: true
+  code-of-conduct: https://github.com/RickCogley/salty.esolia.pro-dd/blob/main/SECURITY.md
+
+distribution-points:
+  - https://salty.esolia.pro
+  - https://github.com/RickCogley/salty.esolia.pro-dd
+
+security-artifacts:
+  self-assessment:
+    publication-date: 2025-01-01
+    publication-url: https://github.com/RickCogley/salty.esolia.pro-dd/blob/main/SECURITY.md
+  threat-model:
+    publication-date: 2025-01-01
+    publication-url: https://github.com/RickCogley/salty.esolia.pro-dd/blob/main/SECURITY.md#threat-model
+
+security-contacts:
+  - type: email
+    value: admin@esolia.co.jp
+
+vulnerability-reporting:
+  accepts-vulnerability-reports: true
+  email-contact: admin@esolia.co.jp
+  security-policy: https://github.com/RickCogley/salty.esolia.pro-dd/blob/main/SECURITY.md
+  bug-bounty: false
+  disclosure-policy:
+    type: coordinated
+    disclosure-deadline: 90
+
+dependencies:
+  third-party-packages: true
+  dependencies-lists:
+    - https://github.com/RickCogley/salty.esolia.pro-dd/blob/main/deno.json
+  env-dependencies-policy:
+    policy-url: https://github.com/RickCogley/salty.esolia.pro-dd/blob/main/SECURITY.md
+
+security-testing:
+  security-testing-at-runtime:
+    - type: sast
+      tool: deno-lint
+    - type: dependency-scan
+      tool: GitHub Dependabot
+    - type: code-analysis
+      tool: CodeQL
+  security-testing-in-development:
+    - type: pattern-check
+      tool: custom-pattern-checker
+    - type: crypto-validation
+      tool: custom-security-tests
+
+encryption:
+  data-in-transit:
+    - description: AES-GCM-256 encryption for all sensitive data
+      algorithms:
+        - AES-GCM-256
+        - PBKDF2-SHA512
+  data-at-rest:
+    - description: No persistent storage of sensitive data
+      algorithms: []
+  key-management:
+    - description: Keys derived from user passwords using PBKDF2
+      algorithms:
+        - PBKDF2-SHA512 (600,000 iterations)

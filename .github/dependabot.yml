@@ -1,0 +1,58 @@
+# Dependabot configuration for Salty
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+
+updates:
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    pull-request-branch-name:
+      separator: "/"
+    assignees:
+      - "RickCogley"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+
+  # Enable version updates for npm (if using any npm dependencies)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    pull-request-branch-name:
+      separator: "/"
+    assignees:
+      - "RickCogley"
+    labels:
+      - "dependencies"
+      - "npm"
+    # Security updates get priority
+    open-pull-requests-limit: 10
+    # Only allow security updates for npm
+    versioning-strategy: increase-if-necessary
+    commit-message:
+      prefix: "fix"
+      prefix-development: "chore"
+      include: "scope"
+
+  # Configuration for Deno dependencies
+  # Note: Dependabot doesn't have native Deno support yet,
+  # but we can monitor the deno.json for any npm: or jsr: imports
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+      - "deno"

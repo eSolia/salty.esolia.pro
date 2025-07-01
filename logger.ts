@@ -75,6 +75,16 @@ export enum SecurityEvent {
   MALFORMED_INPUT = "MALFORMED_INPUT",
   UNAUTHORIZED_ACCESS = "UNAUTHORIZED_ACCESS",
   CSP_VIOLATION = "CSP_VIOLATION",
+  // New audit events
+  ENCRYPTION_SUCCESS = "ENCRYPTION_SUCCESS",
+  DECRYPTION_SUCCESS = "DECRYPTION_SUCCESS",
+  DECRYPTION_FAILURE = "DECRYPTION_FAILURE",
+  KEY_DERIVATION = "KEY_DERIVATION",
+  PATTERN_VIOLATION = "PATTERN_VIOLATION",
+  PATH_TRAVERSAL_ATTEMPT = "PATH_TRAVERSAL_ATTEMPT",
+  SQL_INJECTION_ATTEMPT = "SQL_INJECTION_ATTEMPT",
+  XSS_ATTEMPT = "XSS_ATTEMPT",
+  AUDIT_LOG_ACCESS = "AUDIT_LOG_ACCESS",
 }
 
 /**
@@ -95,6 +105,30 @@ interface PerformanceMetrics {
   securityEvents: Map<SecurityEvent, number>;
   /** Last reset time */
   resetTime: string;
+}
+
+/**
+ * Security audit entry for compliance tracking
+ */
+export interface SecurityAuditEntry {
+  /** Unique audit ID */
+  auditId: string;
+  /** Timestamp of the event */
+  timestamp: string;
+  /** Type of security event */
+  eventType: SecurityEvent;
+  /** User or client associated with event */
+  actor: string;
+  /** Resource being accessed */
+  resource?: string;
+  /** Action performed */
+  action: string;
+  /** Result of the action */
+  result: "success" | "failure" | "blocked";
+  /** Additional context */
+  context?: Record<string, any>;
+  /** Risk score (0-100) */
+  riskScore?: number;
 }
 
 /**
@@ -125,6 +159,8 @@ export class Logger {
   private requestCounter = 0;
   private recentLogs: LogEntry[] = [];
   private metrics: PerformanceMetrics;
+  private securityAuditLog: SecurityAuditEntry[] = [];
+  private auditCounter = 0;
 
   constructor(config: Partial<LoggerConfig> = {}) {
     this.config = {
@@ -461,6 +497,212 @@ export class Logger {
     }
 
     return false;
+  }
+
+  /**
+   * Create a security audit entry
+   */
+  audit(
+    eventType: SecurityEvent,
+    actor: string,
+    action: string,
+    result: "success" | "failure" | "blocked",
+    context?: Record<string, any>,
+  ): void {
+    const auditEntry: SecurityAuditEntry = {
+      auditId: `audit_${++this.auditCounter}_${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      eventType,
+      actor,
+      action,
+      result,
+      context,
+      riskScore: this.calculateRiskScore(eventType, result),
+    };
+
+    // Add to audit log
+    this.securityAuditLog.push(auditEntry);
+    if (this.securityAuditLog.length > this.config.maxLogEntries) {
+      this.securityAuditLog.shift();
+    }
+
+    // Also log as security event for real-time monitoring
+    this.security(
+      eventType,
+      `Security audit: ${action}`,
+      {
+        auditId: auditEntry.auditId,
+        actor,
+        result,
+        riskScore: auditEntry.riskScore,
+        ...context,
+      },
+    );
+  }
+
+  /**
+   * Calculate risk score based on event type and result
+   */
+  private calculateRiskScore(
+    eventType: SecurityEvent,
+    result: "success" | "failure" | "blocked",
+  ): number {
+    // Base scores by event type
+    const baseScores: Partial<Record<SecurityEvent, number>> = {
+      [SecurityEvent.PATH_TRAVERSAL_ATTEMPT]: 90,
+      [SecurityEvent.SQL_INJECTION_ATTEMPT]: 95,
+      [SecurityEvent.XSS_ATTEMPT]: 85,
+      [SecurityEvent.UNAUTHORIZED_ACCESS]: 80,
+      [SecurityEvent.API_KEY_INVALID]: 70,
+      [SecurityEvent.CRYPTO_FAILURE]: 75,
+      [SecurityEvent.MALFORMED_INPUT]: 60,
+      [SecurityEvent.SUSPICIOUS_ACTIVITY]: 85,
+      [SecurityEvent.CSP_VIOLATION]: 50,
+      [SecurityEvent.RATE_LIMIT_EXCEEDED]: 40,
+    };
+
+    let score = baseScores[eventType] || 30;
+
+    // Adjust based on result
+    if (result === "blocked") {
+      score = Math.max(score - 20, 0);
+    } else if (result === "failure") {
+      score = Math.min(score + 10, 100);
+    }
+
+    return score;
+  }
+
+  /**
+   * Get security audit trail
+   */
+  getAuditTrail(
+    filter?: {
+      eventType?: SecurityEvent;
+      actor?: string;
+      startTime?: Date;
+      endTime?: Date;
+      minRiskScore?: number;
+    },
+  ): SecurityAuditEntry[] {
+    let entries = [...this.securityAuditLog];
+
+    if (filter) {
+      if (filter.eventType) {
+        entries = entries.filter((e) => e.eventType === filter.eventType);
+      }
+      if (filter.actor) {
+        entries = entries.filter((e) => e.actor === filter.actor);
+      }
+      if (filter.startTime) {
+        entries = entries.filter(
+          (e) => new Date(e.timestamp) >= filter.startTime!,
+        );
+      }
+      if (filter.endTime) {
+        entries = entries.filter(
+          (e) => new Date(e.timestamp) <= filter.endTime!,
+        );
+      }
+      if (filter.minRiskScore !== undefined) {
+        entries = entries.filter(
+          (e) => (e.riskScore || 0) >= filter.minRiskScore!,
+        );
+      }
+    }
+
+    // Log audit trail access
+    this.audit(
+      SecurityEvent.AUDIT_LOG_ACCESS,
+      "system",
+      "Audit trail accessed",
+      "success",
+      { filterCriteria: filter },
+    );
+
+    return entries;
+  }
+
+  /**
+   * Get security audit summary
+   */
+  getAuditSummary(): {
+    totalEvents: number;
+    eventsByType: Record<string, number>;
+    eventsByResult: Record<string, number>;
+    highRiskEvents: number;
+    averageRiskScore: number;
+  } {
+    const summary = {
+      totalEvents: this.securityAuditLog.length,
+      eventsByType: {} as Record<string, number>,
+      eventsByResult: {
+        success: 0,
+        failure: 0,
+        blocked: 0,
+      },
+      highRiskEvents: 0,
+      averageRiskScore: 0,
+    };
+
+    let totalRiskScore = 0;
+
+    for (const entry of this.securityAuditLog) {
+      // Count by type
+      summary.eventsByType[entry.eventType] =
+        (summary.eventsByType[entry.eventType] || 0) + 1;
+
+      // Count by result
+      summary.eventsByResult[entry.result]++;
+
+      // Count high risk (score >= 70)
+      if ((entry.riskScore || 0) >= 70) {
+        summary.highRiskEvents++;
+      }
+
+      totalRiskScore += entry.riskScore || 0;
+    }
+
+    summary.averageRiskScore =
+      summary.totalEvents > 0 ? totalRiskScore / summary.totalEvents : 0;
+
+    return summary;
+  }
+
+  /**
+   * Export audit log for compliance
+   */
+  exportAuditLog(
+    format: "json" | "csv" = "json",
+  ): string {
+    if (format === "csv") {
+      const headers = [
+        "auditId",
+        "timestamp",
+        "eventType",
+        "actor",
+        "action",
+        "result",
+        "riskScore",
+        "context",
+      ];
+      const rows = this.securityAuditLog.map((entry) => [
+        entry.auditId,
+        entry.timestamp,
+        entry.eventType,
+        entry.actor,
+        entry.action,
+        entry.result,
+        entry.riskScore?.toString() || "",
+        JSON.stringify(entry.context || {}),
+      ]);
+      return [
+        headers.join(","),
+        ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+      ].join("\n");
+    }
+
+    return JSON.stringify(this.securityAuditLog, null, 2);
   }
 }
 
