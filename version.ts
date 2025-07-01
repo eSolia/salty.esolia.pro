@@ -35,14 +35,13 @@ export const RELEASE_NOTES = {
     "bump denoland/setup-deno from 1 to 2 (e407502)",
     "bump actions/cache from 3 to 4 (86c6f8d)",
     "bump actions/upload-artifact from 3 to 4 (61d5b9e)",
-    "bump github/codeql-action from 2 to 3 (66a6ed7)"
+    "bump github/codeql-action from 2 to 3 (66a6ed7)",
   ],
   "deprecated": [],
   "removed": [],
   "fixed": [],
-  "security": []
+  "security": [],
 } as const;
-
 
 // Additional exports configured in nagare.config.ts
 
@@ -55,7 +54,7 @@ export const TECH_SPECS = {
     "PBKDF2-SHA512 key derivation",
     "600,000 iterations",
     "basE91 encoding",
-    "Web Crypto API"
+    "Web Crypto API",
   ],
   "securityFeatures": [
     "Rate limiting",
@@ -64,40 +63,40 @@ export const TECH_SPECS = {
     "API authentication",
     "Request size limits",
     "Structured logging",
-    "Security event tracking"
+    "Security event tracking",
   ],
   "endpoints": [
     {
       "path": "/",
-      "description": "Japanese UI"
+      "description": "Japanese UI",
     },
     {
       "path": "/en/",
-      "description": "English UI"
+      "description": "English UI",
     },
     {
       "path": "/api/encrypt",
       "method": "POST",
-      "description": "Encrypt endpoint"
+      "description": "Encrypt endpoint",
     },
     {
       "path": "/api/decrypt",
       "method": "POST",
-      "description": "Decrypt endpoint"
+      "description": "Decrypt endpoint",
     },
     {
       "path": "/health",
       "method": "GET",
-      "description": "Health check endpoint"
-    }
-  ]
+      "description": "Health check endpoint",
+    },
+  ],
 } as const;
 
 /** Security information for the application */
 export const SECURITY_INFO = {
   "rateLimiting": {
     "window": "1 hour",
-    "maxRequests": 20
+    "maxRequests": 20,
   },
   "maxPayloadSize": "1MB",
   "maxKeySize": "1KB",
@@ -107,8 +106,8 @@ export const SECURITY_INFO = {
     "X-Content-Type-Options",
     "X-Frame-Options",
     "X-XSS-Protection",
-    "Referrer-Policy"
-  ]
+    "Referrer-Policy",
+  ],
 } as const;
 
 /** Version utility class */

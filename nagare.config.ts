@@ -118,7 +118,7 @@ export default {
   },
 
   updateFiles: [
-    { 
+    {
       path: "./deno.json",
       // Custom update function to safely update only the top-level version field
       updateFn: (content: string, data: any) => {
@@ -131,51 +131,55 @@ export default {
           // Fallback to regex if JSON parsing fails
           return content.replace(
             /^(\s*"version":\s*)"[^"]+"/m,
-            `$1"${data.version}"`
+            `$1"${data.version}"`,
           );
         }
-      }
+      },
     },
-    { 
+    {
       path: "./README.md",
       // Custom update function to handle specific badge patterns with comment markers
       updateFn: (content: string, data: any) => {
         let result = content;
-        
+
         // Update version badge between comment markers
-        const versionBadgeRegex = /<!-- VERSION_BADGE_START -->([\s\S]*?)<!-- VERSION_BADGE_END -->/;
+        const versionBadgeRegex =
+          /<!-- VERSION_BADGE_START -->([\s\S]*?)<!-- VERSION_BADGE_END -->/;
         const versionBadgeMatch = result.match(versionBadgeRegex);
-        
+
         if (versionBadgeMatch) {
           const newVersionBadge = `<!-- VERSION_BADGE_START -->
 
 [![Version](https://img.shields.io/badge/version-${data.version}-blue.svg)](https://github.com/esolia/salty.esolia.pro/releases/tag/v${data.version})
 
 <!-- VERSION_BADGE_END -->`;
-          
+
           result = result.replace(versionBadgeRegex, newVersionBadge);
         }
-        
+
         // Update build date badge between comment markers
-        const buildBadgeRegex = /<!-- BUILD_BADGE_START -->([\s\S]*?)<!-- BUILD_BADGE_END -->/;
+        const buildBadgeRegex =
+          /<!-- BUILD_BADGE_START -->([\s\S]*?)<!-- BUILD_BADGE_END -->/;
         const buildBadgeMatch = result.match(buildBadgeRegex);
-        
+
         if (buildBadgeMatch) {
           // Format the build date as YYYY-MM-DD
-          const buildDate = data.buildDate ? new Date(data.buildDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
-          const formattedBuildDate = buildDate.replace(/-/g, '--');
-          
+          const buildDate = data.buildDate
+            ? new Date(data.buildDate).toISOString().split("T")[0]
+            : new Date().toISOString().split("T")[0];
+          const formattedBuildDate = buildDate.replace(/-/g, "--");
+
           const newBuildBadge = `<!-- BUILD_BADGE_START -->
 
 [![Build Date](https://img.shields.io/badge/build-${formattedBuildDate}-green.svg)](https://github.com/esolia/salty.esolia.pro)
 
 <!-- BUILD_BADGE_END -->`;
-          
+
           result = result.replace(buildBadgeRegex, newBuildBadge);
         }
-        
+
         return result;
-      }
+      },
     },
   ],
 

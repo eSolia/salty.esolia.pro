@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.1.2] - 2025-07-01
 
 ### Changed
+
 - bump actions/dependency-review-action from 3 to 4 (a1c213b)
 - bump denoland/setup-deno from 1 to 2 (e407502)
 - bump actions/cache from 3 to 4 (86c6f8d)
@@ -17,24 +18,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.1.1] - 2025-07-01
 
 ### Added
+
 - add custom badge update logic to nagare config (0da7460)
 
 ### Changed
+
 - use JSON parsing for safer deno.json updates (a80b7c6)
 - update README badges to reflect current version 2.1.0 and build date (30cbb43)
 
 ### Fixed
+
 - use safer pattern for deno.json version updates (9a6f87f)
 
 ## [2.1.0] - 2025-07-01
 
 ### Added
+
 - upgrade Nagare to 1.8.0 with additionalExports support (c063470)
 
 ### Changed
+
 - update README version badge to 2.0.1 (2d38537)
 
 ### Fixed
+
 - resolve security test failures and formatting issues (2eca91f)
 - resolve formatting issues in multiple files (300873f)
 - re-add missing exports to version.ts after release (3c3f721)
