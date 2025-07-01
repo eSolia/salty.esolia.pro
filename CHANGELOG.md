@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2025-07-01
+
+### Added
+- add custom badge update logic to nagare config (0da7460)
+
+### Changed
+- use JSON parsing for safer deno.json updates (a80b7c6)
+- update README badges to reflect current version 2.1.0 and build date (30cbb43)
+
+### Fixed
+- use safer pattern for deno.json version updates (9a6f87f)
+
 ## [2.1.0] - 2025-07-01
 
 ### Added

@@ -1,6 +1,6 @@
 {
   "name": "@esolia/salty",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "exports": "./server.ts",
   "description": "Browser-native secure text encryption using Web Crypto API with basE91 encoding",
   "author": "Rick Cogley, eSolia Inc. <rick.cogley@esolia.co.jp>",
@@ -30,14 +30,12 @@
   "tasks": {
     "dev": "deno run --allow-net --allow-read --allow-env --watch server.ts",
     "start": "deno run --allow-net --allow-read --allow-env server.ts",
-
     "nagare": "deno run -A nagare-launcher.ts",
     "release": "deno task nagare",
     "release:patch": "deno task nagare patch",
     "release:minor": "deno task nagare minor",
     "release:major": "deno task nagare major",
     "rollback": "deno task nagare rollback",
-
     "version": "deno run --allow-read version-check.ts",
     "docs": "deno task nagare docs",
     "docs:serve": "deno task nagare docs --serve",
@@ -49,15 +47,24 @@
     "@std/semver": "https://deno.land/std@0.208.0/semver/mod.ts"
   },
   "compilerOptions": {
-    "lib": ["deno.window"],
+    "lib": [
+      "deno.window"
+    ],
     "strict": true
   },
   "lint": {
     "rules": {
-      "tags": ["recommended"],
-      "exclude": ["no-inferrable-types"]
+      "tags": [
+        "recommended"
+      ],
+      "exclude": [
+        "no-inferrable-types"
+      ]
     },
-    "exclude": ["docs/", "scratch/"]
+    "exclude": [
+      "docs/",
+      "scratch/"
+    ]
   },
   "fmt": {
     "useTabs": false,
@@ -66,11 +73,23 @@
     "semiColons": true,
     "singleQuote": false,
     "proseWrap": "preserve",
-    "exclude": ["docs/", "scratch/"]
+    "exclude": [
+      "docs/",
+      "scratch/"
+    ]
   },
   "test": {
-    "include": ["**/*_test.ts", "**/*.test.ts"],
-    "exclude": ["docs/", "scratch/"]
+    "include": [
+      "**/*_test.ts",
+      "**/*.test.ts"
+    ],
+    "exclude": [
+      "docs/",
+      "scratch/"
+    ]
   },
-  "exclude": ["./scratch/**/*", "./docs/**/*"]
+  "exclude": [
+    "./scratch/**/*",
+    "./docs/**/*"
+  ]
 }
