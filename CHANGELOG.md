@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-07-01
+
+### Added
+- upgrade Nagare to 1.8.0 with additionalExports support (c063470)
+
+### Changed
+- update README version badge to 2.0.1 (2d38537)
+
+### Fixed
+- resolve security test failures and formatting issues (2eca91f)
+- resolve formatting issues in multiple files (300873f)
+- re-add missing exports to version.ts after release (3c3f721)
+
 ## [2.0.1] - 2025-07-01
 
 ### Changed
