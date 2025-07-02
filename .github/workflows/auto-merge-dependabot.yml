@@ -12,31 +12,31 @@ jobs:
   auto-update:
     runs-on: ubuntu-latest
     if: github.actor == 'dependabot[bot]'
-    
+
     steps:
       - name: Checkout PR
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.event.pull_request.head.ref }}
-          
+
       - name: Setup Deno
         uses: denoland/setup-deno@v2
         with:
           deno-version: v1.x
-          
+
       - name: Merge main and format
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          
+
           # Fetch and merge main
           git fetch origin main
           git merge origin/main --no-edit || exit 0
-          
+
           # Format code
           deno fmt
-          
+
           # Commit if there are changes
           if [[ -n $(git diff --name-only) ]]; then
             git add -A

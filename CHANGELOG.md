@@ -8,12 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.1.4] - 2025-07-02
 
 ### Added
+
 - add git hooks and auto-update workflow to prevent formatting issues (afccdfe)
 
 ### Changed
+
 - bump nagare to 1.9.4 (c7fe166)
 
 ### Fixed
+
 - apply formatting to pass security workflow checks (9dd31e5)
 
 ## [2.1.3] - 2025-07-02
