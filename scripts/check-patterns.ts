@@ -63,6 +63,7 @@ const DANGEROUS_PATTERNS = [
     severity: "error" as const,
   },
   {
+    // devskim: ignore DS126858 - This is a pattern to detect weak algorithms, not use them
     regex: /\bMD5\b|\bSHA1\b/i,
     message: "Weak hash algorithms detected",
     severity: "error" as const,

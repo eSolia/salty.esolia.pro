@@ -210,6 +210,7 @@ Deno.test("Security Utils - URL Validation", async (t) => {
   await t.step("should validate HTTPS URLs", () => {
     assertEquals(validateURL("https://example.com"), true);
     assertEquals(validateURL("https://example.com/path?query=1"), true);
+    // devskim: ignore DS137138 - Testing HTTP URL validation
     assertEquals(validateURL("http://example.com", ["http", "https"]), true);
   });
 
