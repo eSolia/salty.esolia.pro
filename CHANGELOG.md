@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.5] - 2025-07-02
+
+### Added
+
+- add git hooks and auto-update workflow to prevent formatting issues (afccdfe)
+
+### Changed
+
+- bump nagare to 1.10.0 (fe46d80)
+- bump version to 2.1.4 (59a98b3)
+- bump nagare to 1.9.4 (f112139)
+- bump codecov/codecov-action from 3 to 5 (#22) (651ba78)
+
+### Fixed
+
+- apply formatting after release (902bf90)
+- apply formatting to pass security workflow checks (9dd31e5)
+
 ## [2.1.4] - 2025-07-02
 
 ### Added
