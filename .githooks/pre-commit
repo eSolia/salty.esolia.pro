@@ -1,0 +1,17 @@
+#!/bin/sh
+# Pre-commit hook to ensure code is formatted before committing
+
+echo "Running pre-commit formatting check..."
+
+# Run deno fmt
+deno fmt --check
+
+if [ $? -ne 0 ]; then
+    echo "❌ Code formatting issues detected!"
+    echo "Running 'deno fmt' to fix formatting..."
+    deno fmt
+    echo "✅ Formatting fixed. Please stage the changes and commit again."
+    exit 1
+fi
+
+echo "✅ Code formatting check passed!"

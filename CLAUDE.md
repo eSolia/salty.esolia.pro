@@ -17,6 +17,18 @@ When making any security-related changes to Salty, you MUST update the Security 
 
 The Security Changelog is located in SECURITY.md under the "📝 Security Changelog" section.
 
+## Initial Setup
+
+### Enable Git Hooks
+
+To prevent formatting issues in CI, enable the pre-commit hook:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+This will automatically format code before each commit, preventing formatting failures in CI.
+
 ## Common Development Commands
 
 ### Development
