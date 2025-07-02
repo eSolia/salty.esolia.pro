@@ -32,7 +32,7 @@ export const RELEASE_NOTES = {
   "added": [],
   "changed": [
     "bump nagare to 1.9.3 (dbc17e4)",
-    "bump nagare to 1.9.0 (90215a9)"
+    "bump nagare to 1.9.0 (90215a9)",
   ],
   "deprecated": [],
   "removed": [],
@@ -43,11 +43,10 @@ export const RELEASE_NOTES = {
     "remove unsupported package ecosystems from Dependabot config (c6b83ef)",
     "improve security workflow pattern matching (7a4ddb1)",
     "resolve linting errors and test failures (097ede0)",
-    "resolve formatting issues to fix Security Tests workflow (30adf99)"
+    "resolve formatting issues to fix Security Tests workflow (30adf99)",
   ],
-  "security": []
+  "security": [],
 } as const;
-
 
 // Additional exports configured in nagare.config.ts
 
@@ -60,7 +59,7 @@ export const TECH_SPECS = {
     "PBKDF2-SHA512 key derivation",
     "600,000 iterations",
     "basE91 encoding",
-    "Web Crypto API"
+    "Web Crypto API",
   ],
   "securityFeatures": [
     "Rate limiting",
@@ -69,40 +68,40 @@ export const TECH_SPECS = {
     "API authentication",
     "Request size limits",
     "Structured logging",
-    "Security event tracking"
+    "Security event tracking",
   ],
   "endpoints": [
     {
       "path": "/",
-      "description": "Japanese UI"
+      "description": "Japanese UI",
     },
     {
       "path": "/en/",
-      "description": "English UI"
+      "description": "English UI",
     },
     {
       "path": "/api/encrypt",
       "method": "POST",
-      "description": "Encrypt endpoint"
+      "description": "Encrypt endpoint",
     },
     {
       "path": "/api/decrypt",
       "method": "POST",
-      "description": "Decrypt endpoint"
+      "description": "Decrypt endpoint",
     },
     {
       "path": "/health",
       "method": "GET",
-      "description": "Health check endpoint"
-    }
-  ]
+      "description": "Health check endpoint",
+    },
+  ],
 } as const;
 
 /** Security information for the application */
 export const SECURITY_INFO = {
   "rateLimiting": {
     "window": "1 hour",
-    "maxRequests": 20
+    "maxRequests": 20,
   },
   "maxPayloadSize": "1MB",
   "maxKeySize": "1KB",
@@ -112,8 +111,8 @@ export const SECURITY_INFO = {
     "X-Content-Type-Options",
     "X-Frame-Options",
     "X-XSS-Protection",
-    "Referrer-Policy"
-  ]
+    "Referrer-Policy",
+  ],
 } as const;
 
 /** Version utility class */

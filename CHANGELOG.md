@@ -8,10 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.1.3] - 2025-07-02
 
 ### Changed
+
 - bump nagare to 1.9.3 (dbc17e4)
 - bump nagare to 1.9.0 (90215a9)
 
 ### Fixed
+
 - add missing assert import in salty_security_test.ts (a4c07cb)
 - apply deno formatting to server.ts (8d032a1)
 - resolve code scanning security alerts (aec544d)

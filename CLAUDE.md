@@ -63,6 +63,16 @@ deno check **/*.ts
 deno check *.ts scripts/*.ts
 ```
 
+### Release Automation
+
+Always use the `--skip-confirmation` flag for non-interactive releases:
+
+```bash
+deno task release:patch -- --skip-confirmation  # Non-interactive patch release
+deno task release:minor -- --skip-confirmation  # Non-interactive minor release
+deno task release:major -- --skip-confirmation  # Non-interactive major release
+```
+
 ### Preflight Checks Before Release
 
 ALWAYS perform these checks before any release:
@@ -315,6 +325,18 @@ Include "InfoSec:" prefix in commit messages when changes affect:
 9. **Git Merging**: When merging master changes to an active branch, make sure both branches are
    pulled and up to date first
 10. **Security Documentation**: Document all security-related decisions and their rationale for ISO 27001 compliance
+11. **TypeScript Strictness**: NEVER use `any` type. The project has strict linting that forbids `any` types. Always use proper types:
+    - Use specific interfaces and types from imports
+    - Use type assertions properly: `value as SpecificType` not `value as any`
+    - This prevents CI failures and ensures type safety
+12. **CI Test Considerations**: Some tests may need to be skipped in CI environments. Use:
+    ```typescript
+    Deno.test({
+      ignore: Deno.env.get("CI") === "true",
+      name: "Test name",
+    }, async (t) => {/* test code */});
+    ```
+    This is particularly important for tests that require actual git repositories or file system operations that may conflict in CI
 
 ## Programming Paradigm & Code Consistency
 
