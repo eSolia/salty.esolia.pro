@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.6] - 2025-07-03
+
+### Added
+
+- add QR code generation for shareable URLs (8beaa59)
+- add shareable URL copy button after encryption (87581d1)
+
+### Fixed
+
+- improve Japanese text formatting in QR code modal (0fcfecc)
+- update CSP to allow QR code library from cdn.jsdelivr.net (1e36e39)
+- resolve QR code button click issue and update documentation (9f8161a)
+
 ## [2.1.5] - 2025-07-02
 
 ### Added
