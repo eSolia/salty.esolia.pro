@@ -1341,37 +1341,13 @@
           const password = generatePassword(config);
           generatedPassword.value = password;
 
-          // Calculate and display entropy
-          const entropy = calculatePasswordEntropy(
-            password,
-            currentPasswordType === "diceware",
-            currentPasswordType === "diceware"
-              ? parseInt(wordCount.value)
-              : undefined,
-          );
+          // Calculate strength using the same analyzer as the main form
+          const strength = analyzePasswordStrength(password);
+          const strengthLevel = getStrengthLevel(strength.score);
 
-          let strengthText = "";
-          if (entropy >= 100) {
-            strengthText = `Entropy: ${
-              Math.round(entropy)
-            } bits - Very Strong`;
-          } else if (entropy >= 80) {
-            strengthText = `Entropy: ${
-              Math.round(entropy)
-            } bits - Strong`;
-          } else if (entropy >= 60) {
-            strengthText = `Entropy: ${
-              Math.round(entropy)
-            } bits - Good`;
-          } else if (entropy >= 40) {
-            strengthText = `Entropy: ${
-              Math.round(entropy)
-            } bits - Fair`;
-          } else {
-            strengthText = `Entropy: ${
-              Math.round(entropy)
-            } bits - Weak`;
-          }
+          const strengthText = `Entropy: ${
+            Math.round(strength.entropy)
+          } bits - ${strengthLevel.label}`;
 
           generatedPasswordStrength.textContent = strengthText;
           copyGeneratedPassword.disabled = false;

@@ -1444,37 +1444,23 @@
           const password = generatePassword(config);
           generatedPassword.value = password;
 
-          // Calculate and display entropy
-          const entropy = calculatePasswordEntropy(
-            password,
-            currentPasswordType === "diceware",
-            currentPasswordType === "diceware"
-              ? parseInt(wordCount.value)
-              : undefined,
-          );
+          // Calculate strength using the same analyzer as the main form
+          const strength = analyzePasswordStrength(password);
+          const strengthLevel = getStrengthLevel(strength.score);
 
-          let strengthText = "";
-          if (entropy >= 100) {
-            strengthText = `エントロピー: ${
-              Math.round(entropy)
-            } ビット - 非常に強い`;
-          } else if (entropy >= 80) {
-            strengthText = `エントロピー: ${
-              Math.round(entropy)
-            } ビット - 強い`;
-          } else if (entropy >= 60) {
-            strengthText = `エントロピー: ${
-              Math.round(entropy)
-            } ビット - 良い`;
-          } else if (entropy >= 40) {
-            strengthText = `エントロピー: ${
-              Math.round(entropy)
-            } ビット - 普通`;
-          } else {
-            strengthText = `エントロピー: ${
-              Math.round(entropy)
-            } ビット - 弱い`;
-          }
+          const strengthText = `エントロピー: ${
+            Math.round(strength.entropy)
+          } ビット - ${
+            strength.score === 4
+              ? "非常に強い"
+              : strength.score === 3
+              ? "良い"
+              : strength.score === 2
+              ? "普通"
+              : strength.score === 1
+              ? "弱い"
+              : "非常に弱い"
+          }`;
 
           generatedPasswordStrength.textContent = strengthText;
           copyGeneratedPassword.disabled = false;
