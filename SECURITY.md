@@ -253,6 +253,20 @@ Our application tracks and monitors:
 
 ## 📝 Security Changelog
 
+### Version 2.1.0
+
+- Added QR code generation feature for secure content sharing
+  - QR codes generated entirely client-side using qrcode-generator library
+  - No sensitive data sent to external services
+  - Updated Content Security Policy to allow cdn.jsdelivr.net for QR library
+  - QR codes encode only the shareable URL (same as displayed to user)
+- Fixed console.log information disclosure in server.ts
+  - Replaced debug console.log statements with proper logger calls
+  - Debug logs now respect LOG_LEVEL environment variable
+- Enhanced sharing capabilities
+  - Shareable URLs with encoded ciphertext for easy distribution
+  - Maintains zero-knowledge architecture (keys never in URLs)
+
 ### Version 2.0.0
 
 - Added comprehensive security validation utilities (security-utils.ts)

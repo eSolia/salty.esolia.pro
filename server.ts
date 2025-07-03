@@ -104,7 +104,7 @@ class SecurityUtils {
     const cspDirectives = [
       "default-src 'self'",
       "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com",
-      "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://kit.fontawesome.com https://cdn.usefathom.com",
+      "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://kit.fontawesome.com https://cdn.usefathom.com https://cdn.jsdelivr.net",
       "img-src 'self' data: https:",
       "connect-src 'self' https://cdn.usefathom.com",
       "font-src 'self' https://fonts.gstatic.com https://kit.fontawesome.com",
