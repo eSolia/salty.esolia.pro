@@ -13,8 +13,9 @@ export interface PasswordGeneratorConfig {
   includeLowercase?: boolean; // For random passwords
   includeNumbers?: boolean; // For random passwords
   includeSymbols?: boolean; // For random passwords
+  excludedSymbols?: string; // Symbols to exclude from generation
   wordList?: string[]; // For diceware
-  separator?: string; // For diceware (default: "-")
+  separator?: string; // For diceware (default: " ")
 }
 
 /**
@@ -26,6 +27,35 @@ const CHAR_SETS = {
   numbers: "0123456789",
   symbols: "!@#$%^&*()_+-=[]{}|;:,.<>?",
 } as const;
+
+/**
+ * Get/set excluded symbols in localStorage
+ */
+export function getExcludedSymbols(): string {
+  if (typeof window !== "undefined" && window.localStorage) {
+    return localStorage.getItem("saltyExcludedSymbols") || "";
+  }
+  return "";
+}
+
+export function setExcludedSymbols(symbols: string): void {
+  if (typeof window !== "undefined" && window.localStorage) {
+    localStorage.setItem("saltyExcludedSymbols", symbols);
+  }
+}
+
+/**
+ * Filter out excluded symbols from a character set
+ */
+function filterExcludedSymbols(
+  charSet: string,
+  excludedSymbols: string,
+): string {
+  if (!excludedSymbols) return charSet;
+
+  const excluded = new Set(excludedSymbols.split(""));
+  return charSet.split("").filter((char) => !excluded.has(char)).join("");
+}
 
 /**
  * A subset of Japanese words suitable for diceware
@@ -182,13 +212,22 @@ export function generateRandomPassword(
   const includeLowercase = config.includeLowercase ?? true;
   const includeNumbers = config.includeNumbers ?? true;
   const includeSymbols = config.includeSymbols ?? true;
+  const excludedSymbols = config.excludedSymbols || getExcludedSymbols();
 
   // Build character set
   let charSet = "";
   if (includeUppercase) charSet += CHAR_SETS.uppercase;
   if (includeLowercase) charSet += CHAR_SETS.lowercase;
   if (includeNumbers) charSet += CHAR_SETS.numbers;
-  if (includeSymbols) charSet += CHAR_SETS.symbols;
+  if (includeSymbols) {
+    const filteredSymbols = filterExcludedSymbols(
+      CHAR_SETS.symbols,
+      excludedSymbols,
+    );
+    if (filteredSymbols.length > 0) {
+      charSet += filteredSymbols;
+    }
+  }
 
   if (charSet.length === 0) {
     throw new Error("At least one character set must be included");
@@ -214,9 +253,15 @@ export function generateRandomPassword(
     );
   }
   if (includeSymbols) {
-    password.push(
-      CHAR_SETS.symbols[getSecureRandomInt(CHAR_SETS.symbols.length)],
+    const filteredSymbols = filterExcludedSymbols(
+      CHAR_SETS.symbols,
+      excludedSymbols,
     );
+    if (filteredSymbols.length > 0) {
+      password.push(
+        filteredSymbols[getSecureRandomInt(filteredSymbols.length)],
+      );
+    }
   }
 
   // Fill remaining length
@@ -236,11 +281,42 @@ export function generateRandomPassword(
 /**
  * Generate a diceware passphrase
  */
+// Cache for the loaded wordlist
+let cachedWordList: string[] | null = null;
+
+/**
+ * Load the Japanese diceware wordlist (browser-compatible)
+ */
+async function loadWordList(): Promise<string[]> {
+  if (cachedWordList) {
+    return cachedWordList;
+  }
+
+  try {
+    const response = await fetch("/japanese-diceware-wordlist.txt");
+    if (response.ok) {
+      const text = await response.text();
+      cachedWordList = text.split("\n")
+        .map((word) => word.trim())
+        .filter((word) => word.length > 0);
+      console.log(
+        `Loaded ${cachedWordList.length} words from diceware wordlist`,
+      );
+      return cachedWordList;
+    }
+  } catch (error) {
+    console.warn("Failed to load full wordlist, using default", error);
+  }
+
+  // Fall back to default list
+  return DEFAULT_JAPANESE_WORDS;
+}
+
 export function generateDicewarePassphrase(
   config: PasswordGeneratorConfig,
 ): string {
   const wordCount = config.length || 6; // Default to 6 words
-  const wordList = config.wordList || DEFAULT_JAPANESE_WORDS;
+  const wordList = config.wordList || cachedWordList || DEFAULT_JAPANESE_WORDS;
   const separator = config.separator || " "; // Default to space for easier mobile typing
 
   if (wordList.length < 100) {
@@ -253,6 +329,13 @@ export function generateDicewarePassphrase(
   }
 
   return words.join(separator);
+}
+
+/**
+ * Initialize the wordlist (call this on page load)
+ */
+export async function initializeDiceware(): Promise<void> {
+  await loadWordList();
 }
 
 /**
