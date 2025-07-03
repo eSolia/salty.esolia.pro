@@ -175,18 +175,22 @@ function generateFeedback(
   // Special handling for diceware passphrases
   if (isDicewarePassphrase(password)) {
     const words = password.split(" ");
-    if (words.length < 4) {
-      suggestions.push("Consider using at least 4 words");
-    }
-    if (words.length < 6 && entropy < 60) {
-      suggestions.push("Add more words to increase security");
+    // More nuanced feedback based on word count
+    if (words.length < 3) {
+      suggestions.push("Use at least 3 words for basic security");
+      warning = "Too few words";
+    } else if (words.length === 3) {
+      // 3 words is acceptable for many uses
+      suggestions.push("Good for most uses; add words for high-security needs");
+    } else if (words.length === 4) {
+      suggestions.push("Excellent passphrase strength");
+    } else if (words.length >= 5) {
+      suggestions.push("Very strong passphrase!");
     }
 
-    // Set appropriate warnings for diceware
-    if (entropy < 40) {
+    // Only warn if really too weak
+    if (entropy < 26) {
       warning = "Too few words for adequate security";
-    } else if (entropy < 60) {
-      warning = "Consider adding more words";
     }
 
     // Skip character-based suggestions for diceware
@@ -245,8 +249,21 @@ function generateFeedback(
 
 /**
  * Calculate password strength score (0-4) based on entropy
+ * Uses different thresholds for diceware vs random passwords
  */
-function calculateScore(entropy: number): number {
+function calculateScore(entropy: number, isDiceware: boolean = false): number {
+  // Diceware-specific thresholds
+  // Based on practical security: 3 words from 10k list = ~40 bits
+  // This is equivalent to a 9-char random password with mixed case/numbers
+  if (isDiceware) {
+    if (entropy >= 65) return 4; // 5+ words = Strong (very secure)
+    if (entropy >= 52) return 3; // 4 words = Good (recommended minimum)
+    if (entropy >= 39) return 3; // 3 words = Good (acceptable for many uses)
+    if (entropy >= 26) return 1; // 2 words = Weak
+    return 0; // 1 word = Very Weak
+  }
+
+  // Regular password thresholds
   for (let i = STRENGTH_LEVELS.length - 1; i >= 0; i--) {
     if (entropy >= STRENGTH_LEVELS[i].minEntropy) {
       return STRENGTH_LEVELS[i].score;
@@ -259,8 +276,9 @@ function calculateScore(entropy: number): number {
  * Main function to analyze password strength
  */
 export function analyzePasswordStrength(password: string): PasswordStrength {
+  const isDiceware = isDicewarePassphrase(password);
   const entropy = calculateEntropy(password);
-  const score = calculateScore(entropy);
+  const score = calculateScore(entropy, isDiceware);
   const feedback = generateFeedback(password, entropy);
   const crackTimeDisplay = estimateCrackTime(entropy);
 
