@@ -33,11 +33,13 @@ const DEFAULT_EXCLUDED_SYMBOLS = "[]{}#<>|";
 
 /**
  * Get/set excluded symbols in localStorage
+ * Returns user's saved preferences if they exist, otherwise returns defaults
  */
 export function getExcludedSymbols(): string {
   if (typeof globalThis !== "undefined" && globalThis.localStorage) {
     const saved = localStorage.getItem("saltyExcludedSymbols");
-    // If nothing saved, return defaults
+    // Only use defaults if nothing has ever been saved
+    // If user saved empty string "", respect that choice
     if (saved === null) {
       return DEFAULT_EXCLUDED_SYMBOLS;
     }
@@ -50,6 +52,23 @@ export function setExcludedSymbols(symbols: string): void {
   if (typeof globalThis !== "undefined" && globalThis.localStorage) {
     localStorage.setItem("saltyExcludedSymbols", symbols);
   }
+}
+
+/**
+ * Check if user has customized their excluded symbols
+ */
+export function hasCustomExcludedSymbols(): boolean {
+  if (typeof globalThis !== "undefined" && globalThis.localStorage) {
+    return localStorage.getItem("saltyExcludedSymbols") !== null;
+  }
+  return false;
+}
+
+/**
+ * Get the default excluded symbols for display/reference
+ */
+export function getDefaultExcludedSymbols(): string {
+  return DEFAULT_EXCLUDED_SYMBOLS;
 }
 
 /**
