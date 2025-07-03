@@ -101,6 +101,26 @@
         cursor: pointer;
       }
 
+      /* Password visibility toggle */
+      #togglePassword {
+        display: none;
+      }
+      #togglePassword.show {
+        display: block;
+      }
+
+      /* Password generator modal styles */
+      .password-type-btn {
+        cursor: pointer;
+      }
+      .password-type-btn.active {
+        border-color: #3b82f6;
+        background-color: #eff6ff;
+      }
+      .password-type-btn.active i {
+        color: #3b82f6;
+      }
+
       /* Password strength indicator styles */
       .strength-meter {
         height: 6px;
@@ -235,6 +255,154 @@
       </div>
     </div>
 
+    <!-- Password Generator Modal -->
+    <div id="passwordGeneratorModal" class="modal hidden">
+      <div class="modal-content" style="max-width: 500px">
+        <span
+          class="close-button"
+          onclick="document.getElementById('passwordGeneratorModal').classList.add('hidden')"
+        >&times;</span>
+        <h2 class="text-3xl font-bold text-sky-700 mb-6">パスワード生成</h2>
+
+        <div class="mb-6">
+          <label class="block text-lg font-semibold text-gray-700 mb-3"
+          >タイプ</label>
+          <div class="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              id="dicewareBtn"
+              class="password-type-btn active p-4 border-2 border-blue-500 bg-blue-50 rounded-lg text-center transition"
+            >
+              <i class="fas fa-dice text-2xl mb-2 text-blue-600"></i>
+              <div class="font-semibold">Diceware</div>
+              <div class="text-sm text-gray-600">
+                覚えやすい単語の組み合わせ
+              </div>
+            </button>
+            <button
+              type="button"
+              id="randomBtn"
+              class="password-type-btn p-4 border-2 border-gray-300 bg-white rounded-lg text-center transition hover:border-gray-400"
+            >
+              <i class="fas fa-random text-2xl mb-2 text-gray-600"></i>
+              <div class="font-semibold">ランダム</div>
+              <div class="text-sm text-gray-600">完全にランダムな文字列</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Diceware Options -->
+        <div id="dicewareOptions" class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+          >単語数</label>
+          <input
+            type="range"
+            id="wordCount"
+            min="4"
+            max="8"
+            value="6"
+            class="w-full"
+          >
+          <div class="flex justify-between text-sm text-gray-500">
+            <span>4</span>
+            <span id="wordCountDisplay" class="font-medium text-gray-700"
+            >6 単語</span>
+            <span>8</span>
+          </div>
+        </div>
+
+        <!-- Random Options -->
+        <div id="randomOptions" class="mb-6 hidden">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+            >長さ</label>
+            <input
+              type="range"
+              id="passwordLength"
+              min="8"
+              max="32"
+              value="16"
+              class="w-full"
+            >
+            <div class="flex justify-between text-sm text-gray-500">
+              <span>8</span>
+              <span id="passwordLengthDisplay" class="font-medium text-gray-700"
+              >16 文字</span>
+              <span>32</span>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="flex items-center">
+              <input type="checkbox" id="includeUppercase" checked class="mr-2">
+              <span class="text-sm">大文字 (A-Z)</span>
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" id="includeLowercase" checked class="mr-2">
+              <span class="text-sm">小文字 (a-z)</span>
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" id="includeNumbers" checked class="mr-2">
+              <span class="text-sm">数字 (0-9)</span>
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" id="includeSymbols" checked class="mr-2">
+              <span class="text-sm">記号 (!@#$%^&*)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Generated Password Display -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+          >生成されたパスワード</label>
+          <div
+            class="relative bg-gray-50 p-4 rounded-lg border border-gray-300"
+          >
+            <input
+              type="text"
+              id="generatedPassword"
+              readonly
+              class="w-full bg-transparent border-none outline-none pr-20 font-mono"
+              placeholder="生成ボタンをクリック"
+            >
+            <button
+              type="button"
+              id="copyGeneratedPassword"
+              class="absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled
+            >
+              コピー
+            </button>
+          </div>
+          <div
+            id="generatedPasswordStrength"
+            class="mt-2 text-sm text-gray-600"
+          >
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex space-x-3">
+          <button
+            type="button"
+            id="generateBtn"
+            class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-medium"
+          >
+            <i class="fas fa-sync-alt mr-2"></i>生成
+          </button>
+          <button
+            type="button"
+            id="usePasswordBtn"
+            class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled
+          >
+            <i class="fas fa-check mr-2"></i>使用
+          </button>
+        </div>
+      </div>
+    </div>
+
     <header class="bg-sky-800 text-white p-4 shadow-md">
       <div class="container mx-auto flex justify-between items-center">
         <p class="flex items-center space-x-2">
@@ -291,17 +459,36 @@
         </div>
 
         <div>
-          <label
-            for="key"
-            class="block text-lg font-semibold text-gray-700 mb-2"
-          >キー</label>
-          <input
-            type="password"
-            name="key"
-            id="key"
-            class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 text-base"
-            placeholder="暗号化/復号のためのキーを入力"
-          >
+          <div class="flex justify-between items-end mb-2">
+            <label
+              for="key"
+              class="block text-lg font-semibold text-gray-700"
+            >キー</label>
+            <button
+              type="button"
+              id="generatePasswordBtn"
+              class="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            >
+              <i class="fas fa-key mr-1"></i>パスワード生成
+            </button>
+          </div>
+          <div class="relative">
+            <input
+              type="password"
+              name="key"
+              id="key"
+              class="w-full p-4 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 text-base"
+              placeholder="暗号化/復号のためのキーを入力"
+            >
+            <button
+              type="button"
+              id="togglePassword"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+              aria-label="パスワードを表示/非表示"
+            >
+              <i class="fas fa-eye" id="toggleIcon"></i>
+            </button>
+          </div>
           <!-- Password strength indicator -->
           <div id="strengthIndicator" class="hidden">
             <div class="strength-meter">
@@ -405,6 +592,12 @@
       // Import HIBP checker
       import { checkPasswordBreach } from "/hibp-checker.ts";
 
+      // Import password generator
+      import {
+        calculatePasswordEntropy,
+        generatePassword,
+      } from "/password-generator.ts";
+
       // This will be replaced by the server upon serving the HTML file.
       const INJECTED_SALT_HEX =
         "SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER";
@@ -418,6 +611,8 @@
       const helpModal = document.getElementById("helpModal");
       const closeButton = helpModal.querySelector(".close-button");
       const resetFormBtn = document.getElementById("resetFormBtn"); // Get the new reset button
+      const togglePassword = document.getElementById("togglePassword");
+      const toggleIcon = document.getElementById("toggleIcon");
 
       // Password strength indicator elements
       const strengthIndicator = document.getElementById(
@@ -913,6 +1108,13 @@
         const password = event.target.value;
         updateStrengthIndicator(password);
 
+        // Show/hide password toggle based on input
+        if (password.length > 0) {
+          togglePassword.classList.add("show");
+        } else {
+          togglePassword.classList.remove("show");
+        }
+
         // Debounce breach checking (500ms after user stops typing)
         if (breachCheckTimer) {
           clearTimeout(breachCheckTimer);
@@ -928,6 +1130,23 @@
         }
       });
 
+      // Password visibility toggle
+      togglePassword.addEventListener("click", () => {
+        const type = keyInput.getAttribute("type") === "password"
+          ? "text"
+          : "password";
+        keyInput.setAttribute("type", type);
+
+        // Toggle icon
+        if (type === "password") {
+          toggleIcon.classList.remove("fa-eye-slash");
+          toggleIcon.classList.add("fa-eye");
+        } else {
+          toggleIcon.classList.remove("fa-eye");
+          toggleIcon.classList.add("fa-eye-slash");
+        }
+      });
+
       // Event listener for the reset button
       resetFormBtn.addEventListener("click", () => {
         payloadInput.value = "";
@@ -936,6 +1155,7 @@
         strengthIndicator.classList.add("hidden");
         breachWarning.classList.add("hidden");
         breachCheckLoading.classList.add("hidden");
+        togglePassword.classList.remove("show");
 
         // Clear breach check timer
         if (breachCheckTimer) {
@@ -964,6 +1184,173 @@
         if (event.target === helpModal) {
           helpModal.classList.add("hidden");
         }
+        if (
+          event.target ===
+            document.getElementById("passwordGeneratorModal")
+        ) {
+          document.getElementById("passwordGeneratorModal").classList
+            .add("hidden");
+        }
+      });
+
+      // Password Generator functionality
+      const passwordGeneratorModal = document.getElementById(
+        "passwordGeneratorModal",
+      );
+      const generatePasswordBtn = document.getElementById(
+        "generatePasswordBtn",
+      );
+      const dicewareBtn = document.getElementById("dicewareBtn");
+      const randomBtn = document.getElementById("randomBtn");
+      const dicewareOptions = document.getElementById(
+        "dicewareOptions",
+      );
+      const randomOptions = document.getElementById("randomOptions");
+      const wordCount = document.getElementById("wordCount");
+      const wordCountDisplay = document.getElementById(
+        "wordCountDisplay",
+      );
+      const passwordLength = document.getElementById("passwordLength");
+      const passwordLengthDisplay = document.getElementById(
+        "passwordLengthDisplay",
+      );
+      const generatedPassword = document.getElementById(
+        "generatedPassword",
+      );
+      const generatedPasswordStrength = document.getElementById(
+        "generatedPasswordStrength",
+      );
+      const copyGeneratedPassword = document.getElementById(
+        "copyGeneratedPassword",
+      );
+      const generateBtn = document.getElementById("generateBtn");
+      const usePasswordBtn = document.getElementById("usePasswordBtn");
+
+      let currentPasswordType = "diceware";
+
+      // Open password generator modal
+      generatePasswordBtn.addEventListener("click", () => {
+        passwordGeneratorModal.classList.remove("hidden");
+        generateBtn.click(); // Auto-generate on open
+      });
+
+      // Switch between diceware and random
+      dicewareBtn.addEventListener("click", () => {
+        currentPasswordType = "diceware";
+        dicewareBtn.classList.add("active");
+        randomBtn.classList.remove("active");
+        dicewareOptions.classList.remove("hidden");
+        randomOptions.classList.add("hidden");
+      });
+
+      randomBtn.addEventListener("click", () => {
+        currentPasswordType = "random";
+        randomBtn.classList.add("active");
+        dicewareBtn.classList.remove("active");
+        randomOptions.classList.remove("hidden");
+        dicewareOptions.classList.add("hidden");
+      });
+
+      // Update sliders
+      wordCount.addEventListener("input", (e) => {
+        wordCountDisplay.textContent = `${e.target.value} 単語`;
+      });
+
+      passwordLength.addEventListener("input", (e) => {
+        passwordLengthDisplay.textContent = `${e.target.value} 文字`;
+      });
+
+      // Generate password
+      generateBtn.addEventListener("click", () => {
+        let config;
+
+        if (currentPasswordType === "diceware") {
+          config = {
+            type: "diceware",
+            length: parseInt(wordCount.value),
+          };
+        } else {
+          config = {
+            type: "random",
+            length: parseInt(passwordLength.value),
+            includeUppercase:
+              document.getElementById("includeUppercase").checked,
+            includeLowercase:
+              document.getElementById("includeLowercase").checked,
+            includeNumbers:
+              document.getElementById("includeNumbers").checked,
+            includeSymbols:
+              document.getElementById("includeSymbols").checked,
+          };
+        }
+
+        try {
+          const password = generatePassword(config);
+          generatedPassword.value = password;
+
+          // Calculate and display entropy
+          const entropy = calculatePasswordEntropy(
+            password,
+            currentPasswordType === "diceware",
+            currentPasswordType === "diceware"
+              ? parseInt(wordCount.value)
+              : undefined,
+          );
+
+          let strengthText = "";
+          if (entropy >= 100) {
+            strengthText = `エントロピー: ${
+              Math.round(entropy)
+            } ビット - 非常に強い`;
+          } else if (entropy >= 80) {
+            strengthText = `エントロピー: ${
+              Math.round(entropy)
+            } ビット - 強い`;
+          } else if (entropy >= 60) {
+            strengthText = `エントロピー: ${
+              Math.round(entropy)
+            } ビット - 良い`;
+          } else if (entropy >= 40) {
+            strengthText = `エントロピー: ${
+              Math.round(entropy)
+            } ビット - 普通`;
+          } else {
+            strengthText = `エントロピー: ${
+              Math.round(entropy)
+            } ビット - 弱い`;
+          }
+
+          generatedPasswordStrength.textContent = strengthText;
+          copyGeneratedPassword.disabled = false;
+          usePasswordBtn.disabled = false;
+        } catch (error) {
+          showMessageBox(
+            "パスワード生成エラー: " + error.message,
+            true,
+          );
+        }
+      });
+
+      // Copy generated password
+      copyGeneratedPassword.addEventListener("click", () => {
+        generatedPassword.select();
+        document.execCommand("copy");
+        showMessageBox("パスワードをコピーしました！");
+      });
+
+      // Use generated password
+      usePasswordBtn.addEventListener("click", () => {
+        keyInput.value = generatedPassword.value;
+        keyInput.type = "text"; // Show the password
+        toggleIcon.classList.remove("fa-eye");
+        toggleIcon.classList.add("fa-eye-slash");
+        togglePassword.classList.add("show");
+        passwordGeneratorModal.classList.add("hidden");
+
+        // Trigger input event to update strength indicator
+        keyInput.dispatchEvent(new Event("input"));
+
+        showMessageBox("パスワードが設定されました！");
       });
 
       // NEW: Check for URL parameters on page load

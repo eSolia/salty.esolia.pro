@@ -849,53 +849,32 @@ async function serveFile(pathname: string): Promise<Response> {
       filePath = "./en/index.html";
     } else if (pathname === "favicon.ico") {
       filePath = "./favicon.ico";
-    } else if (pathname === "/salty.ts") {
-      console.log("[DEBUG] Handling /salty.ts transpilation with Deno emit");
+    } // Handle TypeScript module transpilation
+    else if (
+      pathname.endsWith(".ts") && [
+        "/salty.ts",
+        "/password-strength.ts",
+        "/hibp-checker.ts",
+        "/password-generator.ts",
+      ].includes(pathname)
+    ) {
+      console.log(`[DEBUG] Handling ${pathname} transpilation with Deno emit`);
       try {
-        // Use Deno's built-in transpiler
-        const result = await bundle(new URL("./salty.ts", import.meta.url));
+        const moduleName = pathname.slice(1); // Remove leading slash
+        const result = await bundle(
+          new URL(`./${moduleName}`, import.meta.url),
+        );
         const jsContent = result.code;
 
         console.log(
-          "[DEBUG] Deno transpilation successful, length:",
-          jsContent.length,
+          `[DEBUG] Transpilation successful for ${moduleName}, length: ${jsContent.length}`,
         );
 
         const headers = SecurityUtils.createSecurityHeaders();
         headers.set("Content-Type", "text/javascript; charset=utf-8");
         return new Response(jsContent, { headers });
       } catch (error) {
-        console.error("[ERROR] Deno transpilation failed:", error);
-        throw new Error("Transpilation failed");
-      }
-    } else if (pathname === "/password-strength.ts") {
-      console.log("[DEBUG] Handling /password-strength.ts transpilation");
-      try {
-        const result = await bundle(
-          new URL("./password-strength.ts", import.meta.url),
-        );
-        const jsContent = result.code;
-
-        const headers = SecurityUtils.createSecurityHeaders();
-        headers.set("Content-Type", "text/javascript; charset=utf-8");
-        return new Response(jsContent, { headers });
-      } catch (error) {
-        console.error("[ERROR] Password strength transpilation failed:", error);
-        throw new Error("Transpilation failed");
-      }
-    } else if (pathname === "/hibp-checker.ts") {
-      console.log("[DEBUG] Handling /hibp-checker.ts transpilation");
-      try {
-        const result = await bundle(
-          new URL("./hibp-checker.ts", import.meta.url),
-        );
-        const jsContent = result.code;
-
-        const headers = SecurityUtils.createSecurityHeaders();
-        headers.set("Content-Type", "text/javascript; charset=utf-8");
-        return new Response(jsContent, { headers });
-      } catch (error) {
-        console.error("[ERROR] HIBP checker transpilation failed:", error);
+        console.error(`[ERROR] Transpilation failed for ${pathname}:`, error);
         throw new Error("Transpilation failed");
       }
     } // Handle image files
