@@ -22,10 +22,19 @@ const CACHE_DURATION = 3600000; // 1 hour in milliseconds
 
 /**
  * Convert string to SHA-1 hash using Web Crypto API
+ *
+ * NOTE: SHA-1 is intentionally used here as it's required by the HIBP API.
+ * This is NOT a security vulnerability because:
+ * 1. We're only using SHA-1 for API compatibility, not for security
+ * 2. Only the first 5 characters are sent to HIBP (k-Anonymity)
+ * 3. The full hash never leaves the client
+ *
+ * @devskim_disable: DS126858 - SHA-1 required for HIBP API compatibility
  */
 async function sha1Hash(text: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(text);
+  // @devskim_disable: DS126858 - SHA-1 required for HIBP API
   const hashBuffer = await crypto.subtle.digest("SHA-1", data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join(
@@ -52,6 +61,7 @@ async function fetchHashSuffixes(hashPrefix: string): Promise<string> {
   }
 
   const controller = new AbortController();
+  // Fixed 5-second timeout for API calls - no user input involved
   const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
   try {
@@ -121,6 +131,7 @@ export async function checkPasswordBreach(
     }
 
     // Generate SHA-1 hash of password
+    // @devskim_disable: DS126858 - SHA-1 required for HIBP API compatibility
     const fullHash = await sha1Hash(password);
     const hashPrefix = fullHash.substring(0, 5);
     const hashSuffix = fullHash.substring(5);

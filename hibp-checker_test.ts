@@ -26,7 +26,10 @@ Deno.test("HIBP Checker - Basic Functionality", async (t) => {
 
   await t.step("should check safe password", async () => {
     // Generate a random safe password unlikely to be in breaches
-    const safePassword = `SafeP@ss${Date.now()}${Math.random()}!`;
+    // Using crypto.getRandomValues for secure randomness in tests
+    const array = new Uint32Array(1);
+    crypto.getRandomValues(array);
+    const safePassword = `SafeP@ss${Date.now()}${array[0]}!`;
     const result = await checkPasswordBreach(safePassword);
     assertEquals(result.isCompromised, false);
     assertEquals(result.breachCount, 0);
