@@ -106,7 +106,7 @@ class SecurityUtils {
       "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com",
       "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://kit.fontawesome.com https://cdn.usefathom.com https://cdn.jsdelivr.net",
       "img-src 'self' data: https:",
-      "connect-src 'self' https://cdn.usefathom.com",
+      "connect-src 'self' https://cdn.usefathom.com https://api.pwnedpasswords.com",
       "font-src 'self' https://fonts.gstatic.com https://kit.fontawesome.com",
       "object-src 'none'",
       "base-uri 'self'",

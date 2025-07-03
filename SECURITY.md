@@ -253,6 +253,30 @@ Our application tracks and monitors:
 
 ## 📝 Security Changelog
 
+### Version 2.2.0 (In Development)
+
+- Added real-time password strength indicator
+  - Client-side entropy calculation and feedback
+  - Visual strength meter with color-coded levels (Very Weak to Strong)
+  - Entropy-based crack time estimation
+  - Pattern detection for common weak passwords
+  - Improvement suggestions in both English and Japanese
+  - Pure functional implementation following security best practices
+  - No password data sent to server - all analysis done in browser
+  - Helps users create stronger passwords to protect encrypted content
+
+- Added Have I Been Pwned (HIBP) password breach checking
+  - Privacy-preserving k-Anonymity API implementation
+  - Only first 5 characters of SHA-1 hash sent to HIBP API
+  - Client-side SHA-1 hashing using Web Crypto API
+  - Real-time breach detection with debouncing (500ms delay)
+  - Shows breach count when password is compromised
+  - Cached API responses for performance (1-hour cache)
+  - Graceful error handling - doesn't block password usage
+  - Loading state indicator during API checks
+  - Bilingual breach warnings (English and Japanese)
+  - No plaintext passwords ever leave the browser
+
 ### Version 2.1.0
 
 - Added QR code generation feature for secure content sharing

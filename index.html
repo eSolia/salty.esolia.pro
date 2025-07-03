@@ -100,6 +100,107 @@
         text-decoration: none;
         cursor: pointer;
       }
+
+      /* Password strength indicator styles */
+      .strength-meter {
+        height: 6px;
+        background-color: #e5e7eb;
+        border-radius: 3px;
+        margin-top: 8px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+      .strength-meter-fill {
+        height: 100%;
+        width: 0%;
+        transition: width 0.3s ease, background-color 0.3s ease;
+        border-radius: 3px;
+      }
+      .strength-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+        font-size: 0.875rem;
+      }
+      .strength-label {
+        font-weight: 600;
+        transition: color 0.3s ease;
+      }
+      .strength-details {
+        margin-top: 8px;
+        padding: 12px;
+        background-color: #f9fafb;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        border: 1px solid #e5e7eb;
+      }
+      .strength-warning {
+        color: #dc2626;
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+      .strength-suggestions {
+        margin-top: 8px;
+      }
+      .strength-suggestions ul {
+        list-style-type: disc;
+        margin-left: 20px;
+        color: #6b7280;
+      }
+      .strength-suggestions li {
+        margin-top: 4px;
+      }
+      /* Breach warning styles */
+      .breach-warning {
+        margin-top: 12px;
+        padding: 12px;
+        background-color: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 6px;
+        display: flex;
+        align-items: start;
+        gap: 8px;
+      }
+      .breach-warning-icon {
+        color: #dc2626;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+      }
+      .breach-warning-content {
+        flex: 1;
+      }
+      .breach-warning-title {
+        color: #dc2626;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .breach-warning-text {
+        color: #7f1d1d;
+        font-size: 0.875rem;
+        line-height: 1.4;
+      }
+      .breach-check-loading {
+        margin-top: 8px;
+        font-size: 0.875rem;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid #e5e7eb;
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
     </style>
   </head>
 
@@ -200,6 +301,36 @@
             class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 text-base"
             placeholder="暗号化/復号のためのキーを入力"
           >
+          <!-- Password strength indicator -->
+          <div id="strengthIndicator" class="hidden">
+            <div class="strength-meter">
+              <div id="strengthMeterFill" class="strength-meter-fill"></div>
+            </div>
+            <div class="strength-info">
+              <span id="strengthLabel" class="strength-label"></span>
+              <span id="entropyInfo" class="text-gray-500"></span>
+            </div>
+            <div id="strengthDetails" class="strength-details hidden">
+              <div id="strengthWarning" class="strength-warning"></div>
+              <div id="strengthCrackTime" class="text-gray-600 mb-2"></div>
+              <div id="strengthSuggestions" class="strength-suggestions"></div>
+            </div>
+          </div>
+          <!-- Breach warning -->
+          <div id="breachWarning" class="breach-warning hidden">
+            <div class="breach-warning-icon">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="breach-warning-content">
+              <div class="breach-warning-title" id="breachTitle"></div>
+              <div class="breach-warning-text" id="breachText"></div>
+            </div>
+          </div>
+          <!-- Breach check loading -->
+          <div id="breachCheckLoading" class="breach-check-loading hidden">
+            <div class="spinner"></div>
+            <span>データ侵害をチェック中...</span>
+          </div>
         </div>
 
         <!-- Grouped Go and Reset buttons -->
@@ -263,6 +394,16 @@
         salty_key,
       } from "/salty.ts";
 
+      // Import password strength analyzer
+      import {
+        analyzePasswordStrength,
+        getStrengthLevel,
+        STRENGTH_LEVELS,
+      } from "/password-strength.ts";
+
+      // Import HIBP checker
+      import { checkPasswordBreach } from "/hibp-checker.ts";
+
       // This will be replaced by the server upon serving the HTML file.
       const INJECTED_SALT_HEX =
         "SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER";
@@ -276,6 +417,252 @@
       const helpModal = document.getElementById("helpModal");
       const closeButton = helpModal.querySelector(".close-button");
       const resetFormBtn = document.getElementById("resetFormBtn"); // Get the new reset button
+
+      // Password strength indicator elements
+      const strengthIndicator = document.getElementById(
+        "strengthIndicator",
+      );
+      const strengthMeterFill = document.getElementById(
+        "strengthMeterFill",
+      );
+      const strengthLabel = document.getElementById("strengthLabel");
+      const entropyInfo = document.getElementById("entropyInfo");
+      const strengthDetails = document.getElementById(
+        "strengthDetails",
+      );
+      const strengthWarning = document.getElementById(
+        "strengthWarning",
+      );
+      const strengthCrackTime = document.getElementById(
+        "strengthCrackTime",
+      );
+      const strengthSuggestions = document.getElementById(
+        "strengthSuggestions",
+      );
+
+      // Breach warning elements
+      const breachWarning = document.getElementById("breachWarning");
+      const breachTitle = document.getElementById("breachTitle");
+      const breachText = document.getElementById("breachText");
+      const breachCheckLoading = document.getElementById(
+        "breachCheckLoading",
+      );
+
+      /**
+       * Japanese translations for password strength labels and messages
+       */
+      const strengthTranslations = {
+        labels: {
+          "Very Weak": "非常に弱い",
+          "Weak": "弱い",
+          "Fair": "普通",
+          "Good": "良い",
+          "Strong": "強い",
+        },
+        warnings: {
+          "Avoid using 'password' or similar":
+            "「password」などの使用は避けてください",
+          "Common word detected - easily guessable":
+            "一般的な単語 - 推測されやすい",
+          "Only numbers - very predictable":
+            "数字のみ - 非常に予測しやすい",
+          "Only lowercase letters - limited character set":
+            "小文字のみ - 文字セットが限定的",
+          "Repeated characters reduce security":
+            "繰り返し文字はセキュリティを低下させます",
+          "Very predictable - easily crackable":
+            "非常に予測しやすい - 簡単に解読可能",
+          "Could be cracked with moderate effort":
+            "中程度の努力で解読可能",
+        },
+        suggestions: {
+          "Use at least 8 characters": "8文字以上使用してください",
+          "Consider using 12+ characters for better security":
+            "より良いセキュリティのため12文字以上を検討してください",
+          "Add lowercase letters": "小文字を追加してください",
+          "Add uppercase letters": "大文字を追加してください",
+          "Add numbers": "数字を追加してください",
+          "Add special characters (!@#$%^&*)":
+            "特殊文字を追加してください (!@#$%^&*)",
+          "Excellent password strength!": "優れたパスワード強度です！",
+        },
+        crackTime: {
+          "instant": "瞬時",
+          "< 1 minute": "1分以内",
+          "minutes": "分",
+          "hours": "時間",
+          "days": "日",
+          "months": "ヶ月",
+          "years": "年",
+          "k years": "千年",
+          "M years": "百万年",
+          "centuries": "数世紀",
+        },
+        info: {
+          "entropy": "エントロピー",
+          "bits": "ビット",
+          "crackTime": "解読時間",
+        },
+        breach: {
+          "title": "このパスワードは侵害されています！",
+          "singleBreach":
+            "このパスワードは1件のデータ侵害で発見されました。",
+          "multipleBreach":
+            "このパスワードは{count}件のデータ侵害で発見されました。",
+          "recommendation":
+            "別のユニークなパスワードを選択することを強く推奨します。",
+          "checkError": "侵害チェックに失敗しました: {error}",
+          "checking": "データ侵害をチェック中...",
+        },
+      };
+
+      /**
+       * Translate strength-related text to Japanese
+       */
+      function translateStrength(text, category) {
+        if (category === "crackTime") {
+          // Handle crack time translations
+          for (
+            const [en, ja] of Object.entries(
+              strengthTranslations.crackTime,
+            )
+          ) {
+            if (text === en) return ja;
+            if (text.includes(en)) {
+              const num = text.match(/\d+/);
+              if (num) return `${num[0]}${ja}`;
+            }
+          }
+          return text;
+        }
+        return strengthTranslations[category]?.[text] || text;
+      }
+
+      // Debounce timer for breach checking
+      let breachCheckTimer = null;
+
+      /**
+       * Check password breach status with debouncing
+       */
+      async function checkBreachStatus(password) {
+        if (!password || password.length < 8) {
+          breachWarning.classList.add("hidden");
+          breachCheckLoading.classList.add("hidden");
+          return;
+        }
+
+        // Show loading state
+        breachCheckLoading.classList.remove("hidden");
+        breachWarning.classList.add("hidden");
+
+        try {
+          const result = await checkPasswordBreach(password);
+
+          // Hide loading
+          breachCheckLoading.classList.add("hidden");
+
+          if (result.error) {
+            // Don't show errors to avoid blocking user
+            console.warn("Breach check error:", result.error);
+            return;
+          }
+
+          if (result.isCompromised) {
+            breachTitle.textContent = strengthTranslations.breach.title;
+
+            const breachMessage = result.breachCount === 1
+              ? strengthTranslations.breach.singleBreach
+              : strengthTranslations.breach.multipleBreach.replace(
+                "{count}",
+                result.breachCount.toLocaleString(),
+              );
+
+            breachText.textContent =
+              `${breachMessage} ${strengthTranslations.breach.recommendation}`;
+            breachWarning.classList.remove("hidden");
+          } else {
+            breachWarning.classList.add("hidden");
+          }
+        } catch (error) {
+          // Hide loading on error
+          breachCheckLoading.classList.add("hidden");
+          console.error("Breach check failed:", error);
+        }
+      }
+
+      /**
+       * Update password strength indicator
+       */
+      function updateStrengthIndicator(password) {
+        if (!password) {
+          strengthIndicator.classList.add("hidden");
+          return;
+        }
+
+        strengthIndicator.classList.remove("hidden");
+
+        const strength = analyzePasswordStrength(password);
+        const level = getStrengthLevel(strength.score);
+
+        // Update meter fill
+        const percentage = (strength.score / 4) * 100;
+        strengthMeterFill.style.width = `${percentage}%`;
+        strengthMeterFill.style.backgroundColor = level.color;
+
+        // Update labels
+        strengthLabel.textContent = translateStrength(
+          level.label,
+          "labels",
+        );
+        strengthLabel.style.color = level.color;
+        entropyInfo.textContent =
+          `${strengthTranslations.info.entropy}: ${
+            Math.round(strength.entropy)
+          } ${strengthTranslations.info.bits}`;
+
+        // Update details
+        if (
+          strength.feedback.warning ||
+          strength.feedback.suggestions.length > 0 || strength.score < 4
+        ) {
+          strengthDetails.classList.remove("hidden");
+
+          // Warning
+          if (strength.feedback.warning) {
+            strengthWarning.textContent = translateStrength(
+              strength.feedback.warning,
+              "warnings",
+            );
+            strengthWarning.style.display = "block";
+          } else {
+            strengthWarning.style.display = "none";
+          }
+
+          // Crack time
+          const translatedCrackTime = translateStrength(
+            strength.crackTimeDisplay,
+            "crackTime",
+          );
+          strengthCrackTime.textContent =
+            `${strengthTranslations.info.crackTime}: ${translatedCrackTime}`;
+
+          // Suggestions
+          if (strength.feedback.suggestions.length > 0) {
+            const suggestionsList = strength.feedback.suggestions
+              .map((s) =>
+                `<li>${translateStrength(s, "suggestions")}</li>`
+              )
+              .join("");
+            strengthSuggestions.innerHTML =
+              `<ul>${suggestionsList}</ul>`;
+            strengthSuggestions.style.display = "block";
+          } else {
+            strengthSuggestions.style.display = "none";
+          }
+        } else {
+          strengthDetails.classList.add("hidden");
+        }
+      }
 
       /**
        * Displays a temporary message box for user feedback.
@@ -520,11 +907,39 @@
         }
       });
 
+      // Event listener for password strength indicator and breach check
+      keyInput.addEventListener("input", (event) => {
+        const password = event.target.value;
+        updateStrengthIndicator(password);
+
+        // Debounce breach checking (500ms after user stops typing)
+        if (breachCheckTimer) {
+          clearTimeout(breachCheckTimer);
+        }
+
+        if (password.length >= 8) {
+          breachCheckTimer = setTimeout(() => {
+            checkBreachStatus(password);
+          }, 500);
+        } else {
+          breachWarning.classList.add("hidden");
+          breachCheckLoading.classList.add("hidden");
+        }
+      });
+
       // Event listener for the reset button
       resetFormBtn.addEventListener("click", () => {
         payloadInput.value = "";
         keyInput.value = "";
         saltyResultDiv.classList.add("hidden");
+        strengthIndicator.classList.add("hidden");
+        breachWarning.classList.add("hidden");
+        breachCheckLoading.classList.add("hidden");
+
+        // Clear breach check timer
+        if (breachCheckTimer) {
+          clearTimeout(breachCheckTimer);
+        }
 
         // Clear URL parameters
         const cleanUrl = window.location.pathname;
