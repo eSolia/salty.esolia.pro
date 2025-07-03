@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Diceware Entropy Test</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-3xl font-bold mb-6">
+        Diceware vs Random Password Entropy Test
+      </h1>
+
+      <div class="bg-white p-6 rounded shadow mb-4">
+        <h2 class="text-xl font-semibold mb-4">Test Passwords</h2>
+        <div id="test-results" class="space-y-4"></div>
+      </div>
+
+      <div class="bg-white p-6 rounded shadow">
+        <h2 class="text-xl font-semibold mb-4">Manual Test</h2>
+        <input
+          type="text"
+          id="testInput"
+          class="w-full p-2 border rounded mb-4"
+          placeholder="Enter a password to test"
+        >
+        <button id="testBtn" class="bg-blue-500 text-white px-4 py-2 rounded">
+          Test Password
+        </button>
+        <div id="manual-result" class="mt-4"></div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { analyzePasswordStrength } from "/password-strength.ts";
+      import { calculatePasswordEntropy } from "/password-generator.ts";
+
+      const results = document.getElementById("test-results");
+      const manualResult = document.getElementById("manual-result");
+
+      function createTestResult(
+        label,
+        password,
+        strength,
+        generatorEntropy = null,
+      ) {
+        const div = document.createElement("div");
+        div.className = "p-4 bg-gray-50 rounded";
+
+        const isDiceware = password.includes(" ");
+        const wordCount = isDiceware ? password.split(" ").length : 0;
+
+        let html = `
+                <h3 class="font-semibold">${label}</h3>
+                <p class="font-mono text-sm mt-1">"${password}"</p>
+                <p class="mt-2">
+                    <span class="font-semibold">Strength Score:</span> ${strength.score}/4<br>
+                    <span class="font-semibold">Entropy (strength.ts):</span> ${
+          strength.entropy.toFixed(2)
+        } bits<br>
+            `;
+
+        if (generatorEntropy !== null) {
+          html +=
+            `<span class="font-semibold">Entropy (generator.ts):</span> ${
+              generatorEntropy.toFixed(2)
+            } bits<br>`;
+        }
+
+        html += `
+                    <span class="font-semibold">Crack Time:</span> ${strength.crackTimeDisplay}<br>
+                    <span class="font-semibold">Warning:</span> ${
+          strength.feedback.warning || "None"
+        }<br>
+                    <span class="font-semibold">Suggestions:</span> ${
+          strength.feedback.suggestions.join(", ") || "None"
+        }
+                </p>
+            `;
+
+        div.innerHTML = html;
+        return div;
+      }
+
+      // Test cases
+      const testCases = [
+        { label: "3-word diceware", password: "sakura neko yama" },
+        {
+          label: "3-word diceware with 1 number",
+          password: "sakura neko yama1",
+        },
+        { label: "4-word diceware", password: "sakura neko yama umi" },
+        {
+          label: "5-word diceware",
+          password: "sakura neko yama umi sora",
+        },
+        {
+          label: "6-word diceware",
+          password: "sakura neko yama umi sora tsuki",
+        },
+        {
+          label: "7-word diceware",
+          password: "sakura neko yama umi sora tsuki hoshi",
+        },
+        { label: "Random 12 chars", password: "Tr0ub4dor&3" },
+        { label: "Random 16 chars", password: "Tr0ub4dor&3!@#$" },
+        {
+          label: "Diceware-like (no spaces)",
+          password: "sakuranekouma",
+        },
+      ];
+
+      // Run tests
+      testCases.forEach((test) => {
+        const strength = analyzePasswordStrength(test.password);
+        const isDiceware = test.password.includes(" ");
+        const wordCount = isDiceware
+          ? test.password.split(" ").length
+          : 0;
+        const generatorEntropy = calculatePasswordEntropy(
+          test.password,
+          isDiceware,
+          wordCount,
+        );
+
+        results.appendChild(
+          createTestResult(
+            test.label,
+            test.password,
+            strength,
+            generatorEntropy,
+          ),
+        );
+      });
+
+      // Manual test
+      document.getElementById("testBtn").addEventListener(
+        "click",
+        () => {
+          const password = document.getElementById("testInput").value;
+          if (!password) return;
+
+          const strength = analyzePasswordStrength(password);
+          const isDiceware = password.includes(" ");
+          const wordCount = isDiceware ? password.split(" ").length : 0;
+          const generatorEntropy = calculatePasswordEntropy(
+            password,
+            isDiceware,
+            wordCount,
+          );
+
+          manualResult.innerHTML = "";
+          manualResult.appendChild(
+            createTestResult(
+              "Manual Test",
+              password,
+              strength,
+              generatorEntropy,
+            ),
+          );
+        },
+      );
+    </script>
+  </body>
+</html>

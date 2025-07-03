@@ -71,12 +71,45 @@ function calculateCharSpace(password: string): number {
 }
 
 /**
+ * Detect if a password is likely a diceware passphrase
+ * Heuristic: contains spaces and consists of lowercase words
+ */
+function isDicewarePassphrase(password: string): boolean {
+  // Must contain spaces to be diceware
+  if (!password.includes(" ")) return false;
+
+  // Split into words
+  const words = password.split(" ");
+
+  // Typical diceware has 3-10 words
+  if (words.length < 3 || words.length > 10) return false;
+
+  // Check if all parts are word-like (mostly lowercase letters, maybe some numbers)
+  const wordPattern = /^[a-z0-9]+$/i;
+  const allWordsValid = words.every((word) =>
+    word.length >= 2 && word.length <= 15 && wordPattern.test(word)
+  );
+
+  return allWordsValid;
+}
+
+/**
  * Calculate password entropy in bits
- * Entropy = log2(possible_combinations) = length * log2(charset_size)
+ * Handles both random passwords and diceware passphrases
  */
 function calculateEntropy(password: string): number {
   if (password.length === 0) return 0;
 
+  // Check if this looks like a diceware passphrase
+  if (isDicewarePassphrase(password)) {
+    const words = password.split(" ");
+    // Use actual Japanese wordlist size for entropy calculation
+    const WORDLIST_SIZE = 10306; // Actual size of our wordlist
+    const bitsPerWord = Math.log2(WORDLIST_SIZE);
+    return words.length * bitsPerWord;
+  }
+
+  // For random passwords, use character space calculation
   const charSpace = calculateCharSpace(password);
   if (charSpace === 0) return 0;
 
@@ -139,7 +172,28 @@ function generateFeedback(
   const suggestions: string[] = [];
   let warning = "";
 
-  // Length-based suggestions
+  // Special handling for diceware passphrases
+  if (isDicewarePassphrase(password)) {
+    const words = password.split(" ");
+    if (words.length < 4) {
+      suggestions.push("Consider using at least 4 words");
+    }
+    if (words.length < 6 && entropy < 60) {
+      suggestions.push("Add more words to increase security");
+    }
+
+    // Set appropriate warnings for diceware
+    if (entropy < 40) {
+      warning = "Too few words for adequate security";
+    } else if (entropy < 60) {
+      warning = "Consider adding more words";
+    }
+
+    // Skip character-based suggestions for diceware
+    return { warning, suggestions };
+  }
+
+  // Length-based suggestions for random passwords
   if (password.length < 8) {
     suggestions.push("Use at least 8 characters");
   } else if (password.length < 12) {
