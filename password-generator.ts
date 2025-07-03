@@ -28,18 +28,26 @@ const CHAR_SETS = {
   symbols: "!@#$%^&*()_+-=[]{}|;:,.<>?",
 } as const;
 
+// Default symbols to exclude (iPhone second screen symbols)
+const DEFAULT_EXCLUDED_SYMBOLS = "[]{}#<>|";
+
 /**
  * Get/set excluded symbols in localStorage
  */
 export function getExcludedSymbols(): string {
-  if (typeof window !== "undefined" && window.localStorage) {
-    return localStorage.getItem("saltyExcludedSymbols") || "";
+  if (typeof globalThis !== "undefined" && globalThis.localStorage) {
+    const saved = localStorage.getItem("saltyExcludedSymbols");
+    // If nothing saved, return defaults
+    if (saved === null) {
+      return DEFAULT_EXCLUDED_SYMBOLS;
+    }
+    return saved;
   }
-  return "";
+  return DEFAULT_EXCLUDED_SYMBOLS;
 }
 
 export function setExcludedSymbols(symbols: string): void {
-  if (typeof window !== "undefined" && window.localStorage) {
+  if (typeof globalThis !== "undefined" && globalThis.localStorage) {
     localStorage.setItem("saltyExcludedSymbols", symbols);
   }
 }
