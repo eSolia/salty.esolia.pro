@@ -31,7 +31,9 @@ const CACHE_DURATION = 3600000; // 1 hour in milliseconds
  *
  * @devskim_disable: DS126858 - SHA-1 required for HIBP API compatibility
  */
-async function sha1Hash(text: string): Promise<string> {
+// lgtm[js/weak-cryptographic-algorithm] - SHA-1 required by HIBP API
+// codeql[js/weak-cryptographic-algorithm] - SHA-1 is required for HIBP API compatibility
+async function sha1Hash(text: string): Promise<string> { // devskim: ignore DS126858
   const encoder = new TextEncoder();
   const data = encoder.encode(text);
   const hashBuffer = await crypto.subtle.digest("SHA-1", data); // devskim: ignore DS126858 - SHA-1 required for HIBP API
@@ -61,6 +63,7 @@ async function fetchHashSuffixes(hashPrefix: string): Promise<string> {
 
   const controller = new AbortController();
   // Fixed 5-second timeout for API calls - no user input involved
+  // lgtm[js/arbitrary-code-injection] - Static timeout value, no user input
   const timeoutId = setTimeout(() => controller.abort(), 5000); // devskim: ignore - Static timeout, no user input
 
   try {
