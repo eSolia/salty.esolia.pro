@@ -797,7 +797,50 @@
 
         strengthIndicator.classList.remove("hidden");
 
-        const strength = analyzePasswordStrength(password);
+        // Check if this is a generated password with metadata
+        const isDiceware = keyInput.dataset.isDiceware === "true";
+        const wordCount = parseInt(keyInput.dataset.wordCount);
+
+        let strength;
+        if (isDiceware && wordCount) {
+          // For diceware, calculate entropy properly
+          const entropy = calculatePasswordEntropy(
+            password,
+            true,
+            wordCount,
+          );
+          // Create a strength object compatible with analyzePasswordStrength output
+          strength = {
+            score: entropy >= 100
+              ? 4
+              : entropy >= 80
+              ? 3
+              : entropy >= 60
+              ? 2
+              : entropy >= 40
+              ? 1
+              : 0,
+            entropy: entropy,
+            feedback: {
+              warning: "",
+              suggestions: entropy >= 80
+                ? ["Excellent password strength!"]
+                : [],
+            },
+            crackTimeDisplay: entropy >= 100
+              ? "centuries"
+              : entropy >= 80
+              ? "years"
+              : entropy >= 60
+              ? "months"
+              : entropy >= 40
+              ? "days"
+              : "hours",
+          };
+        } else {
+          strength = analyzePasswordStrength(password);
+        }
+
         const level = getStrengthLevel(strength.score);
 
         // Update meter fill
@@ -1106,6 +1149,17 @@
       // Event listener for password strength indicator and breach check
       keyInput.addEventListener("input", (event) => {
         const password = event.target.value;
+
+        // Clear diceware metadata if user is typing manually
+        // (unless this event was triggered programmatically from the generator)
+        if (!event.isTrusted) {
+          // This is a programmatic event, keep the metadata
+        } else {
+          // User is typing, clear metadata
+          delete keyInput.dataset.isDiceware;
+          delete keyInput.dataset.wordCount;
+        }
+
         updateStrengthIndicator(password);
 
         // Show/hide password toggle based on input
@@ -1236,28 +1290,74 @@
 
       // Switch between diceware and random
       dicewareBtn.addEventListener("click", () => {
-        currentPasswordType = "diceware";
-        dicewareBtn.classList.add("active");
-        randomBtn.classList.remove("active");
-        dicewareOptions.classList.remove("hidden");
-        randomOptions.classList.add("hidden");
+        if (currentPasswordType !== "diceware") {
+          currentPasswordType = "diceware";
+          dicewareBtn.classList.add(
+            "active",
+            "border-blue-500",
+            "bg-blue-50",
+          );
+          dicewareBtn.classList.remove("border-gray-300", "bg-white");
+          randomBtn.classList.remove(
+            "active",
+            "border-blue-500",
+            "bg-blue-50",
+          );
+          randomBtn.classList.add("border-gray-300", "bg-white");
+          dicewareOptions.classList.remove("hidden");
+          randomOptions.classList.add("hidden");
+          generateBtn.click(); // Auto-regenerate on type change
+        }
       });
 
       randomBtn.addEventListener("click", () => {
-        currentPasswordType = "random";
-        randomBtn.classList.add("active");
-        dicewareBtn.classList.remove("active");
-        randomOptions.classList.remove("hidden");
-        dicewareOptions.classList.add("hidden");
+        if (currentPasswordType !== "random") {
+          currentPasswordType = "random";
+          randomBtn.classList.add(
+            "active",
+            "border-blue-500",
+            "bg-blue-50",
+          );
+          randomBtn.classList.remove("border-gray-300", "bg-white");
+          dicewareBtn.classList.remove(
+            "active",
+            "border-blue-500",
+            "bg-blue-50",
+          );
+          dicewareBtn.classList.add("border-gray-300", "bg-white");
+          randomOptions.classList.remove("hidden");
+          dicewareOptions.classList.add("hidden");
+          generateBtn.click(); // Auto-regenerate on type change
+        }
       });
 
-      // Update sliders
+      // Update sliders and auto-regenerate
       wordCount.addEventListener("input", (e) => {
         wordCountDisplay.textContent = `${e.target.value} 単語`;
+        if (generatedPassword.value) {
+          generateBtn.click(); // Auto-regenerate if password exists
+        }
       });
 
       passwordLength.addEventListener("input", (e) => {
         passwordLengthDisplay.textContent = `${e.target.value} 文字`;
+        if (generatedPassword.value) {
+          generateBtn.click(); // Auto-regenerate if password exists
+        }
+      });
+
+      // Auto-regenerate on checkbox change for random passwords
+      const checkboxes = randomOptions.querySelectorAll(
+        'input[type="checkbox"]',
+      );
+      checkboxes.forEach((checkbox) => {
+        checkbox.addEventListener("change", () => {
+          if (
+            currentPasswordType === "random" && generatedPassword.value
+          ) {
+            generateBtn.click();
+          }
+        });
       });
 
       // Generate password
@@ -1346,6 +1446,13 @@
         toggleIcon.classList.add("fa-eye-slash");
         togglePassword.classList.add("show");
         passwordGeneratorModal.classList.add("hidden");
+
+        // Store metadata about generated password
+        keyInput.dataset.isDiceware =
+          currentPasswordType === "diceware";
+        keyInput.dataset.wordCount = currentPasswordType === "diceware"
+          ? wordCount.value
+          : "";
 
         // Trigger input event to update strength indicator
         keyInput.dispatchEvent(new Event("input"));

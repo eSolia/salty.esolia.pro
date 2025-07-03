@@ -241,7 +241,7 @@ export function generateDicewarePassphrase(
 ): string {
   const wordCount = config.length || 6; // Default to 6 words
   const wordList = config.wordList || DEFAULT_JAPANESE_WORDS;
-  const separator = config.separator || "-";
+  const separator = config.separator || " "; // Default to space for easier mobile typing
 
   if (wordList.length < 100) {
     throw new Error("Word list must contain at least 100 words for security");
