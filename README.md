@@ -40,6 +40,8 @@ Salty (<https://salty.esolia.pro>) is a comprehensive, web-based application des
 - **Clipboard Integration**: Easy one-click copying of encrypted or decrypted text to the clipboard
 - **Real-time Feedback**: User-friendly messages and error handling
 - **Modal Help System**: Comprehensive documentation accessible within the application
+- **Shareable URLs**: Generate URLs with encrypted payload for easy sharing via email or chat
+- **QR Code Generation**: Create scannable QR codes for mobile-to-desktop sharing and secure in-person exchanges
 
 ## Technologies Used
 
