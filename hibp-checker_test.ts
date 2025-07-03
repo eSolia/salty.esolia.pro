@@ -80,7 +80,7 @@ Deno.test("HIBP Checker - Caching", async (t) => {
   });
 });
 
-Deno.test("HIBP Checker - SHA-1 Hashing", async (t) => {
+Deno.test("HIBP Checker - SHA-1 Hashing", async (t) => { // devskim: ignore DS126858 - Testing HIBP which requires SHA-1
   await t.step("should handle various password types", async () => {
     const passwords = [
       "simple",

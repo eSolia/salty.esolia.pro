@@ -125,6 +125,15 @@ Salty has been assessed against the OWASP Top 10 (2021) security risks and demon
 - **Purpose**: Compact, portable representation
 - **Implementation**: Fixed bit operations for reliability
 
+### SHA-1 Usage (HIBP Integration Only)
+
+- **Purpose**: Have I Been Pwned API compatibility only
+- **Scope**: Limited to password breach checking feature
+- **Security Context**: NOT used for cryptographic security
+- **Privacy Protection**: Only first 5 characters sent via k-Anonymity
+- **Justification**: HIBP API requires SHA-1 for historical breach data compatibility
+- **Risk Assessment**: No security impact as SHA-1 is not used for authentication or encryption
+
 ## 🚀 Security Features
 
 ### Client-Side Encryption
