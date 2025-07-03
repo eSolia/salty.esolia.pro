@@ -909,6 +909,8 @@ async function serveFile(pathname: string): Promise<Response> {
       filePath = "./LICENSE";
     } else if (pathname === "/README.md") {
       filePath = "./README.md";
+    } else if (pathname === "/japanese-diceware-wordlist.txt") {
+      filePath = "./japanese-diceware-wordlist.txt";
     } else {
       throw new Error("File not found");
     }
@@ -959,6 +961,8 @@ async function serveFile(pathname: string): Promise<Response> {
       headers.set("Content-Type", "text/plain; charset=utf-8");
       // Security.txt should not be cached for long
       headers.set("Cache-Control", "public, max-age=3600"); // 1 hour
+    } else if (filePath.endsWith(".txt")) {
+      headers.set("Content-Type", "text/plain; charset=utf-8");
     }
 
     return new Response(fileContent, { headers });

@@ -268,6 +268,10 @@ export function generatePassword(config: PasswordGeneratorConfig): string {
   }
 }
 
+// Actual size of our combined Japanese diceware word list
+// Combined from github.com/tsuchm/diceware-ja and github.com/RickCogley/jpassgen
+const JAPANESE_WORDLIST_SIZE = 10306;
+
 /**
  * Calculate entropy bits for a password
  */
@@ -278,8 +282,8 @@ export function calculatePasswordEntropy(
 ): number {
   if (isDiceware && wordCount) {
     // For diceware: log2(wordListSize) * wordCount
-    // Using DEFAULT_JAPANESE_WORDS length as approximation
-    const bitsPerWord = Math.log2(DEFAULT_JAPANESE_WORDS.length);
+    // Using actual Japanese word list size for accurate entropy
+    const bitsPerWord = Math.log2(JAPANESE_WORDLIST_SIZE);
     return bitsPerWord * wordCount;
   } else {
     // For random passwords, count unique character sets used
