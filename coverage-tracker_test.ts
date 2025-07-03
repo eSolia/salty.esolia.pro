@@ -11,7 +11,6 @@ import {
 import {
   coverageTracker,
   EndpointCoverageTracker,
-  trackCoverage,
 } from "./coverage-tracker.ts";
 
 Deno.test("Coverage Tracker - Singleton Pattern", () => {

@@ -6,8 +6,6 @@
 import {
   assert,
   assertEquals,
-  assertExists,
-  assertNotEquals,
 } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import {
   getTracer,
@@ -15,7 +13,7 @@ import {
   NativeSaltyTracer,
   TracingHelpers,
 } from "./telemetry-native.ts";
-import { SPAN_NAMES, TELEMETRY_SERVICE } from "./telemetry.ts";
+import { SPAN_NAMES } from "./telemetry.ts";
 
 // Mock environment for testing
 const originalOtelDeno = Deno.env.get("OTEL_DENO");

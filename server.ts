@@ -856,16 +856,18 @@ async function serveFile(pathname: string): Promise<Response> {
     } else if (pathname === "favicon.ico") {
       filePath = "./favicon.ico";
     } else if (pathname === "/salty.ts") {
-      console.log("[DEBUG] Handling /salty.ts transpilation with Deno emit");
+      logger.debug("Handling /salty.ts transpilation with Deno emit", {
+        category: LogCategory.HEALTH,
+      });
       try {
         // Use Deno's built-in transpiler
         const result = await bundle(new URL("./salty.ts", import.meta.url));
         const jsContent = result.code;
 
-        console.log(
-          "[DEBUG] Deno transpilation successful, length:",
-          jsContent.length,
-        );
+        logger.debug("Deno transpilation successful", {
+          category: LogCategory.HEALTH,
+          contentLength: jsContent.length,
+        });
 
         const headers = SecurityUtils.createSecurityHeaders();
         headers.set("Content-Type", "text/javascript; charset=utf-8");
@@ -922,20 +924,27 @@ async function serveFile(pathname: string): Promise<Response> {
       if (saltHex) {
         let htmlContent = new TextDecoder().decode(fileContent);
 
-        console.log(`[DEBUG] Processing HTML file: ${filePath}`);
-        console.log("[DEBUG] Attempting salt injection...");
+        logger.debug("Processing HTML file for salt injection", {
+          category: LogCategory.HEALTH,
+          filePath,
+        });
 
         // Simple, reliable replacement
         const placeholder = "SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER";
 
         if (htmlContent.includes(placeholder)) {
-          console.log(
-            `[DEBUG] Found salt placeholder, injecting salt: ${saltHex}`,
-          );
+          logger.debug("Found salt placeholder, injecting salt", {
+            category: LogCategory.HEALTH,
+            saltConfigured: true,
+          });
           htmlContent = htmlContent.replace(placeholder, saltHex);
-          console.log("[DEBUG] Salt injection completed successfully");
+          logger.debug("Salt injection completed successfully", {
+            category: LogCategory.HEALTH,
+          });
         } else {
-          console.log("[DEBUG] No salt placeholder found in this HTML file");
+          logger.debug("No salt placeholder found in HTML file", {
+            category: LogCategory.HEALTH,
+          });
         }
 
         fileContent = new Uint8Array(new TextEncoder().encode(htmlContent));

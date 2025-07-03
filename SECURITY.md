@@ -274,6 +274,10 @@ Our application tracks and monitors:
   - Error tracking with full exception details
   - Performance metrics for security checks
   - Integration with existing security audit trail
+- Fixed information disclosure via console.log statements
+  - Replaced all console.log debug statements with proper logger calls
+  - Debug logs now respect LOG_LEVEL environment variable
+  - Prevents sensitive information leakage in production environments
 
 ### Version 2.0.0
 
