@@ -847,7 +847,7 @@ async function serveFile(pathname: string): Promise<Response> {
       filePath = "./index.html";
     } else if (pathname === "/en" || pathname === "/en/") {
       filePath = "./en/index.html";
-    } else if (pathname === "favicon.ico") {
+    } else if (pathname === "/favicon.ico") {
       filePath = "./favicon.ico";
     } // Handle TypeScript module transpilation
     else if (
