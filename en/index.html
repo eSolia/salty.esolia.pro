@@ -396,6 +396,20 @@
                   </button>
                </div>
                <p class="text-sm text-gray-500 mt-2">Share this URL to allow others to decrypt using the same key.</p>`;
+
+          // Add QR code section
+          html +=
+            `<h3 class="text-2xl font-semibold text-sky-700 mb-4 mt-6">QR Code</h3>`;
+          html +=
+            `<div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200 text-center">
+                  <button onclick="window.showQRCode('${
+              escapeHtml(shareableUrl).replace(/'/g, "\\'")
+            }')" 
+                          class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                    Show QR Code
+                  </button>
+                  <p class="text-sm text-gray-600 mt-2">Scan with smartphone to open encrypted content</p>
+               </div>`;
         } else if (type === "encrypted") {
           html +=
             `<p class="text-sm text-gray-500 mb-2"><span class="font-bold text-purple-600">Auto-detected: Salty cipher</span></p>`;
@@ -562,6 +576,115 @@
 
         // Intentionally NOT loading key from URL for security reasons
         // Keys should be transmitted separately (email, phone, etc.)
+      });
+
+      // QR Code functionality
+      window.showQRCode = function (url) {
+        // Create modal if it doesn't exist
+        let qrModal = document.getElementById("qrModal");
+        if (!qrModal) {
+          qrModal = document.createElement("div");
+          qrModal.id = "qrModal";
+          qrModal.className =
+            "fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50";
+          qrModal.innerHTML = `
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div class="mt-3 text-center">
+                <h3 class="text-2xl font-semibold text-gray-900 mb-4">QR Code</h3>
+                <div id="qrCodeContainer" class="flex justify-center mb-4"></div>
+                <p class="text-sm text-gray-600 mb-4">Scan with your smartphone to open encrypted content</p>
+                <button id="downloadQR" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition mr-2">
+                  Save as Image
+                </button>
+                <button onclick="document.getElementById('qrModal').classList.add('hidden')" 
+                        class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition">
+                  Close
+                </button>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(qrModal);
+        }
+
+        // Load QR code library if not already loaded
+        if (typeof qrcode === "undefined") {
+          const script = document.createElement("script");
+          script.src =
+            "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js";
+          script.onload = function () {
+            generateAndShowQR(url);
+          };
+          document.head.appendChild(script);
+        } else {
+          generateAndShowQR(url);
+        }
+      };
+
+      function generateAndShowQR(url) {
+        const qrModal = document.getElementById("qrModal");
+        const container = document.getElementById("qrCodeContainer");
+
+        // Clear previous QR code
+        container.innerHTML = "";
+
+        // Generate QR code
+        const typeNumber = 0; // Auto-detect
+        const errorCorrectionLevel = "M"; // 15% error correction
+        const qr = qrcode(typeNumber, errorCorrectionLevel);
+        qr.addData(url);
+        qr.make();
+
+        // Create canvas
+        const size = 280;
+        const cellSize = size / qr.getModuleCount();
+        const margin = cellSize * 2;
+
+        const canvas = document.createElement("canvas");
+        canvas.width = size + margin * 2;
+        canvas.height = size + margin * 2;
+
+        const ctx = canvas.getContext("2d");
+
+        // White background
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw QR code
+        ctx.fillStyle = "#000000";
+        for (let row = 0; row < qr.getModuleCount(); row++) {
+          for (let col = 0; col < qr.getModuleCount(); col++) {
+            if (qr.isDark(row, col)) {
+              ctx.fillRect(
+                margin + col * cellSize,
+                margin + row * cellSize,
+                cellSize,
+                cellSize,
+              );
+            }
+          }
+        }
+
+        container.appendChild(canvas);
+
+        // Set up download button
+        const downloadBtn = document.getElementById("downloadQR");
+        downloadBtn.onclick = function () {
+          const link = document.createElement("a");
+          link.download = "salty-qr-code.png";
+          link.href = canvas.toDataURL();
+          link.click();
+        };
+
+        // Show modal
+        qrModal.classList.remove("hidden");
+      }
+
+      // Close QR modal when clicking outside
+      window.addEventListener("click", (event) => {
+        const qrModal = document.getElementById("qrModal");
+        if (qrModal && event.target === qrModal) {
+          qrModal.classList.add("hidden");
+        }
       });
     </script>
   </body>
