@@ -911,6 +911,8 @@ async function serveFile(pathname: string): Promise<Response> {
       filePath = "./README.md";
     } else if (pathname === "/japanese-diceware-wordlist.txt") {
       filePath = "./japanese-diceware-wordlist.txt";
+    } else if (pathname === "/test-password-generator.html") {
+      filePath = "./test-password-generator.html";
     } else {
       throw new Error("File not found");
     }
