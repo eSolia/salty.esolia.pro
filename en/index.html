@@ -736,49 +736,8 @@
 
         strengthIndicator.classList.remove("hidden");
 
-        // Check if this is a generated password with metadata
-        const isDiceware = keyInput.dataset.isDiceware === "true";
-        const wordCount = parseInt(keyInput.dataset.wordCount);
-
-        let strength;
-        if (isDiceware && wordCount) {
-          // For diceware, calculate entropy properly
-          const entropy = calculatePasswordEntropy(
-            password,
-            true,
-            wordCount,
-          );
-          // Create a strength object compatible with analyzePasswordStrength output
-          strength = {
-            score: entropy >= 100
-              ? 4
-              : entropy >= 80
-              ? 3
-              : entropy >= 60
-              ? 2
-              : entropy >= 40
-              ? 1
-              : 0,
-            entropy: entropy,
-            feedback: {
-              warning: "",
-              suggestions: entropy >= 80
-                ? ["Excellent password strength!"]
-                : [],
-            },
-            crackTimeDisplay: entropy >= 100
-              ? "centuries"
-              : entropy >= 80
-              ? "years"
-              : entropy >= 60
-              ? "months"
-              : entropy >= 40
-              ? "days"
-              : "hours",
-          };
-        } else {
-          strength = analyzePasswordStrength(password);
-        }
+        // Always use analyzePasswordStrength which now handles diceware detection
+        const strength = analyzePasswordStrength(password);
 
         const level = getStrengthLevel(strength.score);
 
@@ -1066,16 +1025,6 @@
       // Event listener for password strength indicator and breach check
       keyInput.addEventListener("input", (event) => {
         const password = event.target.value;
-
-        // Clear diceware metadata if user is typing manually
-        // (unless this event was triggered programmatically from the generator)
-        if (!event.isTrusted) {
-          // This is a programmatic event, keep the metadata
-        } else {
-          // User is typing, clear metadata
-          delete keyInput.dataset.isDiceware;
-          delete keyInput.dataset.wordCount;
-        }
 
         updateStrengthIndicator(password);
 
@@ -1376,15 +1325,8 @@
         togglePassword.classList.add("show");
         passwordGeneratorModal.classList.add("hidden");
 
-        // Store metadata about generated password
-        keyInput.dataset.isDiceware =
-          currentPasswordType === "diceware";
-        keyInput.dataset.wordCount = currentPasswordType === "diceware"
-          ? wordCount.value
-          : "";
-
         // Trigger input event to update strength indicator
-        keyInput.dispatchEvent(new Event("input"));
+        updateStrengthIndicator(generatedPassword.value);
 
         showMessageBox("Password set!");
       });
