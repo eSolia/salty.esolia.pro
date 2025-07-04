@@ -82,7 +82,14 @@ async function build() {
 
       // Write output file with trailing newline
       await Deno.writeTextFile(lang.path, html + "\n");
-      console.log(`  ✅ Generated ${lang.path}`);
+
+      // Format the generated HTML file
+      const formatCmd = new Deno.Command("deno", {
+        args: ["fmt", lang.path],
+      });
+      await formatCmd.output();
+
+      console.log(`  ✅ Generated and formatted ${lang.path}`);
     }
 
     console.log("\n✨ Build completed successfully!");
