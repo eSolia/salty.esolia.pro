@@ -1,14 +1,4 @@
-<!-- VERSION_BADGE_START -->
-
 [![Version](https://img.shields.io/badge/version-2.2.2-blue.svg)](https://github.com/esolia/salty.esolia.pro/releases/tag/v2.2.2)
-
-<!-- VERSION_BADGE_END -->
-
-<!-- BUILD_BADGE_START -->
-
-[![Build Date](https://img.shields.io/badge/build-2025--07--04-green.svg)](https://github.com/esolia/salty.esolia.pro)
-
-<!-- BUILD_BADGE_END -->
 
 # Salty: Browser-Native Secure Text Encryption
 

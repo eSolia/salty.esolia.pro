@@ -85,6 +85,43 @@ export default {
         asConst: true,
       },
       {
+        name: "SECURITY_COMPLIANCE",
+        type: "const",
+        description: "Security compliance and standards information",
+        value: {
+          standards: {
+            owasp: {
+              a01_brokenAccessControl: "N/A - No user authentication system",
+              a02_cryptographicFailures:
+                "AES-256-GCM with PBKDF2-SHA512 (600k iterations)",
+              a03_injection:
+                "Input validation and sanitization on all endpoints",
+              a04_insecureDesign: "Security-first design with rate limiting",
+              a05_securityMisconfiguration:
+                "Secure headers, strict CSP, HSTS enabled",
+              a06_vulnerableComponents: "Regular Deno and dependency updates",
+              a07_authFailures:
+                "API key authentication for sensitive endpoints",
+              a08_dataIntegrityFailures:
+                "HMAC validation in encrypted payloads",
+              a09_loggingFailures: "Structured logging with security events",
+              a10_ssrf: "N/A - No external requests from user input",
+            },
+          },
+          lastSecurityReview: "BUILD_INFO.buildDate", // This will reference the actual BUILD_INFO
+          encryptionDetails: {
+            algorithm: "AES-GCM",
+            keySize: 256,
+            keyDerivation: "PBKDF2-SHA512",
+            iterations: 600000,
+            saltSize: 16,
+            ivSize: 12,
+            tagSize: 16,
+          },
+        },
+        asConst: true,
+      },
+      {
         name: "VersionUtils",
         type: "class",
         description: "Version utility class",
@@ -100,6 +137,7 @@ export default {
       app: APP_INFO,
       specs: TECH_SPECS,
       security: SECURITY_INFO,
+      compliance: SECURITY_COMPLIANCE,
     };
   }
 
@@ -120,7 +158,7 @@ export default {
   updateFiles: [
     {
       path: "./deno.json",
-      // Custom update function to safely update only the top-level version field
+      // KEEP custom update function because of "version" task that would get clobbered
       updateFn: (content: string, data: { version: string }) => {
         // Parse the JSON to safely update only the top-level version
         try {
@@ -138,58 +176,28 @@ export default {
     },
     {
       path: "./README.md",
-      // Custom update function to handle specific badge patterns with comment markers
-      updateFn: (
-        content: string,
-        data: { version: string; buildDate?: string },
-      ) => {
-        let result = content;
-
-        // Update version badge between comment markers
-        const versionBadgeRegex =
-          /<!-- VERSION_BADGE_START -->([\s\S]*?)<!-- VERSION_BADGE_END -->/;
-        const versionBadgeMatch = result.match(versionBadgeRegex);
-
-        if (versionBadgeMatch) {
-          const newVersionBadge = `<!-- VERSION_BADGE_START -->
-
-[![Version](https://img.shields.io/badge/version-${data.version}-blue.svg)](https://github.com/esolia/salty.esolia.pro/releases/tag/v${data.version})
-
-<!-- VERSION_BADGE_END -->`;
-
-          result = result.replace(versionBadgeRegex, newVersionBadge);
-        }
-
-        // Update build date badge between comment markers
-        const buildBadgeRegex =
-          /<!-- BUILD_BADGE_START -->([\s\S]*?)<!-- BUILD_BADGE_END -->/;
-        const buildBadgeMatch = result.match(buildBadgeRegex);
-
-        if (buildBadgeMatch) {
-          // Format the build date as YYYY-MM-DD
-          const buildDate = data.buildDate
-            ? new Date(data.buildDate).toISOString().split("T")[0]
-            : new Date().toISOString().split("T")[0];
-          const formattedBuildDate = buildDate.replace(/-/g, "--");
-
-          const newBuildBadge = `<!-- BUILD_BADGE_START -->
-
-[![Build Date](https://img.shields.io/badge/build-${formattedBuildDate}-green.svg)](https://github.com/esolia/salty.esolia.pro)
-
-<!-- BUILD_BADGE_END -->`;
-
-          result = result.replace(buildBadgeRegex, newBuildBadge);
-        }
-
-        return result;
-      },
+      // Now using built-in handler - just need to update README badges to standard format
+      // Change badges to: https://img.shields.io/badge/version-X.X.X-blue
     },
   ],
+
+  // Release notes configuration
+  releaseNotes: {
+    includeCommitHashes: true,
+    maxDescriptionLength: 120, // Increased from default 100 for more descriptive commits
+  },
 
   github: {
     owner: "esolia",
     repo: "salty.esolia.pro",
     createRelease: true,
+  },
+
+  // Options are already using defaults, but explicit for clarity
+  options: {
+    tagPrefix: "v",
+    gitRemote: "origin",
+    // logLevel defaults to INFO
   },
 
   hooks: {
