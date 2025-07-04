@@ -615,7 +615,7 @@
                 </button>
               </div>
             </div>
-            <div>
+            <div id="compressedSection">
               <label class="block text-sm font-medium text-gray-700 mb-1"
               >圧縮版</label>
               <div class="relative">
@@ -1260,7 +1260,20 @@
               throw new Error(i18n.messages.decryptionError);
             }
             operationType = i18n.results.decrypted;
+
+            // For decryption, show only the plaintext
+            operationTypeSpan.textContent = operationType;
+            shareableCipherTextarea.value = result;
+            compressedCipherTextarea.value = "";
+
+            // Hide the compressed cipher section and share URL section
             shareUrlSection.classList.add("hidden");
+            const compressedSection = document.getElementById(
+              "compressedSection",
+            );
+            compressedSection.classList.add("hidden");
+
+            saltyResultDiv.classList.remove("hidden");
           } else {
             // Encrypt
             result = await salty_encrypt(payload, cryptoKey);
@@ -1273,18 +1286,22 @@
               }`;
             shareUrlInput.value = shareUrl;
             shareUrlSection.classList.remove("hidden");
+
+            // For encryption, show both formatted and compressed versions
+            const formattedResult =
+              `-----BEGIN SALTY MESSAGE-----\n${result}\n-----END SALTY MESSAGE-----`;
+            operationTypeSpan.textContent = operationType;
+            shareableCipherTextarea.value = formattedResult;
+            compressedCipherTextarea.value = result;
+
+            // Show the compressed section
+            const compressedSection = document.getElementById(
+              "compressedSection",
+            );
+            compressedSection.classList.remove("hidden");
+
+            saltyResultDiv.classList.remove("hidden");
           }
-
-          // Format the result for display
-          const formattedResult =
-            operationType === i18n.results.encrypted
-              ? `-----BEGIN SALTY MESSAGE-----\n${result}\n-----END SALTY MESSAGE-----`
-              : result;
-
-          operationTypeSpan.textContent = operationType;
-          shareableCipherTextarea.value = formattedResult;
-          compressedCipherTextarea.value = result;
-          saltyResultDiv.classList.remove("hidden");
 
           // Clear password strength indicator after successful operation
           strengthIndicator.classList.add("hidden");
