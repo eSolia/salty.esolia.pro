@@ -191,4 +191,20 @@ export default {
     repo: "salty.esolia.pro",
     createRelease: true,
   },
+
+  hooks: {
+    preRelease: [
+      async () => {
+        console.log("🔨 Building HTML files from templates...");
+        const command = new Deno.Command("deno", {
+          args: ["task", "build:html"],
+        });
+        const result = await command.output();
+        if (!result.success) {
+          throw new Error("HTML build failed");
+        }
+        console.log("✅ HTML build completed");
+      },
+    ],
+  },
 } satisfies NagareConfig;

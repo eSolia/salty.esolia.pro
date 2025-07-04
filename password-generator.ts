@@ -336,7 +336,7 @@ async function loadWordList(): Promise<string[]> {
   }
 
   // Fall back to default list
-  return DEFAULT_JAPANESE_WORDS;
+  return [...DEFAULT_JAPANESE_WORDS];
 }
 
 export function generateDicewarePassphrase(

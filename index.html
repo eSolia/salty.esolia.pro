@@ -111,78 +111,41 @@
         text-decoration: none;
         cursor: pointer;
       }
-
-      /* Password visibility toggle */
-      #togglePassword {
+      .toggle-password {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        padding: 5px;
         display: none;
       }
-      #togglePassword.show {
+      .toggle-password.show {
         display: block;
       }
-
-      /* Password generator modal styles */
+      /* Password strength indicator styles */
+      .strength-bar {
+        height: 4px;
+        border-radius: 2px;
+        transition: width 0.3s ease, background-color 0.3s ease;
+      }
       .password-type-btn {
         cursor: pointer;
+        user-select: none;
       }
       .password-type-btn.active {
         border-color: #3b82f6;
         background-color: #eff6ff;
       }
-      .password-type-btn.active i {
-        color: #3b82f6;
+      .password-type-btn:not(.active) {
+        border-color: #e5e7eb;
+        background-color: white;
       }
-
-      /* Password strength indicator styles */
-      .strength-meter {
-        height: 6px;
-        background-color: #e5e7eb;
-        border-radius: 3px;
-        margin-top: 8px;
-        overflow: hidden;
-        transition: all 0.3s ease;
-      }
-      .strength-meter-fill {
-        height: 100%;
-        width: 0%;
-        transition: width 0.3s ease, background-color 0.3s ease;
-        border-radius: 3px;
-      }
-      .strength-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 8px;
-        font-size: 0.875rem;
-      }
-      .strength-label {
-        font-weight: 600;
-        transition: color 0.3s ease;
-      }
-      .strength-details {
-        margin-top: 8px;
-        padding: 12px;
+      .password-type-btn:hover:not(.active) {
+        border-color: #d1d5db;
         background-color: #f9fafb;
-        border-radius: 6px;
-        font-size: 0.875rem;
-        border: 1px solid #e5e7eb;
       }
-      .strength-warning {
-        color: #dc2626;
-        font-weight: 500;
-        margin-bottom: 4px;
-      }
-      .strength-suggestions {
-        margin-top: 8px;
-      }
-      .strength-suggestions ul {
-        list-style-type: disc;
-        margin-left: 20px;
-        color: #6b7280;
-      }
-      .strength-suggestions li {
-        margin-top: 4px;
-      }
-      /* Breach warning styles */
+      /* Password breach warning styles */
       .breach-warning {
         margin-top: 12px;
         padding: 12px;
@@ -190,13 +153,13 @@
         border: 1px solid #fecaca;
         border-radius: 6px;
         display: flex;
-        align-items: start;
-        gap: 8px;
+        align-items: flex-start;
+        gap: 12px;
       }
       .breach-warning-icon {
-        color: #dc2626;
-        font-size: 1.25rem;
         flex-shrink: 0;
+        color: #dc2626;
+        font-size: 20px;
       }
       .breach-warning-content {
         flex: 1;
@@ -245,36 +208,63 @@
         <h1 class="text-3xl font-bold mb-4">Salty</h1>
         <p class="italic mb-4">ブラウザネイティブな安全なテキスト暗号化</p>
         <p class="mb-4">
-          Saltyは、共有キーで強力に暗号化されたメッセージを簡単に送信できるようにします。ブラウザのWeb
-          Crypto API（Web暗号化API）を介して暗号化機能を提供し、<a
-            href="http://base91.sourceforge.net"
-            target="_blank"
-            class="text-sky-600 hover:underline"
-          >basE91</a>を使用して移植性を高めています。
+          Saltyを使用すると、共有キーで強力に暗号化されたメッセージを簡単に送信できます。ブラウザのWeb
+          Crypto
+          APIを介して暗号化機能を提供し、結果のテキストはポータブル性のためにbasE91でエンコードされます。
         </p>
+        <h2 class="text-2xl font-semibold mt-6 mb-3">暗号化</h2>
+        <ol class="list-decimal list-inside space-y-2 mb-4">
+          <li>「ペイロード」テキストエリアにメッセージを入力します。</li>
+          <li>
+            「キー」フィールドにパスワードを入力します（または「パスワード生成」をクリックして強力なパスワードを作成します）。
+          </li>
+          <li>「実行」をクリックします。</li>
+          <li>
+            暗号化されたメッセージが下に表示されます。必要な形式でコピーするか、共有URLまたはQRコードを使用してください。
+          </li>
+        </ol>
+        <h2 class="text-2xl font-semibold mt-6 mb-3">復号化</h2>
+        <ol class="list-decimal list-inside space-y-2 mb-4">
+          <li>
+            暗号化されたSalty暗号を「ペイロード」テキストエリアに貼り付けます。
+          </li>
+          <li>暗号化に使用したのと同じキーを入力します。</li>
+          <li>「実行」をクリックします。</li>
+          <li>元のメッセージが表示されます。</li>
+        </ol>
+        <h2 class="text-2xl font-semibold mt-6 mb-3">セキュリティ</h2>
         <p class="mb-4">
-          Saltyを使えば、最大185文字のメッセージを暗号化でき、結果として得られる暗号文はツイート（約277文字）に収まるため、ツイートや文字数制限のある他の通信の暗号化に最適です。ただし、任意の長さのテキストでもどこでも使用できます。
+          Saltyはサーバー上でメッセージを保存または処理しません。すべての暗号化と復号化はブラウザで行われ、送信されるのは暗号化されたテキストのみです。強力で一意のキーを使用し、安全なチャネルで共有してください。
         </p>
-        <h2 class="text-2xl font-semibold mb-3">謝辞</h2>
+        <h2 class="text-2xl font-semibold mt-6 mb-3">技術詳細</h2>
         <p class="mb-4">
-          Saltyは最新のTypeScript言語にて再開発されましたが、<a
-            href="http://github.com/neatnik/salty"
+          Web Crypto
+          API、AES-GCMアルゴリズム、PBKDF2を使用したキー派生、およびポータブル性のためのbasE91エンコーディングに基づいています。
+        </p>
+        <h2 class="text-2xl font-semibold mt-6 mb-3">オープンソース</h2>
+        <p class="mb-4">
+          SaltyはeSolia
+          Inc.によって開発・維持されており、MITライセンスの下でGitHubでオープンソース化されています。
+        </p>
+        <hr class="my-6 border-gray-300" />
+        <p class="text-sm text-gray-600">
+          Concept, basE91 encoding/decoding and crypto functions adapted from
+          Adam Newbold's Salty (<a
+            href="https://salty.neatnik.net/"
             target="_blank"
-            class="text-sky-600 hover:underline"
-          >NeatnikのPHP版Salty</a>に影響を受けています。
+            class="text-sky-600 underline hover:text-sky-700"
+          >https://salty.neatnik.net/</a>).
         </p>
       </div>
     </div>
 
     <!-- Password Generator Modal -->
-    <div id="passwordGeneratorModal" class="modal hidden">
-      <div class="modal-content" style="max-width: 500px">
-        <span
-          class="close-button"
-          onclick="document.getElementById('passwordGeneratorModal').classList.add('hidden')"
-        >&times;</span>
-        <h2 class="text-3xl font-bold text-sky-700 mb-6">パスワード生成</h2>
+    <div id="passwordModal" class="modal hidden">
+      <div class="modal-content max-w-2xl">
+        <span class="close-button" id="passwordModalClose">&times;</span>
+        <h2 class="text-2xl font-bold mb-6">パスワード生成</h2>
 
+        <!-- Password Type Selection -->
         <div class="mb-6">
           <label class="block text-lg font-semibold text-gray-700 mb-3"
           >タイプ</label>
@@ -295,11 +285,11 @@
             <button
               type="button"
               id="randomBtn"
-              class="password-type-btn p-4 border-2 border-gray-300 bg-white rounded-lg text-center transition hover:border-gray-400"
+              class="password-type-btn p-4 border-2 rounded-lg text-center transition"
             >
               <i class="ph-duotone ph-shuffle text-2xl mb-2 text-gray-600"></i>
               <div class="font-semibold">ランダム</div>
-              <div class="text-sm text-gray-600">完全にランダムな文字列</div>
+              <div class="text-sm text-gray-600">完全にランダムな文字</div>
             </button>
           </div>
         </div>
@@ -308,126 +298,142 @@
         <div id="dicewareOptions" class="mb-6">
           <label class="block text-sm font-medium text-gray-700 mb-2"
           >単語数</label>
-          <input
-            type="range"
-            id="wordCount"
-            min="4"
-            max="8"
-            value="6"
-            class="w-full"
+          <select
+            id="dicewareWords"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
           >
-          <div class="flex justify-between text-sm text-gray-500">
-            <span>4</span>
-            <span id="wordCountDisplay" class="font-medium text-gray-700"
-            >6 単語</span>
-            <span>8</span>
-          </div>
+            <option value="3">3単語 (最小限のセキュリティ)</option>
+            <option value="4" selected>4単語 (推奨)</option>
+            <option value="5">5単語 (高セキュリティ)</option>
+            <option value="6">6単語 (非常に高い)</option>
+          </select>
         </div>
 
-        <!-- Random Options -->
+        <!-- Random Password Options -->
         <div id="randomOptions" class="mb-6 hidden">
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2"
             >長さ</label>
-            <input
-              type="range"
-              id="passwordLength"
-              min="8"
-              max="32"
-              value="16"
-              class="w-full"
-            >
-            <div class="flex justify-between text-sm text-gray-500">
-              <span>8</span>
-              <span id="passwordLengthDisplay" class="font-medium text-gray-700"
-              >16 文字</span>
-              <span>32</span>
+            <div class="flex items-center gap-3">
+              <input
+                type="range"
+                id="passwordLength"
+                min="8"
+                max="128"
+                value="16"
+                class="flex-1"
+              >
+              <span id="lengthValue" class="w-12 text-center font-mono"
+              >16</span>
             </div>
+            <p class="text-xs text-gray-500 mt-1">8-128文字</p>
           </div>
 
           <div class="space-y-2">
             <label class="flex items-center">
-              <input type="checkbox" id="includeUppercase" checked class="mr-2">
-              <span class="text-sm">大文字 (A-Z)</span>
+              <input
+                type="checkbox"
+                id="includeNumbers"
+                checked
+                class="mr-2"
+              >
+              数字を含む
             </label>
             <label class="flex items-center">
-              <input type="checkbox" id="includeLowercase" checked class="mr-2">
-              <span class="text-sm">小文字 (a-z)</span>
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" id="includeNumbers" checked class="mr-2">
-              <span class="text-sm">数字 (0-9)</span>
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" id="includeSymbols" checked class="mr-2">
-              <span class="text-sm">記号 (!@#$%^&*)</span>
+              <input
+                type="checkbox"
+                id="includeSymbols"
+                checked
+                class="mr-2"
+              >
+              記号を含む
             </label>
           </div>
 
-          <!-- Excluded Symbols -->
-          <div class="mt-4" id="excludedSymbolsSection" style="display: none">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              除外する記号
-              <span class="text-xs text-gray-500 ml-1">
-                (モバイルで入力しにくい文字など)
-              </span>
-            </label>
+          <div class="mt-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+            >除外する記号</label>
             <input
               type="text"
-              id="excludedSymbols"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono"
-              placeholder="例: <>{}"
+              id="excludeSymbols"
+              placeholder="例: &lt;&gt;{}[]"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
             >
             <p class="text-xs text-gray-500 mt-1">
-              ここに入力した記号はパスワード生成時に使用されません
+              モバイルで入力しにくい記号を除外できます
             </p>
           </div>
         </div>
 
         <!-- Generated Password Display -->
-        <div class="mb-6">
-          <label class="block text-sm font-medium text-gray-700 mb-2"
-          >生成されたパスワード</label>
-          <div
-            class="relative bg-gray-50 p-4 rounded-lg border border-gray-300"
-          >
+        <div
+          id="generatedPasswordSection"
+          class="mb-6 p-4 bg-gray-50 rounded-lg hidden"
+        >
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-sm font-medium text-gray-700"
+            >生成されたパスワード:</label>
+            <button
+              type="button"
+              id="toggleGeneratedPassword"
+              class="text-gray-600 hover:text-gray-800 p-1"
+            >
+              <i class="ph-duotone ph-eye"></i>
+            </button>
+          </div>
+          <div class="flex items-center gap-2">
             <input
-              type="text"
+              type="password"
               id="generatedPassword"
               readonly
-              class="w-full bg-transparent border-none outline-none pr-20 font-mono"
-              placeholder="生成ボタンをクリック"
+              class="flex-1 px-3 py-2 font-mono bg-white border border-gray-300 rounded-md"
             >
             <button
               type="button"
               id="copyGeneratedPassword"
-              class="absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled
+              class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-md transition"
             >
-              コピー
+              <i class="ph-duotone ph-copy"></i>
             </button>
           </div>
-          <div
-            id="generatedPasswordStrength"
-            class="mt-2 text-sm text-gray-600"
-          >
+
+          <!-- Password Strength Indicator for Modal -->
+          <div id="modalStrengthIndicator" class="mt-3 hidden">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-sm font-medium">
+                <span id="modalStrengthLabel"></span>
+              </span>
+              <span class="text-sm text-gray-600">
+                <span id="modalEntropyBits"></span> bits エントロピー
+              </span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div
+                id="modalStrengthBar"
+                class="strength-bar"
+                style="width: 0%"
+              >
+              </div>
+            </div>
+            <div class="text-xs text-gray-500 mt-1">
+              解読時間: <span id="modalCrackTime"></span>
+            </div>
           </div>
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex space-x-3">
+        <div class="flex gap-3">
           <button
             type="button"
-            id="generateBtn"
-            class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-medium"
+            id="generatePasswordModalBtn"
+            class="flex-1 bg-sky-500 text-white py-2 px-4 rounded-md hover:bg-sky-600 transition"
           >
             <i class="ph-duotone ph-arrows-clockwise mr-2"></i>生成
           </button>
           <button
             type="button"
             id="usePasswordBtn"
-            class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled
+            class="flex-1 bg-emerald-500 text-white py-2 px-4 rounded-md hover:bg-emerald-600 transition"
           >
             <i class="ph-duotone ph-check-fat mr-2"></i>使用
           </button>
@@ -435,184 +441,265 @@
       </div>
     </div>
 
-    <header class="bg-sky-800 text-white p-4 shadow-md">
-      <div class="container mx-auto flex justify-between items-center">
-        <p class="flex items-center space-x-2">
-          <a
-            href="/"
-            class="text-white hover:text-gray-300 font-bold text-lg rounded-md p-1 transition"
+    <!-- QR Code Modal -->
+    <div id="qrModal" class="modal hidden">
+      <div class="modal-content max-w-md text-center">
+        <span class="close-button" id="qrModalClose">&times;</span>
+        <h2 class="text-2xl font-bold mb-4">共有URLのQRコード</h2>
+        <div id="qrcode" class="flex justify-center mb-4"></div>
+        <p class="text-sm text-gray-600 mb-4">
+          このQRコードをスキャンして、別のデバイスで暗号化されたメッセージを開きます。復号化にはキーが必要です。
+        </p>
+        <button
+          id="closeQrBtn"
+          class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600 transition"
+        >
+          閉じる
+        </button>
+      </div>
+    </div>
+
+    <header class="bg-sky-600 text-white py-8 px-4">
+      <div class="container mx-auto max-w-4xl text-center">
+        <h1 class="text-5xl font-bold mb-2">Salty</h1>
+        <p class="text-xl mb-4 italic">
+          ブラウザネイティブな安全なテキスト暗号化
+        </p>
+        <p class="mb-4 max-w-[65ch] mx-auto">
+          Saltyを使用すると、共有キーで強力に暗号化されたメッセージを簡単に送信できます。<br>ブラウザのWeb
+          Crypto API
+          を介して暗号化機能を提供し、結果のテキストはポータブル性のためにbasE91でエンコードされます。
+        </p>
+        <div class="flex justify-center space-x-4">
+          <button
+            id="openModalBtn"
+            class="bg-sky-500 hover:bg-sky-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105"
           >
-            <img
-              src="/img/symbol_white_bgtransparent.svg"
-              alt="イソリア シンボル ロゴ"
-              class="h-10 w-auto rounded-md"
-            >
+            Saltyについて
+          </button>
+          <a
+            href="en/"
+            class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105"
+          >
+            English
           </a>
-        </p>
-        <p class="flex items-center space-x-4">
-          <strong class="text-gray-300">表示言語:</strong>
-          <a
-            href="/en/"
-            class="text-white hover:text-gray-300 font-bold rounded-md p-2 hover:bg-gray-700 transition"
-          >English</a>
-          <a
-            href="/"
-            class="text-white hover:text-gray-300 font-bold rounded-md p-2 hover:bg-gray-700 transition"
-          >日本語</a>
-        </p>
+        </div>
       </div>
     </header>
 
-    <main class="container mx-auto p-6 flex-grow">
-      <h1 class="text-4xl font-bold text-center text-sky-700 mb-8 mt-4">
-        Salty 安全なテキスト暗号化
-      </h1>
-
-      <p class="max-w-[65ch] mx-auto text-center text-lg mb-8 leading-relaxed">
-        下記にペイロードとキーをご記入して、「実行」をクリックしてください。<br>ペイロードは、暗号化されていないテキスト、またはSaltyで暗号化（自動的に検出）することができます。
-      </p>
-
-      <form
-        id="saltyForm"
-        method="POST"
-        class="bg-white p-8 rounded-lg shadow-xl max-w-2xl mx-auto space-y-6 border border-blue-200"
-      >
-        <div>
-          <label
-            for="payload"
-            class="block text-lg font-semibold text-gray-700 mb-2"
-          >ペイロード</label>
-          <textarea
-            name="payload"
-            id="payload"
-            rows="8"
-            class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 text-base resize-y"
-          ></textarea>
-        </div>
-
-        <div>
-          <div class="flex justify-between items-end mb-2">
+    <main class="flex-grow">
+      <div class="container mx-auto max-w-4xl px-4 py-8">
+        <form id="saltyForm" class="bg-white rounded-lg shadow-lg p-8">
+          <div class="mb-6">
+            <label
+              for="payload"
+              class="block text-lg font-semibold text-gray-700 mb-2"
+            >ペイロード</label>
+            <textarea
+              id="payload"
+              rows="6"
+              class="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-sky-300 focus:border-sky-500 transition duration-200 resize-vertical"
+              placeholder="暗号化するテキストまたは復号化するSalty暗号を貼り付けます..."
+            ></textarea>
+          </div>
+          <div class="mb-6">
             <label
               for="key"
-              class="block text-lg font-semibold text-gray-700"
+              class="block text-lg font-semibold text-gray-700 mb-2"
             >キー</label>
-            <button
-              type="button"
-              id="generatePasswordBtn"
-              class="text-sm text-blue-600 hover:text-blue-700 font-medium"
-            >
-              <i class="ph-duotone ph-key mr-1"></i>パスワード生成
-            </button>
-          </div>
-          <div class="relative">
-            <input
-              type="password"
-              name="key"
-              id="key"
-              class="w-full p-4 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 text-base"
-              placeholder="暗号化/復号のためのキーを入力"
-            >
-            <button
-              type="button"
-              id="togglePassword"
-              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
-              aria-label="パスワードを表示/非表示"
-            >
-              <i class="ph-duotone ph-eye" id="toggleIcon"></i>
-            </button>
-          </div>
-          <!-- Password strength indicator -->
-          <div id="strengthIndicator" class="hidden">
-            <div class="strength-meter">
-              <div id="strengthMeterFill" class="strength-meter-fill"></div>
+            <div class="flex gap-2">
+              <div class="flex-1 relative">
+                <input
+                  type="password"
+                  id="key"
+                  class="w-full px-4 py-3 pr-12 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-sky-300 focus:border-sky-500 transition duration-200"
+                  placeholder="共有キーを入力"
+                  autocomplete="off"
+                >
+                <span class="toggle-password" id="togglePassword">
+                  <i class="ph-duotone ph-eye" id="toggleIcon"></i>
+                </span>
+              </div>
+              <button
+                type="button"
+                id="generatePasswordBtn"
+                class="bg-sky-500 text-white py-3 px-4 rounded-lg font-medium shadow-md hover:bg-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-300 transition duration-300 ease-in-out transform hover:scale-105 whitespace-nowrap"
+              >
+                <i class="ph-duotone ph-key mr-1"></i>パスワード生成
+              </button>
             </div>
-            <div class="strength-info">
-              <span id="strengthLabel" class="strength-label"></span>
-              <span id="entropyInfo" class="text-gray-500"></span>
-            </div>
-            <div id="strengthDetails" class="strength-details hidden">
-              <div id="strengthWarning" class="strength-warning"></div>
-              <div id="strengthCrackTime" class="text-gray-600 mb-2"></div>
-              <div id="strengthSuggestions" class="strength-suggestions"></div>
-            </div>
-          </div>
-          <!-- Breach warning -->
-          <div id="breachWarning" class="breach-warning hidden">
-            <div class="breach-warning-icon">
-              <i class="ph-duotone ph-warning-diamond"></i>
-            </div>
-            <div class="breach-warning-content">
-              <div class="breach-warning-title" id="breachTitle"></div>
-              <div class="breach-warning-text" id="breachText"></div>
-            </div>
-          </div>
-          <!-- Breach check loading -->
-          <div id="breachCheckLoading" class="breach-check-loading hidden">
-            <div class="spinner"></div>
-            <span>データ侵害をチェック中...</span>
-          </div>
-        </div>
 
-        <!-- Grouped Go and Reset buttons -->
+            <!-- Password Strength Indicator -->
+            <div id="strengthIndicator" class="mt-3 hidden">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-sm font-medium">
+                  <span id="strengthLabel"></span>
+                </span>
+                <span class="text-sm text-gray-600">
+                  <span id="entropyBits"></span> bits エントロピー
+                </span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  id="strengthBar"
+                  class="strength-bar"
+                  style="width: 0%"
+                >
+                </div>
+              </div>
+              <div class="text-xs text-gray-500 mt-1">
+                解読時間: <span id="crackTime"></span>
+              </div>
+            </div>
+
+            <!-- Breach Warning -->
+            <div id="breachWarning" class="breach-warning hidden">
+              <i class="ph-duotone ph-warning-diamond breach-warning-icon"></i>
+              <div class="breach-warning-content">
+                <div class="breach-warning-title">
+                  警告: このパスワードは漏洩しています
+                </div>
+                <div class="breach-warning-text" id="breachText"></div>
+              </div>
+            </div>
+
+            <!-- Breach Check Loading -->
+            <div id="breachCheckLoading" class="breach-check-loading hidden">
+              <div class="spinner"></div>
+              <span>既知の情報漏えいを確認中...</span>
+            </div>
+          </div>
+          <div
+            class="flex flex-col sm:flex-row gap-4 justify-center items-center"
+          >
+            <button
+              type="submit"
+              class="w-full sm:w-1/2 bg-emerald-500 text-white py-3 px-6 rounded-lg font-semibold text-xl shadow-md hover:bg-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-300 transition duration-300 ease-in-out transform hover:scale-105"
+            >
+              <i class="ph-duotone ph-fingerprint mr-2"></i>実行
+            </button>
+            <button
+              type="button"
+              id="resetFormBtn"
+              class="w-full sm:w-1/2 bg-amber-500 text-white py-3 px-6 rounded-lg font-semibold text-xl shadow-md hover:bg-amber-600 focus:outline-none focus:ring-4 focus:ring-amber-300 transition duration-300 ease-in-out transform hover:scale-105"
+            >
+              <i class="ph-duotone ph-broom mr-2"></i>リセット
+            </button>
+          </div>
+        </form>
+
         <div
-          class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-6"
+          id="saltyResult"
+          class="mt-8 bg-white rounded-lg shadow-lg p-8 hidden"
         >
-          <button
-            type="submit"
-            class="w-full sm:w-1/2 bg-emerald-500 text-white py-3 px-6 rounded-lg font-semibold text-xl shadow-md hover:bg-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-300 transition duration-300 ease-in-out transform hover:scale-105"
-          >
-            <i class="ph-duotone ph-fingerprint mr-2"></i>実行
-          </button>
-          <button
-            type="button"
-            id="resetFormBtn"
-            class="w-full sm:w-1/2 bg-amber-500 text-white py-3 px-6 rounded-lg font-semibold text-xl shadow-md hover:bg-amber-600 focus:outline-none focus:ring-4 focus:ring-amber-300 transition duration-300 ease-in-out transform hover:scale-105"
-          >
-            <i class="ph-duotone ph-broom mr-2"></i>リセット
-          </button>
+          <h2 class="text-2xl font-bold mb-4 text-sky-600">
+            操作: <span id="operationType"></span>
+          </h2>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+              >共有可能な暗号</label>
+              <div class="relative">
+                <textarea
+                  id="shareableCipher"
+                  rows="3"
+                  class="w-full px-3 py-2 font-mono text-sm bg-gray-50 border border-gray-300 rounded-md resize-none"
+                  readonly
+                ></textarea>
+                <button
+                  type="button"
+                  class="absolute top-2 right-2 bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded text-sm transition copyBtn"
+                  data-target="shareableCipher"
+                >
+                  コピー
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+              >圧縮版</label>
+              <div class="relative">
+                <textarea
+                  id="compressedCipher"
+                  rows="3"
+                  class="w-full px-3 py-2 font-mono text-sm bg-gray-50 border border-gray-300 rounded-md resize-none"
+                  readonly
+                  style="word-wrap: break-word; word-break: break-all"
+                ></textarea>
+                <button
+                  type="button"
+                  class="absolute top-2 right-2 bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded text-sm transition copyBtn"
+                  data-target="compressedCipher"
+                >
+                  コピー
+                </button>
+              </div>
+            </div>
+            <div id="shareUrlSection" class="hidden">
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+              >共有URL</label>
+              <div class="flex gap-2">
+                <input
+                  type="text"
+                  id="shareUrl"
+                  class="flex-1 px-3 py-2 font-mono text-sm bg-gray-50 border border-gray-300 rounded-md"
+                  readonly
+                >
+                <button
+                  type="button"
+                  id="copyShareUrlBtn"
+                  class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-md transition"
+                >
+                  URLをコピー
+                </button>
+                <button
+                  type="button"
+                  id="showQrBtn"
+                  class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition"
+                >
+                  QR
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </form>
-
-      <div
-        id="saltyResult"
-        class="mt-12 bg-white p-8 rounded-lg shadow-xl max-w-2xl mx-auto border border-blue-200 hidden"
-      >
-        <!-- Results will be displayed here by JavaScript -->
       </div>
     </main>
 
-    <footer class="bg-sky-800 text-white p-6 mt-8 shadow-inner">
-      <div class="container mx-auto text-center">
-        <h4 class="text-xl font-semibold mb-3">株式会社イソリア</h4>
-        <p class="mb-2">
-          〒105-7105 東京都港区東新橋一丁目５番２号<br>汐留シティセンター５階
-          （Work Styling）
-        </p>
-        <p class="mb-4">Tel: 03-4577-3380 (代表)<br>Fax: 03-4577-3309</p>
+    <footer class="bg-gray-800 text-white py-4 text-center">
+      <p class="mb-2">© 2025 eSolia Inc. All rights reserved.</p>
+      <a href="https://esolia.com/" target="_blank">
         <img
           src="/img/logo_horiz_white_bgtransparent.svg"
-          alt="イソリア ロゴ"
-          class="mx-auto mb-4 rounded-md"
-        />
-        <p>
-          <button
-            type="button"
-            id="aboutSaltyBtn"
-            class="bg-fuchsia-600 text-white py-2 px-5 rounded-lg hover:bg-fuchsia-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-fuchsia-400"
-          >
-            ソルティーについて
-          </button>
-        </p>
-      </div>
+          alt="eSolia Logo"
+          class="inline h-12"
+        >
+      </a>
     </footer>
 
+    <!-- QR Code Library -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
+    ></script>
+
     <script type="module">
-      // Import cryptographic functions from salty.ts
+      // Import crypto functions
       import {
         salty_decrypt,
         salty_encrypt,
         salty_key,
       } from "/salty.ts";
+
+      // Import password generator functions
+      import {
+        calculatePasswordEntropy,
+        generatePassword,
+        getDefaultExcludedSymbols,
+        getExcludedSymbols,
+        hasCustomExcludedSymbols,
+        initializeDiceware,
+        setExcludedSymbols,
+      } from "/password-generator.ts";
 
       // Import password strength analyzer
       import {
@@ -623,547 +710,278 @@
       // Import HIBP checker
       import { checkPasswordBreach } from "/hibp-checker.ts";
 
-      // Import password generator
-      import {
-        calculatePasswordEntropy,
-        generatePassword,
-        getExcludedSymbols,
-        initializeDiceware,
-        setExcludedSymbols,
-      } from "/password-generator.ts";
-
-      // This will be replaced by the server upon serving the HTML file.
-      const INJECTED_SALT_HEX =
-        "SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER";
-
-      const saltyForm = document.getElementById("saltyForm");
+      // Get DOM elements
+      const form = document.getElementById("saltyForm");
       const payloadInput = document.getElementById("payload");
       const keyInput = document.getElementById("key");
       const saltyResultDiv = document.getElementById("saltyResult");
-      const messageBox = document.getElementById("messageBox");
-      const aboutSaltyBtn = document.getElementById("aboutSaltyBtn");
-      const helpModal = document.getElementById("helpModal");
-      const closeButton = helpModal.querySelector(".close-button");
+      const operationTypeSpan = document.getElementById(
+        "operationType",
+      );
+      const shareableCipherTextarea = document.getElementById(
+        "shareableCipher",
+      );
+      const compressedCipherTextarea = document.getElementById(
+        "compressedCipher",
+      );
+      const shareUrlSection = document.getElementById(
+        "shareUrlSection",
+      );
+      const shareUrlInput = document.getElementById("shareUrl");
+      const copyShareUrlBtn = document.getElementById(
+        "copyShareUrlBtn",
+      );
       const resetFormBtn = document.getElementById("resetFormBtn"); // Get the new reset button
       const togglePassword = document.getElementById("togglePassword");
       const toggleIcon = document.getElementById("toggleIcon");
-
-      // Flag for sharing UI mode
+      const generatePasswordBtn = document.getElementById(
+        "generatePasswordBtn",
+      );
       let sharingUIMode = false;
 
-      // Password strength indicator elements
+      // Password strength elements
       const strengthIndicator = document.getElementById(
         "strengthIndicator",
       );
-      const strengthMeterFill = document.getElementById(
-        "strengthMeterFill",
-      );
       const strengthLabel = document.getElementById("strengthLabel");
-      const entropyInfo = document.getElementById("entropyInfo");
-      const strengthDetails = document.getElementById(
-        "strengthDetails",
-      );
-      const strengthWarning = document.getElementById(
-        "strengthWarning",
-      );
-      const strengthCrackTime = document.getElementById(
-        "strengthCrackTime",
-      );
-      const strengthSuggestions = document.getElementById(
-        "strengthSuggestions",
-      );
+      const strengthBar = document.getElementById("strengthBar");
+      const entropyBits = document.getElementById("entropyBits");
+      const crackTime = document.getElementById("crackTime");
 
-      // Breach warning elements
+      // Breach check elements
       const breachWarning = document.getElementById("breachWarning");
-      const breachTitle = document.getElementById("breachTitle");
       const breachText = document.getElementById("breachText");
       const breachCheckLoading = document.getElementById(
         "breachCheckLoading",
       );
+      let breachCheckTimer = null;
 
-      /**
-       * Japanese translations for password strength labels and messages
-       */
-      const strengthTranslations = {
-        labels: {
-          "Very Weak": "非常に弱い",
-          "Weak": "弱い",
-          "Fair": "普通",
-          "Good": "良い",
-          "Strong": "強い",
+      // Modal elements
+      const passwordModal = document.getElementById("passwordModal");
+      const passwordModalClose = document.getElementById(
+        "passwordModalClose",
+      );
+      const dicewareBtn = document.getElementById("dicewareBtn");
+      const randomBtn = document.getElementById("randomBtn");
+      const dicewareOptions = document.getElementById(
+        "dicewareOptions",
+      );
+      const randomOptions = document.getElementById("randomOptions");
+      const passwordLength = document.getElementById("passwordLength");
+      const lengthValue = document.getElementById("lengthValue");
+      const includeNumbers = document.getElementById("includeNumbers");
+      const includeSymbols = document.getElementById("includeSymbols");
+      const excludeSymbols = document.getElementById("excludeSymbols");
+      const generatePasswordModalBtn = document.getElementById(
+        "generatePasswordModalBtn",
+      );
+      const generatedPasswordSection = document.getElementById(
+        "generatedPasswordSection",
+      );
+      const generatedPassword = document.getElementById(
+        "generatedPassword",
+      );
+      const toggleGeneratedPassword = document.getElementById(
+        "toggleGeneratedPassword",
+      );
+      const copyGeneratedPassword = document.getElementById(
+        "copyGeneratedPassword",
+      );
+      const usePasswordBtn = document.getElementById("usePasswordBtn");
+
+      // Modal strength indicator elements
+      const modalStrengthIndicator = document.getElementById(
+        "modalStrengthIndicator",
+      );
+      const modalStrengthLabel = document.getElementById(
+        "modalStrengthLabel",
+      );
+      const modalStrengthBar = document.getElementById(
+        "modalStrengthBar",
+      );
+      const modalEntropyBits = document.getElementById(
+        "modalEntropyBits",
+      );
+      const modalCrackTime = document.getElementById("modalCrackTime");
+
+      // QR Modal elements
+      const qrModal = document.getElementById("qrModal");
+      const qrModalClose = document.getElementById("qrModalClose");
+      const showQrBtn = document.getElementById("showQrBtn");
+      const closeQrBtn = document.getElementById("closeQrBtn");
+      let qrcode = null;
+
+      // i18n translations - using Vento variables
+      const i18n = {
+        messages: {
+          "formReset": "フォームをリセットしました。",
+          "operationError":
+            "エラー: 暗号を検出できませんでした。復号化するには有効なSalty暗号を貼り付けるか、暗号化するテキストを入力してください。",
+          "encryptionError": "暗号化エラー: ",
+          "decryptionError":
+            "復号化エラー: 指定されたキーで暗号を復号化できませんでした。正しいキーを使用していることを確認してください。",
+          "copied": "クリップボードにコピーされました",
+          "failedToCopy": "コピーに失敗しました",
+          "shareUrlCopied": "共有URLがクリップボードにコピーされました",
         },
-        warnings: {
-          "Avoid using 'password' or similar":
-            "「password」などの使用は避けてください",
-          "Common word detected - easily guessable":
-            "一般的な単語 - 推測されやすい",
-          "Only numbers - very predictable":
-            "数字のみ - 非常に予測しやすい",
-          "Only lowercase letters - limited character set":
-            "小文字のみ - 文字セットが限定的",
-          "Repeated characters reduce security":
-            "繰り返し文字はセキュリティを低下させます",
-          "Very predictable - easily crackable":
-            "非常に予測しやすい - 簡単に解読可能",
-          "Could be cracked with moderate effort":
-            "中程度の努力で解読可能",
-        },
-        suggestions: {
-          "Use at least 8 characters": "8文字以上使用してください",
-          "Consider using 12+ characters for better security":
-            "より良いセキュリティのため12文字以上を検討してください",
-          "Add lowercase letters": "小文字を追加してください",
-          "Add uppercase letters": "大文字を追加してください",
-          "Add numbers": "数字を追加してください",
-          "Add special characters (!@#$%^&*)":
-            "特殊文字を追加してください (!@#$%^&*)",
-          "Excellent password strength!": "優れたパスワード強度です！",
-        },
-        crackTime: {
-          "instant": "瞬時",
-          "< 1 minute": "1分以内",
-          "minutes": "分",
-          "hours": "時間",
-          "days": "日",
-          "months": "ヶ月",
-          "years": "年",
-          "k years": "千年",
-          "M years": "百万年",
-          "centuries": "数世紀",
-        },
-        info: {
-          "entropy": "エントロピー",
-          "bits": "ビット",
+        passwordStrength: {
+          "veryWeak": "非常に弱い",
+          "weak": "弱い",
+          "fair": "普通",
+          "good": "良い",
+          "strong": "強い",
+          "entropyBits": "エントロピー",
           "crackTime": "解読時間",
         },
         breach: {
-          "title": "このパスワードは侵害されています！",
-          "singleBreach":
-            "このパスワードは1件のデータ侵害で発見されました。",
-          "multipleBreach":
-            "このパスワードは{count}件のデータ侵害で発見されました。",
-          "recommendation":
-            "別のユニークなパスワードを選択することを強く推奨します。",
-          "checkError": "侵害チェックに失敗しました: {error}",
-          "checking": "データ侵害をチェック中...",
+          "checking": "既知の情報漏えいを確認中...",
+          "warning": "警告: このパスワードは漏洩しています",
+          "warningText":
+            "このパスワードは{{count}}件のデータ侵害で発見されています。別のパスワードを選択してください。",
+        },
+        results: {
+          "operation": "操作",
+          "encrypted": "暗号化済み",
+          "decrypted": "復号化済み",
+          "shareableLabel": "共有可能な暗号",
+          "compressedLabel": "圧縮版",
+          "shareUrlLabel": "共有URL",
+          "shareUrlButton": "URLをコピー",
+          "qrButton": "QR",
+          "copyButton": "コピー",
         },
       };
 
+      // Initialize diceware on page load
+      await initializeDiceware();
+
       /**
-       * Translate strength-related text to Japanese
+       * Detects if the given text is a Salty cipher
+       * @param {string} text - Text to check
+       * @returns {boolean} True if the text appears to be a Salty cipher
        */
-      function translateStrength(text, category) {
-        if (category === "crackTime") {
-          // Handle crack time translations
-          for (
-            const [en, ja] of Object.entries(
-              strengthTranslations.crackTime,
-            )
-          ) {
-            if (text === en) return ja;
-            if (text.includes(en)) {
-              const num = text.match(/\d+/);
-              if (num) return `${num[0]}${ja}`;
-            }
-          }
-          return text;
+      function isSaltyCipher(text) {
+        const trimmedText = text.trim();
+
+        // Check for the full format with header and footer
+        if (
+          trimmedText.includes("-----BEGIN SALTY MESSAGE-----") &&
+          trimmedText.includes("-----END SALTY MESSAGE-----")
+        ) {
+          return true;
         }
-        return strengthTranslations[category]?.[text] || text;
+
+        // Check if it looks like a compressed basE91 cipher
+        // Salty ciphers have specific basE91 characters and minimum length
+        const basE91Regex =
+          /^[A-Za-z0-9!#$%&()*+,./:;<=>?@\[\\\]^_`{|}~"-]+$/;
+        const looksLikeBasE91 = basE91Regex.test(trimmedText) &&
+          trimmedText.length >= 44; // Minimum for IV + tag + some ciphertext
+
+        return looksLikeBasE91;
       }
 
-      // Debounce timer for breach checking
-      let breachCheckTimer = null;
+      /**
+       * Shows a message box with the given message
+       * @param {string} message - Message to display
+       * @param {boolean} isError - Whether the message is an error
+       */
+      function showMessageBox(message, isError = false) {
+        const messageBox = document.getElementById("messageBox");
+        messageBox.textContent = message;
+        messageBox.classList.toggle("error", isError);
+        messageBox.classList.add("show");
+
+        setTimeout(() => {
+          messageBox.classList.remove("show");
+        }, 3000);
+      }
 
       /**
-       * Check password breach status with debouncing
+       * Updates the password strength indicator
        */
-      async function checkBreachStatus(password) {
-        if (!password || password.length < 8) {
+      function updatePasswordStrength(password, indicatorElements) {
+        if (!password || sharingUIMode) {
+          indicatorElements.container.classList.add("hidden");
+          return;
+        }
+
+        const strength = analyzePasswordStrength(password);
+        const level = getStrengthLevel(strength.score);
+
+        indicatorElements.container.classList.remove("hidden");
+        indicatorElements.label.textContent = i18n.passwordStrength[
+          level.label.toLowerCase().replace(" ", "")
+        ] || level.label;
+        indicatorElements.bar.style.width = `${
+          (strength.score + 1) * 20
+        }%`;
+        indicatorElements.bar.style.backgroundColor = level.color;
+        indicatorElements.entropy.textContent = Math.round(
+          strength.entropy,
+        );
+        indicatorElements.crackTime.textContent =
+          strength.crackTimeDisplay;
+      }
+
+      /**
+       * Checks if a password has been breached
+       */
+      async function checkBreach(password) {
+        if (!password || sharingUIMode) {
           breachWarning.classList.add("hidden");
           breachCheckLoading.classList.add("hidden");
           return;
         }
 
-        // Show loading state
-        breachCheckLoading.classList.remove("hidden");
-        breachWarning.classList.add("hidden");
-
-        try {
-          const result = await checkPasswordBreach(password);
-
-          // Hide loading
-          breachCheckLoading.classList.add("hidden");
-
-          if (result.error) {
-            // Don't show errors to avoid blocking user
-            console.warn("Breach check error:", result.error);
-            return;
-          }
-
-          if (result.isCompromised) {
-            breachTitle.textContent = strengthTranslations.breach.title;
-
-            const breachMessage = result.breachCount === 1
-              ? strengthTranslations.breach.singleBreach
-              : strengthTranslations.breach.multipleBreach.replace(
-                "{count}",
-                result.breachCount.toLocaleString(),
-              );
-
-            breachText.textContent =
-              `${breachMessage} ${strengthTranslations.breach.recommendation}`;
-            breachWarning.classList.remove("hidden");
-          } else {
-            breachWarning.classList.add("hidden");
-          }
-        } catch (error) {
-          // Hide loading on error
-          breachCheckLoading.classList.add("hidden");
-          console.error("Breach check failed:", error);
-        }
-      }
-
-      /**
-       * Update password strength indicator
-       */
-      function updateStrengthIndicator(password) {
-        if (!password || sharingUIMode) {
-          strengthIndicator.classList.add("hidden");
-          return;
-        }
-
-        strengthIndicator.classList.remove("hidden");
-
-        // Always use analyzePasswordStrength which now handles diceware detection
-        const strength = analyzePasswordStrength(password);
-
-        const level = getStrengthLevel(strength.score);
-
-        // Update meter fill
-        const percentage = (strength.score / 4) * 100;
-        strengthMeterFill.style.width = `${percentage}%`;
-        strengthMeterFill.style.backgroundColor = level.color;
-
-        // Update labels
-        strengthLabel.textContent = translateStrength(
-          level.label,
-          "labels",
-        );
-        strengthLabel.style.color = level.color;
-        entropyInfo.textContent =
-          `${strengthTranslations.info.entropy}: ${
-            Math.round(strength.entropy)
-          } ${strengthTranslations.info.bits}`;
-
-        // Update details
-        if (
-          strength.feedback.warning ||
-          strength.feedback.suggestions.length > 0 || strength.score < 4
-        ) {
-          strengthDetails.classList.remove("hidden");
-
-          // Warning
-          if (strength.feedback.warning) {
-            strengthWarning.textContent = translateStrength(
-              strength.feedback.warning,
-              "warnings",
-            );
-            strengthWarning.style.display = "block";
-          } else {
-            strengthWarning.style.display = "none";
-          }
-
-          // Crack time
-          const translatedCrackTime = translateStrength(
-            strength.crackTimeDisplay,
-            "crackTime",
-          );
-          strengthCrackTime.textContent =
-            `${strengthTranslations.info.crackTime}: ${translatedCrackTime}`;
-
-          // Suggestions
-          if (strength.feedback.suggestions.length > 0) {
-            const suggestionsList = strength.feedback.suggestions
-              .map((s) =>
-                `<li>${translateStrength(s, "suggestions")}</li>`
-              )
-              .join("");
-            strengthSuggestions.innerHTML =
-              `<ul>${suggestionsList}</ul>`;
-            strengthSuggestions.style.display = "block";
-          } else {
-            strengthSuggestions.style.display = "none";
-          }
-        } else {
-          strengthDetails.classList.add("hidden");
-        }
-      }
-
-      /**
-       * Displays a temporary message box for user feedback.
-       * @param {string} message The message to display.
-       * @param {boolean} isError True if it's an error message, false for success/info.
-       */
-      function showMessageBox(message, isError = false) {
-        messageBox.textContent = message;
-        messageBox.className = "message-box show"; // Reset classes
-        if (isError) {
-          messageBox.classList.add("error");
-        }
-        setTimeout(() => {
-          messageBox.classList.remove("show");
-        }, 3000); // Hide after 3 seconds
-      }
-
-      /**
-       * Copies text to the clipboard.
-       * Reads the text from a data attribute on the clicked element.
-       * @param {Event} event The click event.
-       */
-      window.copyToClipboard = function (event) { // Attached to window object
-        const textToCopy = event.currentTarget.dataset.textToCopy;
-        if (!textToCopy) {
-          showMessageBox("コピーするテキストがありません。", true);
-          return;
-        }
-
-        const textarea = document.createElement("textarea");
-        textarea.value = textToCopy;
-        textarea.style.position = "fixed"; // Avoid scrolling to bottom
-        textarea.style.opacity = "0";
-        document.body.appendChild(textarea);
-        textarea.focus(); // Ensure textarea is focused
-        textarea.select();
-        try {
-          const successful = document.execCommand("copy");
-          if (successful) {
-            showMessageBox("クリップボードにコピーしました！");
-          } else {
-            showMessageBox(
-              "クリップボードへのコピーに失敗しました。",
-              true,
-            );
-          }
-        } catch (err) {
-          showMessageBox(
-            "クリップボードへのコピーに失敗しました。",
-            true,
-          );
-        }
-        document.body.removeChild(textarea);
-      };
-
-      // Function to format and display output
-      function displayResult(type, content) {
-        let html = "";
-        saltyResultDiv.innerHTML = ""; // Clear previous results
-        saltyResultDiv.classList.remove("hidden");
-
-        if (type === "plaintext") {
-          html +=
-            `<p class="text-sm text-gray-500 mb-2"><span class="font-bold text-green-600">自動検出: プレーンテキスト</span></p>`;
-          html +=
-            `<h3 class="text-2xl font-semibold text-sky-700 mb-4">共有可能暗号テキスト</h3>`;
-          html +=
-            `<div class="relative bg-amber-50 p-4 rounded-lg border border-blue-200 mb-4">
-                  <p class="output uncompressed break-all text-gray-800">${
-              escapeHtml(content.encryptedFormatted)
-            }</p>
-                  <button onclick="window.copyToClipboard(event)" data-text-to-copy="${
-              escapeHtml(content.encryptedFormatted)
-            }"
-                          class="absolute top-2 right-2 bg-amber-200 text-sky-800 px-3 py-1 rounded-md text-xs hover:bg-amber-300 transition">
-                    コピー
-                  </button>
-               </div>`;
-
-          html +=
-            `<h3 class="text-2xl font-semibold text-sky-700 mb-4">共有可能暗号テキスト（圧縮版）</h3>`;
-          html +=
-            `<div class="relative bg-amber-50 p-4 rounded-lg border border-blue-200">
-                  <p class="output breakable compressed text-gray-800 break-words">${
-              escapeHtml(content.encryptedCompressed)
-            }</p>
-                  <button onclick="window.copyToClipboard(event)" data-text-to-copy="${
-              escapeHtml(content.encryptedCompressed)
-            }"
-                          class="absolute top-2 right-2 bg-amber-200 text-sky-800 px-3 py-1 rounded-md text-xs hover:bg-amber-300 transition">
-                    コピー
-                  </button>
-               </div>
-               <p class="text-sm text-gray-500 mt-2">${content.encryptedCompressed.length} chars</p>`;
-
-          // Add URL copy button
-          const currentUrl = new URL(window.location.href);
-          currentUrl.searchParams.set(
-            "payload",
-            encodeURIComponent(content.encryptedCompressed),
-          );
-          const shareableUrl = currentUrl.toString();
-
-          html +=
-            `<h3 class="text-2xl font-semibold text-sky-700 mb-4 mt-6">共有可能URL</h3>`;
-          html +=
-            `<div class="relative bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <p class="output text-gray-800 break-all text-sm">${
-              escapeHtml(shareableUrl)
-            }</p>
-                  <button onclick="window.copyToClipboard(event)" data-text-to-copy="${
-              escapeHtml(shareableUrl)
-            }"
-                          class="absolute top-2 right-2 bg-blue-200 text-blue-800 px-3 py-1 rounded-md text-xs hover:bg-blue-300 transition">
-                    URLをコピー
-                  </button>
-               </div>
-               <p class="text-sm text-gray-500 mt-2">このURLを共有することで、受信者は同じキーを使って復号できます。</p>`;
-
-          // Add QR code section
-          html +=
-            `<h3 class="text-2xl font-semibold text-sky-700 mb-4 mt-6">QRコード</h3>`;
-          html +=
-            `<div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200 text-center">
-                  <button onclick="window.showQRCodeFromButton(event)" 
-                          data-qr-url="${escapeHtml(shareableUrl)}"
-                          class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                    QRコードを表示
-                  </button>
-                  <p class="text-sm text-gray-600 mt-2">スマートフォンでスキャンして<br>暗号化コンテンツを開きます</p>
-               </div>`;
-        } else if (type === "encrypted") {
-          html +=
-            `<p class="text-sm text-gray-500 mb-2"><span class="font-bold text-purple-600">自動検出: Salty暗号化テキスト</span></p>`;
-          html +=
-            `<h3 class="text-2xl font-semibold text-sky-700 mb-4">復号の結果</h3>`;
-          html +=
-            `<div class="relative bg-green-50 p-4 rounded-lg border border-green-200">
-                  <p class="output decrypted break-all text-gray-800">${
-              escapeHtml(content.decrypted)
-            }</p>
-                  <button onclick="window.copyToClipboard(event)" data-text-to-copy="${
-              escapeHtml(content.decrypted)
-            }"
-                          class="absolute top-2 right-2 bg-green-200 text-green-800 px-3 py-1 rounded-md text-xs hover:bg-green-300 transition">
-                    コピー
-                  </button>
-               </div>`;
-        } else if (type === "error") {
-          html +=
-            `<p class="text-sm text-red-500 mb-2"><span class="font-bold">エラー</span></p>`;
-          html +=
-            `<div class="bg-red-50 p-4 rounded-lg border border-red-200 text-red-700">
-                    <p>${escapeHtml(content)}</p>
-                 </div>`;
-        }
-        saltyResultDiv.innerHTML = html;
-      }
-
-      // Basic HTML escaping
-      function escapeHtml(text) {
-        const map = {
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#039;",
-          "`": "&#96;", // Escape backtick for safety in template literals
-        };
-        return text.replace(/[&<>"'`]/g, function (m) {
-          return map[m];
-        });
-      }
-
-      // Function to get query parameter by name
-      function getQueryParam(name) {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get(name);
-      }
-
-      // Event listener for form submission
-      saltyForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const payload = payloadInput.value;
-        const key = keyInput.value;
-
-        if (!payload || !key) {
-          displayResult(
-            "error",
-            "ペイロードとキーの両方を入力してください。",
-          );
-          return;
-        }
-
-        try {
-          const cryptoKey = await salty_key(key, INJECTED_SALT_HEX);
-
-          // Step 1: Clean the input by removing potential Salty headers and spaces
-          let cleanedPayload = payload
-            .replace(/-- BEGIN SALTY ENCRYPTED MESSAGE --/g, "")
-            .replace(/-- END SALTY ENCRYPTED MESSAGE --/g, "")
-            .replace(/\n|\r| /g, "");
-
-          let decryptedText = null;
-          try {
-            decryptedText = await salty_decrypt(
-              cleanedPayload,
-              cryptoKey,
-            );
-          } catch (e) {
-            console.warn(
-              "Decryption attempt threw an error (likely invalid ciphertext format for Web Crypto API):",
-              e,
-            );
-            // If salty_decrypt throws, it's definitely not valid ciphertext for the key, proceed to encrypt.
-          }
-
-          if (decryptedText !== null && decryptedText !== "") { // Also check for non-empty decrypted text
-            // If decryption was successful and returned non-empty text, display it as decrypted.
-            displayResult("encrypted", { decrypted: decryptedText });
-          } else {
-            // If decryption failed or returned null/empty, assume it was plaintext and encrypt it.
-            // Use the original payload for encryption, not the cleaned one.
-            const encrypted = await salty_encrypt(payload, cryptoKey);
-
-            const encryptedFormatted =
-              "-- BEGIN SALTY ENCRYPTED MESSAGE --\n" +
-              encrypted.match(/.{1,2}/g)?.join(" ") +
-              "\n-- END SALTY ENCRYPTED MESSAGE --";
-
-            displayResult("plaintext", {
-              encryptedFormatted: encryptedFormatted,
-              encryptedCompressed: encrypted,
-            });
-          }
-        } catch (e) {
-          console.error("Overall operation failed:", e);
-          displayResult(
-            "error",
-            "エラーが発生しました: " + (e.message || "不明なエラー"),
-          );
-        }
-      });
-
-      // Event listener for password strength indicator and breach check
-      keyInput.addEventListener("input", (event) => {
-        const password = event.target.value;
-
-        updateStrengthIndicator(password);
-
-        // Show/hide password toggle based on input
-        if (password.length > 0) {
-          togglePassword.classList.add("show");
-        } else {
-          togglePassword.classList.remove("show");
-        }
-
-        // Debounce breach checking (500ms after user stops typing)
+        // Clear any existing timer
         if (breachCheckTimer) {
           clearTimeout(breachCheckTimer);
         }
 
+        // Show loading state
+        breachWarning.classList.add("hidden");
+        breachCheckLoading.classList.remove("hidden");
+
+        // Debounce the check
+        breachCheckTimer = setTimeout(async () => {
+          try {
+            const breachCount = await checkPasswordBreach(password);
+            breachCheckLoading.classList.add("hidden");
+
+            if (breachCount > 0) {
+              const warningText = i18n.breach.warningText.replace(
+                "{{count}}",
+                breachCount.toLocaleString(),
+              );
+              breachText.textContent = warningText;
+              breachWarning.classList.remove("hidden");
+            } else {
+              breachWarning.classList.add("hidden");
+            }
+          } catch (error) {
+            console.error("Breach check failed:", error);
+            breachCheckLoading.classList.add("hidden");
+          }
+        }, 500);
+      }
+
+      // Update strength indicator when password changes
+      keyInput.addEventListener("input", (e) => {
+        const password = e.target.value;
+
+        // Main form indicator
+        updatePasswordStrength(password, {
+          container: strengthIndicator,
+          label: strengthLabel,
+          bar: strengthBar,
+          entropy: entropyBits,
+          crackTime: crackTime,
+        });
+
+        // Check for breaches
         if (password.length >= 8 && !sharingUIMode) {
-          breachCheckTimer = setTimeout(() => {
-            checkBreachStatus(password);
-          }, 500);
+          checkBreach(password);
         } else {
           breachWarning.classList.add("hidden");
           breachCheckLoading.classList.add("hidden");
@@ -1171,19 +989,22 @@
       });
 
       // Password visibility toggle
-      togglePassword.addEventListener("click", () => {
-        const type = keyInput.getAttribute("type") === "password"
-          ? "text"
-          : "password";
-        keyInput.setAttribute("type", type);
+      keyInput.addEventListener("input", () => {
+        togglePassword.classList.toggle(
+          "show",
+          keyInput.value.length > 0,
+        );
+      });
 
-        // Toggle icon
-        if (type === "password") {
-          toggleIcon.classList.remove("ph-eye-slash");
-          toggleIcon.classList.add("ph-eye");
-        } else {
+      togglePassword.addEventListener("click", () => {
+        if (keyInput.type === "password") {
+          keyInput.type = "text";
           toggleIcon.classList.remove("ph-eye");
           toggleIcon.classList.add("ph-eye-slash");
+        } else {
+          keyInput.type = "password";
+          toggleIcon.classList.remove("ph-eye-slash");
+          toggleIcon.classList.add("ph-eye");
         }
       });
 
@@ -1215,264 +1036,287 @@
         const cleanUrl = window.location.pathname;
         window.history.replaceState({}, document.title, cleanUrl);
 
-        showMessageBox("フォームをリセットしました。");
+        showMessageBox(i18n.messages.formReset);
       });
 
-      // Handle the "About Salty" button click to open modal
-      aboutSaltyBtn.addEventListener("click", () => {
-        helpModal.classList.remove("hidden");
+      // Help modal functionality
+      const modal = document.getElementById("helpModal");
+      const openModalBtn = document.getElementById("openModalBtn");
+      const closeModalBtn = document.querySelector(".close-button");
+
+      openModalBtn.addEventListener("click", () => {
+        modal.classList.remove("hidden");
       });
 
-      // Handle closing the modal
-      closeButton.addEventListener("click", () => {
-        helpModal.classList.add("hidden");
+      closeModalBtn.addEventListener("click", () => {
+        modal.classList.add("hidden");
       });
 
-      // Close modal if user clicks outside of it
+      // Close modal when clicking outside
       window.addEventListener("click", (event) => {
-        if (event.target === helpModal) {
-          helpModal.classList.add("hidden");
+        if (event.target === modal) {
+          modal.classList.add("hidden");
         }
-        if (
-          event.target ===
-            document.getElementById("passwordGeneratorModal")
-        ) {
-          document.getElementById("passwordGeneratorModal").classList
-            .add("hidden");
+        if (event.target === passwordModal) {
+          passwordModal.classList.add("hidden");
+        }
+        if (event.target === qrModal) {
+          qrModal.classList.add("hidden");
         }
       });
 
-      // Password Generator functionality
-      const passwordGeneratorModal = document.getElementById(
-        "passwordGeneratorModal",
-      );
-      const generatePasswordBtn = document.getElementById(
-        "generatePasswordBtn",
-      );
-      const dicewareBtn = document.getElementById("dicewareBtn");
-      const randomBtn = document.getElementById("randomBtn");
-      const dicewareOptions = document.getElementById(
-        "dicewareOptions",
-      );
-      const randomOptions = document.getElementById("randomOptions");
-      const wordCount = document.getElementById("wordCount");
-      const wordCountDisplay = document.getElementById(
-        "wordCountDisplay",
-      );
-      const passwordLength = document.getElementById("passwordLength");
-      const passwordLengthDisplay = document.getElementById(
-        "passwordLengthDisplay",
-      );
-      const generatedPassword = document.getElementById(
-        "generatedPassword",
-      );
-      const generatedPasswordStrength = document.getElementById(
-        "generatedPasswordStrength",
-      );
-      const copyGeneratedPassword = document.getElementById(
-        "copyGeneratedPassword",
-      );
-      const generateBtn = document.getElementById("generateBtn");
-      const usePasswordBtn = document.getElementById("usePasswordBtn");
-      const excludedSymbolsInput = document.getElementById(
-        "excludedSymbols",
-      );
-      const excludedSymbolsSection = document.getElementById(
-        "excludedSymbolsSection",
-      );
-      const includeSymbolsCheckbox = document.getElementById(
-        "includeSymbols",
-      );
-
-      let currentPasswordType = "diceware";
-
-      // Open password generator modal
+      // Password generator modal functionality
       generatePasswordBtn.addEventListener("click", () => {
-        passwordGeneratorModal.classList.remove("hidden");
-        generateBtn.click(); // Auto-generate on open
+        // Load current excluded symbols
+        excludeSymbols.value = hasCustomExcludedSymbols()
+          ? getExcludedSymbols()
+          : "";
+        passwordModal.classList.remove("hidden");
       });
 
-      // Switch between diceware and random
+      passwordModalClose.addEventListener("click", () => {
+        passwordModal.classList.add("hidden");
+      });
+
+      // Password type switching
       dicewareBtn.addEventListener("click", () => {
-        if (currentPasswordType !== "diceware") {
-          currentPasswordType = "diceware";
-          dicewareBtn.classList.add(
-            "active",
-            "border-blue-500",
-            "bg-blue-50",
-          );
-          dicewareBtn.classList.remove("border-gray-300", "bg-white");
-          randomBtn.classList.remove(
-            "active",
-            "border-blue-500",
-            "bg-blue-50",
-          );
-          randomBtn.classList.add("border-gray-300", "bg-white");
-          dicewareOptions.classList.remove("hidden");
-          randomOptions.classList.add("hidden");
-          generateBtn.click(); // Auto-regenerate on type change
-        }
+        dicewareBtn.classList.add("active");
+        randomBtn.classList.remove("active");
+        dicewareOptions.classList.remove("hidden");
+        randomOptions.classList.add("hidden");
       });
 
       randomBtn.addEventListener("click", () => {
-        if (currentPasswordType !== "random") {
-          currentPasswordType = "random";
-          randomBtn.classList.add(
-            "active",
-            "border-blue-500",
-            "bg-blue-50",
-          );
-          randomBtn.classList.remove("border-gray-300", "bg-white");
-          dicewareBtn.classList.remove(
-            "active",
-            "border-blue-500",
-            "bg-blue-50",
-          );
-          dicewareBtn.classList.add("border-gray-300", "bg-white");
-          randomOptions.classList.remove("hidden");
-          dicewareOptions.classList.add("hidden");
-          generateBtn.click(); // Auto-regenerate on type change
-        }
+        randomBtn.classList.add("active");
+        dicewareBtn.classList.remove("active");
+        randomOptions.classList.remove("hidden");
+        dicewareOptions.classList.add("hidden");
       });
 
-      // Update sliders and auto-regenerate
-      wordCount.addEventListener("input", (e) => {
-        wordCountDisplay.textContent = `${e.target.value} 単語`;
-        if (generatedPassword.value) {
-          generateBtn.click(); // Auto-regenerate if password exists
-        }
-      });
-
+      // Password length slider
       passwordLength.addEventListener("input", (e) => {
-        passwordLengthDisplay.textContent = `${e.target.value} 文字`;
-        if (generatedPassword.value) {
-          generateBtn.click(); // Auto-regenerate if password exists
-        }
+        lengthValue.textContent = e.target.value;
       });
 
-      // Auto-regenerate on checkbox change for random passwords
-      const checkboxes = randomOptions.querySelectorAll(
-        'input[type="checkbox"]',
-      );
-      checkboxes.forEach((checkbox) => {
-        checkbox.addEventListener("change", () => {
-          // Show/hide excluded symbols section based on symbols checkbox
-          if (checkbox.id === "includeSymbols") {
-            excludedSymbolsSection.style.display = checkbox.checked
-              ? "block"
-              : "none";
-          }
-
-          if (
-            currentPasswordType === "random" && generatedPassword.value
-          ) {
-            generateBtn.click();
-          }
-        });
-      });
-
-      // Load saved excluded symbols
-      excludedSymbolsInput.value = getExcludedSymbols();
-
-      // Save excluded symbols on change
-      excludedSymbolsInput.addEventListener("input", (e) => {
-        setExcludedSymbols(e.target.value);
-        if (
-          currentPasswordType === "random" && generatedPassword.value &&
-          includeSymbolsCheckbox.checked
-        ) {
-          generateBtn.click(); // Regenerate with new exclusions
-        }
-      });
-
-      // Show excluded symbols section if symbols are enabled
-      if (includeSymbolsCheckbox.checked) {
-        excludedSymbolsSection.style.display = "block";
-      }
-
-      // Generate password
-      generateBtn.addEventListener("click", () => {
-        let config;
-
-        if (currentPasswordType === "diceware") {
-          config = {
-            type: "diceware",
-            length: parseInt(wordCount.value),
-          };
+      // Generated password visibility toggle
+      toggleGeneratedPassword.addEventListener("click", () => {
+        const icon = toggleGeneratedPassword.querySelector("i");
+        if (generatedPassword.type === "password") {
+          generatedPassword.type = "text";
+          icon.classList.remove("ph-eye");
+          icon.classList.add("ph-eye-slash");
         } else {
-          config = {
-            type: "random",
-            length: parseInt(passwordLength.value),
-            includeUppercase:
-              document.getElementById("includeUppercase").checked,
-            includeLowercase:
-              document.getElementById("includeLowercase").checked,
-            includeNumbers:
-              document.getElementById("includeNumbers").checked,
-            includeSymbols:
-              document.getElementById("includeSymbols").checked,
-          };
+          generatedPassword.type = "password";
+          icon.classList.remove("ph-eye");
+          icon.classList.add("ph-eye-slash");
         }
+      });
 
+      // Copy generated password
+      copyGeneratedPassword.addEventListener("click", async () => {
         try {
-          const password = generatePassword(config);
+          await navigator.clipboard.writeText(generatedPassword.value);
+          showMessageBox(i18n.messages.copied);
+        } catch (error) {
+          showMessageBox(i18n.messages.failedToCopy, true);
+        }
+      });
+
+      // Save excluded symbols when changed
+      excludeSymbols.addEventListener("change", () => {
+        setExcludedSymbols(excludeSymbols.value);
+      });
+
+      // Generate password button in modal
+      generatePasswordModalBtn.addEventListener("click", async () => {
+        try {
+          const isDiceware = dicewareBtn.classList.contains("active");
+          let password;
+
+          if (isDiceware) {
+            const wordCount = parseInt(dicewareWords.value);
+            password = await generatePassword("diceware", {
+              wordCount,
+            });
+          } else {
+            const options = {
+              length: parseInt(passwordLength.value),
+              includeNumbers: includeNumbers.checked,
+              includeSymbols: includeSymbols.checked,
+              excludeSymbols: excludeSymbols.value ||
+                getExcludedSymbols(),
+            };
+            password = await generatePassword("random", options);
+          }
+
           generatedPassword.value = password;
+          generatedPasswordSection.classList.remove("hidden");
 
-          // Calculate strength using the same analyzer as the main form
-          const strength = analyzePasswordStrength(password);
-          const strengthLevel = getStrengthLevel(strength.score);
-
-          const strengthText = `エントロピー: ${
-            Math.round(strength.entropy)
-          } ビット - ${
-            strength.score === 4
-              ? "非常に強い"
-              : strength.score === 3
-              ? "良い"
-              : strength.score === 2
-              ? "普通"
-              : strength.score === 1
-              ? "弱い"
-              : "非常に弱い"
-          }`;
-
-          generatedPasswordStrength.textContent = strengthText;
-          copyGeneratedPassword.disabled = false;
-          usePasswordBtn.disabled = false;
+          // Update modal strength indicator using shared function
+          updatePasswordStrength(password, {
+            container: modalStrengthIndicator,
+            label: modalStrengthLabel,
+            bar: modalStrengthBar,
+            entropy: modalEntropyBits,
+            crackTime: modalCrackTime,
+          });
         } catch (error) {
           showMessageBox(
-            "パスワード生成エラー: " + error.message,
+            i18n.messages.encryptionError + error.message,
             true,
           );
         }
       });
 
-      // Copy generated password
-      copyGeneratedPassword.addEventListener("click", () => {
-        generatedPassword.select();
-        document.execCommand("copy");
-        showMessageBox("パスワードをコピーしました！");
-      });
-
-      // Use generated password
+      // Use password button
       usePasswordBtn.addEventListener("click", () => {
-        keyInput.value = generatedPassword.value;
-        keyInput.type = "text"; // Show the password
-        toggleIcon.classList.remove("ph-eye");
-        toggleIcon.classList.add("ph-eye-slash");
-        togglePassword.classList.add("show");
-        passwordGeneratorModal.classList.add("hidden");
+        if (generatedPassword.value) {
+          keyInput.value = generatedPassword.value;
+          keyInput.type = "password";
+          toggleIcon.classList.remove("ph-eye");
+          toggleIcon.classList.add("ph-eye-slash");
+          togglePassword.classList.add("show");
+          passwordModal.classList.add("hidden");
 
-        // Trigger input event to update strength indicator
-        updateStrengthIndicator(generatedPassword.value);
+          // Update main form strength indicator
+          updatePasswordStrength(generatedPassword.value, {
+            container: strengthIndicator,
+            label: strengthLabel,
+            bar: strengthBar,
+            entropy: entropyBits,
+            crackTime: crackTime,
+          });
 
-        showMessageBox("パスワードが設定されました！");
+          // Check for breaches
+          checkBreach(generatedPassword.value);
+        }
       });
 
-      // NEW: Check for URL parameters on page load
-      document.addEventListener("DOMContentLoaded", async () => {
-        // Initialize diceware wordlist
-        await initializeDiceware();
+      // QR code modal functionality
+      showQrBtn.addEventListener("click", () => {
+        const url = shareUrlInput.value;
+        if (url) {
+          // Clear any existing QR code
+          const qrcodeDiv = document.getElementById("qrcode");
+          qrcodeDiv.innerHTML = "";
+
+          // Generate new QR code
+          qrcode = new QRCode(qrcodeDiv, {
+            text: url,
+            width: 256,
+            height: 256,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H,
+          });
+
+          qrModal.classList.remove("hidden");
+        }
+      });
+
+      qrModalClose.addEventListener("click", () => {
+        qrModal.classList.add("hidden");
+      });
+
+      closeQrBtn.addEventListener("click", () => {
+        qrModal.classList.add("hidden");
+      });
+
+      // Handle form submission
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const payload = payloadInput.value.trim();
+        const key = keyInput.value;
+
+        if (!payload || !key) {
+          return;
+        }
+
+        try {
+          const cryptoKey = await salty_key(key);
+          let result;
+          let operationType;
+
+          if (isSaltyCipher(payload)) {
+            // Decrypt
+            result = await salty_decrypt(payload, cryptoKey);
+            if (result === null) {
+              throw new Error(i18n.messages.decryptionError);
+            }
+            operationType = i18n.results.decrypted;
+            shareUrlSection.classList.add("hidden");
+          } else {
+            // Encrypt
+            result = await salty_encrypt(payload, cryptoKey);
+            operationType = i18n.results.encrypted;
+
+            // Create shareable URL
+            const shareUrl =
+              `${window.location.origin}${window.location.pathname}?payload=${
+                encodeURIComponent(result)
+              }`;
+            shareUrlInput.value = shareUrl;
+            shareUrlSection.classList.remove("hidden");
+          }
+
+          // Format the result for display
+          const formattedResult =
+            operationType === i18n.results.encrypted
+              ? `-----BEGIN SALTY MESSAGE-----\n${result}\n-----END SALTY MESSAGE-----`
+              : result;
+
+          operationTypeSpan.textContent = operationType;
+          shareableCipherTextarea.value = formattedResult;
+          compressedCipherTextarea.value = result;
+          saltyResultDiv.classList.remove("hidden");
+
+          // Clear password strength indicator after successful operation
+          strengthIndicator.classList.add("hidden");
+          breachWarning.classList.add("hidden");
+          breachCheckLoading.classList.add("hidden");
+        } catch (error) {
+          console.error("Crypto operation failed:", error);
+          showMessageBox(
+            error.message || i18n.messages.operationError,
+            true,
+          );
+        }
+      });
+
+      // Copy functionality
+      document.querySelectorAll(".copyBtn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const targetId = btn.getAttribute("data-target");
+          const targetElement = document.getElementById(targetId);
+
+          try {
+            await navigator.clipboard.writeText(targetElement.value);
+            showMessageBox(i18n.messages.copied);
+          } catch (error) {
+            showMessageBox(i18n.messages.failedToCopy, true);
+          }
+        });
+      });
+
+      // Copy share URL button
+      copyShareUrlBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(shareUrlInput.value);
+          showMessageBox(i18n.messages.shareUrlCopied);
+        } catch (error) {
+          showMessageBox(i18n.messages.failedToCopy, true);
+        }
+      });
+
+      // Check for URL parameters
+      function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+      }
+
+      // Check for initial payload in URL
+      document.addEventListener("DOMContentLoaded", () => {
         // Check for sharing UI mode
         const suiParam = getQueryParam("sui");
         if (suiParam === "1") {
@@ -1489,143 +1333,7 @@
 
         const urlPayload = getQueryParam("payload");
         if (urlPayload) {
-          try {
-            // Simple URL decoding (since database now uses standard URLEncode)
-            const decodedPayload = decodeURIComponent(urlPayload);
-
-            payloadInput.value = decodedPayload;
-            console.log(
-              "Payload populated from URL parameter:",
-              decodedPayload.substring(0, 20) + "...",
-            );
-
-            // Show a message that payload was loaded
-            // showMessageBox('Payload loaded from URL parameter'); // For English
-            showMessageBox(
-              "URLパラメータからペイロードが読み込まれました",
-            ); // For Japanese
-          } catch (error) {
-            console.error("Error decoding payload parameter:", error);
-            // showMessageBox('Invalid payload parameter in URL', true); // For English
-            showMessageBox("URLパラメータのペイロードが無効です", true); // For Japanese
-          }
-        }
-
-        // Intentionally NOT loading key from URL for security reasons
-        // Keys should be transmitted separately (email, phone, etc.)
-      });
-
-      // QR Code functionality
-      window.showQRCodeFromButton = function (event) {
-        const url = event.currentTarget.dataset.qrUrl;
-        window.showQRCode(url);
-      };
-
-      window.showQRCode = function (url) {
-        // Create modal if it doesn't exist
-        let qrModal = document.getElementById("qrModal");
-        if (!qrModal) {
-          qrModal = document.createElement("div");
-          qrModal.id = "qrModal";
-          qrModal.className =
-            "fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50";
-          qrModal.innerHTML = `
-            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-              <div class="mt-3 text-center">
-                <h3 class="text-2xl font-semibold text-gray-900 mb-4">QRコード</h3>
-                <div id="qrCodeContainer" class="flex justify-center mb-4"></div>
-                <p class="text-sm text-gray-600 mb-4">スマートフォンでスキャンして<br>暗号化コンテンツを開きます</p>
-                <button id="downloadQR" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition mr-2">
-                  画像として保存
-                </button>
-                <button onclick="document.getElementById('qrModal').classList.add('hidden')" 
-                        class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition">
-                  閉じる
-                </button>
-              </div>
-            </div>
-          `;
-          document.body.appendChild(qrModal);
-        }
-
-        // Load QR code library if not already loaded
-        if (typeof qrcode === "undefined") {
-          const script = document.createElement("script");
-          script.src =
-            "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js";
-          script.onload = function () {
-            generateAndShowQR(url);
-          };
-          document.head.appendChild(script);
-        } else {
-          generateAndShowQR(url);
-        }
-      };
-
-      function generateAndShowQR(url) {
-        const qrModal = document.getElementById("qrModal");
-        const container = document.getElementById("qrCodeContainer");
-
-        // Clear previous QR code
-        container.innerHTML = "";
-
-        // Generate QR code
-        const typeNumber = 0; // Auto-detect
-        const errorCorrectionLevel = "M"; // 15% error correction
-        const qr = qrcode(typeNumber, errorCorrectionLevel);
-        qr.addData(url);
-        qr.make();
-
-        // Create canvas
-        const size = 280;
-        const cellSize = size / qr.getModuleCount();
-        const margin = cellSize * 2;
-
-        const canvas = document.createElement("canvas");
-        canvas.width = size + margin * 2;
-        canvas.height = size + margin * 2;
-
-        const ctx = canvas.getContext("2d");
-
-        // White background
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Draw QR code
-        ctx.fillStyle = "#000000";
-        for (let row = 0; row < qr.getModuleCount(); row++) {
-          for (let col = 0; col < qr.getModuleCount(); col++) {
-            if (qr.isDark(row, col)) {
-              ctx.fillRect(
-                margin + col * cellSize,
-                margin + row * cellSize,
-                cellSize,
-                cellSize,
-              );
-            }
-          }
-        }
-
-        container.appendChild(canvas);
-
-        // Set up download button
-        const downloadBtn = document.getElementById("downloadQR");
-        downloadBtn.onclick = function () {
-          const link = document.createElement("a");
-          link.download = "salty-qr-code.png";
-          link.href = canvas.toDataURL();
-          link.click();
-        };
-
-        // Show modal
-        qrModal.classList.remove("hidden");
-      }
-
-      // Close QR modal when clicking outside
-      window.addEventListener("click", (event) => {
-        const qrModal = document.getElementById("qrModal");
-        if (qrModal && event.target === qrModal) {
-          qrModal.classList.add("hidden");
+          payloadInput.value = decodeURIComponent(urlPayload);
         }
       });
     </script>

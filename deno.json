@@ -40,7 +40,9 @@
     "docs": "deno task nagare docs",
     "docs:serve": "deno task nagare docs --serve",
     "changelog": "deno task nagare changelog --preview",
-    "validate": "deno task nagare validate"
+    "validate": "deno task nagare validate",
+    "build:html": "deno run --allow-read --allow-write scripts/build-html.ts",
+    "build:html:watch": "deno run --allow-read --allow-write --watch scripts/build-html.ts"
   },
   "imports": {
     "@rick/nagare": "jsr:@rick/nagare@1.10.0",

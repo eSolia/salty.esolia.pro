@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ lang }}">
   <head>
-    <title>Salty: Browser-Native Secure Text Encryption</title>
+    <title>{{ meta.title }}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta
       property="og:title"
-      content="Salty: Browser-Native Secure Text Encryption"
+      content="{{ meta.ogTitle }}"
     >
     <meta property="og:url" content="https://salty.esolia.pro/">
     <meta
       property="og:description"
-      content="Salty: Browser-Native Secure Text Encryption"
+      content="{{ meta.ogDescription }}"
     >
     <!-- Tailwind CSS - Note: Dynamic CDN doesn't support SRI, consider using a specific version -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -205,62 +205,34 @@
     <div id="helpModal" class="modal hidden">
       <div class="modal-content max-w-[65ch] mx-auto">
         <span class="close-button">&times;</span>
-        <h1 class="text-3xl font-bold mb-4">Salty</h1>
-        <p class="italic mb-4">Browser-Native Secure Text Encryption</p>
+        <h1 class="text-3xl font-bold mb-4">{{ helpModal.title }}</h1>
+        <p class="italic mb-4">{{ helpModal.subtitle }}</p>
         <p class="mb-4">
-          Salty makes it easy to send strongly-encrypted messages with a shared
-          key. It provides encryption capabilities via the browser&#39;s Web
-          Crypto API, and the resulting text is encoded with basE91 for
-          portability.
+          {{- helpModal.intro -}}
         </p>
-        <h2 class="text-2xl font-semibold mt-6 mb-3">Encrypt</h2>
+        <h2 class="text-2xl font-semibold mt-6 mb-3">{{ helpModal.encryptTitle }}</h2>
         <ol class="list-decimal list-inside space-y-2 mb-4">
-          <li>Enter your message in the &quot;Payload&quot; text area.</li>
-          <li>
-            Enter a password in the &quot;Key&quot; field (or click
-            &quot;Generate Password&quot; to create a strong password).
-          </li>
-          <li>Click &quot;Go&quot;.</li>
-          <li>
-            The encrypted message appears below. Copy it in your preferred
-            format, or use the share URL or QR code.
-          </li>
+          <li>{{ helpModal.encryptStep1 }}</li>
+          <li>{{ helpModal.encryptStep2 }}</li>
+          <li>{{ helpModal.encryptStep3 }}</li>
+          <li>{{ helpModal.encryptStep4 }}</li>
         </ol>
-        <h2 class="text-2xl font-semibold mt-6 mb-3">Decrypt</h2>
+        <h2 class="text-2xl font-semibold mt-6 mb-3">{{ helpModal.decryptTitle }}</h2>
         <ol class="list-decimal list-inside space-y-2 mb-4">
-          <li>
-            Paste the encrypted Salty cipher into the &quot;Payload&quot; text
-            area.
-          </li>
-          <li>Enter the same key that was used for encryption.</li>
-          <li>Click &quot;Go&quot;.</li>
-          <li>The original message is displayed.</li>
+          <li>{{ helpModal.decryptStep1 }}</li>
+          <li>{{ helpModal.decryptStep2 }}</li>
+          <li>{{ helpModal.decryptStep3 }}</li>
+          <li>{{ helpModal.decryptStep4 }}</li>
         </ol>
-        <h2 class="text-2xl font-semibold mt-6 mb-3">Security</h2>
-        <p class="mb-4">
-          Salty doesn&#39;t store or process messages on the server. All
-          encryption and decryption happens in your browser, and only the
-          encrypted text is transmitted. Use strong, unique keys and share them
-          through secure channels.
-        </p>
-        <h2 class="text-2xl font-semibold mt-6 mb-3">Technical Details</h2>
-        <p class="mb-4">
-          Based on the Web Crypto API, using the AES-GCM algorithm, PBKDF2 for
-          key derivation, and basE91 encoding for portability.
-        </p>
-        <h2 class="text-2xl font-semibold mt-6 mb-3">Open Source</h2>
-        <p class="mb-4">
-          Salty is developed and maintained by eSolia Inc. and is open-sourced
-          on GitHub under the MIT License.
-        </p>
+        <h2 class="text-2xl font-semibold mt-6 mb-3">{{ helpModal.securityTitle }}</h2>
+        <p class="mb-4">{{- helpModal.securityDesc -}}</p>
+        <h2 class="text-2xl font-semibold mt-6 mb-3">{{ helpModal.techDetailsTitle }}</h2>
+        <p class="mb-4">{{- helpModal.techDetailsDesc -}}</p>
+        <h2 class="text-2xl font-semibold mt-6 mb-3">{{ helpModal.ossTitle }}</h2>
+        <p class="mb-4">{{- helpModal.ossDesc -}}</p>
         <hr class="my-6 border-gray-300" />
         <p class="text-sm text-gray-600">
-          Concept, basE91 encoding/decoding and crypto functions adapted from
-          Adam Newbold's Salty (<a
-            href="https://salty.neatnik.net/"
-            target="_blank"
-            class="text-sky-600 underline hover:text-sky-700"
-          >https://salty.neatnik.net/</a>).
+          {{- helpModal.acknowledgement |> safe -}}
         </p>
       </div>
     </div>
@@ -269,12 +241,12 @@
     <div id="passwordModal" class="modal hidden">
       <div class="modal-content max-w-2xl">
         <span class="close-button" id="passwordModalClose">&times;</span>
-        <h2 class="text-2xl font-bold mb-6">Password Generator</h2>
+        <h2 class="text-2xl font-bold mb-6">{{ passwordGenerator.modalTitle }}</h2>
 
         <!-- Password Type Selection -->
         <div class="mb-6">
           <label class="block text-lg font-semibold text-gray-700 mb-3"
-          >Type</label>
+          >{{ passwordGenerator.typeLabel }}</label>
           <div class="grid grid-cols-2 gap-3">
             <button
               type="button"
@@ -284,9 +256,9 @@
               <i
                 class="ph-duotone ph-dice-five text-2xl mb-2 text-blue-600"
               ></i>
-              <div class="font-semibold">Diceware</div>
+              <div class="font-semibold">{{ passwordGenerator.dicewareTitle }}</div>
               <div class="text-sm text-gray-600">
-                Memorable word combinations
+                {{- passwordGenerator.dicewareDesc -}}
               </div>
             </button>
             <button
@@ -295,9 +267,9 @@
               class="password-type-btn p-4 border-2 rounded-lg text-center transition"
             >
               <i class="ph-duotone ph-shuffle text-2xl mb-2 text-gray-600"></i>
-              <div class="font-semibold">Random</div>
+              <div class="font-semibold">{{ passwordGenerator.randomTitle }}</div>
               <div class="text-sm text-gray-600">
-                Completely random characters
+                {{- passwordGenerator.randomDesc -}}
               </div>
             </button>
           </div>
@@ -306,15 +278,15 @@
         <!-- Diceware Options -->
         <div id="dicewareOptions" class="mb-6">
           <label class="block text-sm font-medium text-gray-700 mb-2"
-          >Number of words</label>
+          >{{ passwordGenerator.dicewareOptions.label }}</label>
           <select
             id="dicewareWords"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
           >
-            <option value="3">3 words (minimal security)</option>
-            <option value="4" selected>4 words (recommended)</option>
-            <option value="5">5 words (high security)</option>
-            <option value="6">6 words (very high)</option>
+            <option value="3">{{ passwordGenerator.dicewareOptions.option3 }}</option>
+            <option value="4" selected>{{ passwordGenerator.dicewareOptions.option4 }}</option>
+            <option value="5">{{ passwordGenerator.dicewareOptions.option5 }}</option>
+            <option value="6">{{ passwordGenerator.dicewareOptions.option6 }}</option>
           </select>
         </div>
 
@@ -322,7 +294,7 @@
         <div id="randomOptions" class="mb-6 hidden">
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2"
-            >Length</label>
+            >{{ passwordGenerator.randomOptions.lengthLabel }}</label>
             <div class="flex items-center gap-3">
               <input
                 type="range"
@@ -332,10 +304,9 @@
                 value="16"
                 class="flex-1"
               >
-              <span id="lengthValue" class="w-12 text-center font-mono"
-              >16</span>
+              <span id="lengthValue" class="w-12 text-center font-mono">16</span>
             </div>
-            <p class="text-xs text-gray-500 mt-1">8-128 characters</p>
+            <p class="text-xs text-gray-500 mt-1">{{ passwordGenerator.randomOptions.lengthHelp }}</p>
           </div>
 
           <div class="space-y-2">
@@ -346,7 +317,7 @@
                 checked
                 class="mr-2"
               >
-              Include numbers
+              {{ passwordGenerator.randomOptions.includeNumbers }}
             </label>
             <label class="flex items-center">
               <input
@@ -355,21 +326,21 @@
                 checked
                 class="mr-2"
               >
-              Include symbols
+              {{ passwordGenerator.randomOptions.includeSymbols }}
             </label>
           </div>
 
           <div class="mt-4">
             <label class="block text-sm font-medium text-gray-700 mb-2"
-            >Exclude symbols</label>
+            >{{ passwordGenerator.randomOptions.excludeLabel }}</label>
             <input
               type="text"
               id="excludeSymbols"
-              placeholder="e.g. &lt;&gt;{}[]"
+              placeholder="{{ passwordGenerator.randomOptions.excludePlaceholder }}"
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500"
             >
             <p class="text-xs text-gray-500 mt-1">
-              Exclude symbols that are hard to type on mobile
+              {{- passwordGenerator.randomOptions.excludeHelp -}}
             </p>
           </div>
         </div>
@@ -381,7 +352,7 @@
         >
           <div class="flex items-center justify-between mb-2">
             <label class="text-sm font-medium text-gray-700"
-            >Generated password:</label>
+            >{{ passwordGenerator.generatedPasswordLabel }}</label>
             <button
               type="button"
               id="toggleGeneratedPassword"
@@ -413,7 +384,7 @@
                 <span id="modalStrengthLabel"></span>
               </span>
               <span class="text-sm text-gray-600">
-                <span id="modalEntropyBits"></span> bits entropy
+                <span id="modalEntropyBits"></span> bits {{ passwordStrength.entropyBits }}
               </span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2">
@@ -421,11 +392,10 @@
                 id="modalStrengthBar"
                 class="strength-bar"
                 style="width: 0%"
-              >
-              </div>
+              ></div>
             </div>
             <div class="text-xs text-gray-500 mt-1">
-              Crack time: <span id="modalCrackTime"></span>
+              {{ passwordStrength.crackTime }}: <span id="modalCrackTime"></span>
             </div>
           </div>
         </div>
@@ -437,14 +407,14 @@
             id="generatePasswordModalBtn"
             class="flex-1 bg-sky-500 text-white py-2 px-4 rounded-md hover:bg-sky-600 transition"
           >
-            <i class="ph-duotone ph-arrows-clockwise mr-2"></i>Generate
+            <i class="ph-duotone ph-arrows-clockwise mr-2"></i>{{ passwordGenerator.generateButton }}
           </button>
           <button
             type="button"
             id="usePasswordBtn"
             class="flex-1 bg-emerald-500 text-white py-2 px-4 rounded-md hover:bg-emerald-600 transition"
           >
-            <i class="ph-duotone ph-check-fat mr-2"></i>Use
+            <i class="ph-duotone ph-check-fat mr-2"></i>{{ passwordGenerator.useButton }}
           </button>
         </div>
       </div>
@@ -454,43 +424,39 @@
     <div id="qrModal" class="modal hidden">
       <div class="modal-content max-w-md text-center">
         <span class="close-button" id="qrModalClose">&times;</span>
-        <h2 class="text-2xl font-bold mb-4">QR Code for Share URL</h2>
+        <h2 class="text-2xl font-bold mb-4">{{ qrModal.title }}</h2>
         <div id="qrcode" class="flex justify-center mb-4"></div>
         <p class="text-sm text-gray-600 mb-4">
-          Scan this QR code to open the encrypted message on another device. The
-          key will still be required for decryption.
+          {{- qrModal.instructions -}}
         </p>
         <button
           id="closeQrBtn"
           class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600 transition"
         >
-          Close
+          {{ qrModal.closeButton }}
         </button>
       </div>
     </div>
 
     <header class="bg-sky-600 text-white py-8 px-4">
       <div class="container mx-auto max-w-4xl text-center">
-        <h1 class="text-5xl font-bold mb-2">Salty</h1>
-        <p class="text-xl mb-4 italic">Browser-Native Secure Text Encryption</p>
+        <h1 class="text-5xl font-bold mb-2">{{ header.title }}</h1>
+        <p class="text-xl mb-4 italic">{{ header.subtitle }}</p>
         <p class="mb-4 max-w-[65ch] mx-auto">
-          Salty makes it easy to send strongly-encrypted messages with a shared
-          key.<br>It provides encryption capabilities via the browser's Web
-          Crypto API, and the resulting text is encoded with basE91 for
-          portability.
+          {{- header.intro |> safe -}}
         </p>
         <div class="flex justify-center space-x-4">
           <button
             id="openModalBtn"
             class="bg-sky-500 hover:bg-sky-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105"
           >
-            About Salty
+            {{ header.helpButton }}
           </button>
           <a
-            href="../"
+            href="{{ langPath }}/"
             class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105"
           >
-            日本語
+            {{ header.langSwitch }}
           </a>
         </div>
       </div>
@@ -503,26 +469,26 @@
             <label
               for="payload"
               class="block text-lg font-semibold text-gray-700 mb-2"
-            >Payload</label>
+            >{{ form.payloadLabel }}</label>
             <textarea
               id="payload"
               rows="6"
               class="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-sky-300 focus:border-sky-500 transition duration-200 resize-vertical"
-              placeholder="Paste text to encrypt or a Salty cipher to decrypt..."
+              placeholder="{{ form.payloadPlaceholder }}"
             ></textarea>
           </div>
           <div class="mb-6">
             <label
               for="key"
               class="block text-lg font-semibold text-gray-700 mb-2"
-            >Key</label>
+            >{{ form.keyLabel }}</label>
             <div class="flex gap-2">
               <div class="flex-1 relative">
                 <input
                   type="password"
                   id="key"
                   class="w-full px-4 py-3 pr-12 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-sky-300 focus:border-sky-500 transition duration-200"
-                  placeholder="Enter shared key"
+                  placeholder="{{ form.keyPlaceholder }}"
                   autocomplete="off"
                 >
                 <span class="toggle-password" id="togglePassword">
@@ -534,7 +500,7 @@
                 id="generatePasswordBtn"
                 class="bg-sky-500 text-white py-3 px-4 rounded-lg font-medium shadow-md hover:bg-sky-600 focus:outline-none focus:ring-4 focus:ring-sky-300 transition duration-300 ease-in-out transform hover:scale-105 whitespace-nowrap"
               >
-                <i class="ph-duotone ph-key mr-1"></i>Generate Password
+                <i class="ph-duotone ph-key mr-1"></i>{{ form.generatePasswordButton }}
               </button>
             </div>
 
@@ -545,7 +511,7 @@
                   <span id="strengthLabel"></span>
                 </span>
                 <span class="text-sm text-gray-600">
-                  <span id="entropyBits"></span> bits entropy
+                  <span id="entropyBits"></span> bits {{ passwordStrength.entropyBits }}
                 </span>
               </div>
               <div class="w-full bg-gray-200 rounded-full h-2">
@@ -553,11 +519,10 @@
                   id="strengthBar"
                   class="strength-bar"
                   style="width: 0%"
-                >
-                </div>
+                ></div>
               </div>
               <div class="text-xs text-gray-500 mt-1">
-                Crack time: <span id="crackTime"></span>
+                {{ passwordStrength.crackTime }}: <span id="crackTime"></span>
               </div>
             </div>
 
@@ -565,9 +530,7 @@
             <div id="breachWarning" class="breach-warning hidden">
               <i class="ph-duotone ph-warning-diamond breach-warning-icon"></i>
               <div class="breach-warning-content">
-                <div class="breach-warning-title">
-                  Warning: This password has been compromised
-                </div>
+                <div class="breach-warning-title">{{ breach.warning }}</div>
                 <div class="breach-warning-text" id="breachText"></div>
               </div>
             </div>
@@ -575,7 +538,7 @@
             <!-- Breach Check Loading -->
             <div id="breachCheckLoading" class="breach-check-loading hidden">
               <div class="spinner"></div>
-              <span>Checking against known breaches...</span>
+              <span>{{ breach.checking }}</span>
             </div>
           </div>
           <div
@@ -585,14 +548,14 @@
               type="submit"
               class="w-full sm:w-1/2 bg-emerald-500 text-white py-3 px-6 rounded-lg font-semibold text-xl shadow-md hover:bg-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-300 transition duration-300 ease-in-out transform hover:scale-105"
             >
-              <i class="ph-duotone ph-fingerprint mr-2"></i>Go
+              <i class="ph-duotone ph-fingerprint mr-2"></i>{{ form.submitButton }}
             </button>
             <button
               type="button"
               id="resetFormBtn"
               class="w-full sm:w-1/2 bg-amber-500 text-white py-3 px-6 rounded-lg font-semibold text-xl shadow-md hover:bg-amber-600 focus:outline-none focus:ring-4 focus:ring-amber-300 transition duration-300 ease-in-out transform hover:scale-105"
             >
-              <i class="ph-duotone ph-broom mr-2"></i>Reset
+              <i class="ph-duotone ph-broom mr-2"></i>{{ form.resetButton }}
             </button>
           </div>
         </form>
@@ -602,12 +565,12 @@
           class="mt-8 bg-white rounded-lg shadow-lg p-8 hidden"
         >
           <h2 class="text-2xl font-bold mb-4 text-sky-600">
-            Operation: <span id="operationType"></span>
+            {{ results.operation }}: <span id="operationType"></span>
           </h2>
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Shareable cipher</label>
+              >{{ results.shareableLabel }}</label>
               <div class="relative">
                 <textarea
                   id="shareableCipher"
@@ -620,33 +583,33 @@
                   class="absolute top-2 right-2 bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded text-sm transition copyBtn"
                   data-target="shareableCipher"
                 >
-                  Copy
+                  {{ results.copyButton }}
                 </button>
               </div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Compressed version</label>
+              >{{ results.compressedLabel }}</label>
               <div class="relative">
                 <textarea
                   id="compressedCipher"
                   rows="3"
                   class="w-full px-3 py-2 font-mono text-sm bg-gray-50 border border-gray-300 rounded-md resize-none"
                   readonly
-                  style="word-wrap: break-word; word-break: break-all"
+                  style="word-wrap: break-word; word-break: break-all;"
                 ></textarea>
                 <button
                   type="button"
                   class="absolute top-2 right-2 bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded text-sm transition copyBtn"
                   data-target="compressedCipher"
                 >
-                  Copy
+                  {{ results.copyButton }}
                 </button>
               </div>
             </div>
             <div id="shareUrlSection" class="hidden">
               <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Share URL</label>
+              >{{ results.shareUrlLabel }}</label>
               <div class="flex gap-2">
                 <input
                   type="text"
@@ -659,14 +622,14 @@
                   id="copyShareUrlBtn"
                   class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-md transition"
                 >
-                  Copy URL
+                  {{ results.shareUrlButton }}
                 </button>
                 <button
                   type="button"
                   id="showQrBtn"
                   class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition"
                 >
-                  QR
+                  {{ results.qrButton }}
                 </button>
               </div>
             </div>
@@ -676,20 +639,18 @@
     </main>
 
     <footer class="bg-gray-800 text-white py-4 text-center">
-      <p class="mb-2">© 2025 eSolia Inc. All rights reserved.</p>
+      <p class="mb-2">{{ footer.copyright }}</p>
       <a href="https://esolia.com/" target="_blank">
         <img
           src="/img/logo_horiz_white_bgtransparent.svg"
-          alt="eSolia Logo"
+          alt="{{ footer.logoAlt }}"
           class="inline h-12"
         >
       </a>
     </footer>
 
     <!-- QR Code Library -->
-    <script
-      src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
-    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
     <script type="module">
       // Import crypto functions
@@ -724,22 +685,16 @@
       const payloadInput = document.getElementById("payload");
       const keyInput = document.getElementById("key");
       const saltyResultDiv = document.getElementById("saltyResult");
-      const operationTypeSpan = document.getElementById(
-        "operationType",
-      );
+      const operationTypeSpan = document.getElementById("operationType");
       const shareableCipherTextarea = document.getElementById(
         "shareableCipher",
       );
       const compressedCipherTextarea = document.getElementById(
         "compressedCipher",
       );
-      const shareUrlSection = document.getElementById(
-        "shareUrlSection",
-      );
+      const shareUrlSection = document.getElementById("shareUrlSection");
       const shareUrlInput = document.getElementById("shareUrl");
-      const copyShareUrlBtn = document.getElementById(
-        "copyShareUrlBtn",
-      );
+      const copyShareUrlBtn = document.getElementById("copyShareUrlBtn");
       const resetFormBtn = document.getElementById("resetFormBtn"); // Get the new reset button
       const togglePassword = document.getElementById("togglePassword");
       const toggleIcon = document.getElementById("toggleIcon");
@@ -749,9 +704,7 @@
       let sharingUIMode = false;
 
       // Password strength elements
-      const strengthIndicator = document.getElementById(
-        "strengthIndicator",
-      );
+      const strengthIndicator = document.getElementById("strengthIndicator");
       const strengthLabel = document.getElementById("strengthLabel");
       const strengthBar = document.getElementById("strengthBar");
       const entropyBits = document.getElementById("entropyBits");
@@ -760,21 +713,15 @@
       // Breach check elements
       const breachWarning = document.getElementById("breachWarning");
       const breachText = document.getElementById("breachText");
-      const breachCheckLoading = document.getElementById(
-        "breachCheckLoading",
-      );
+      const breachCheckLoading = document.getElementById("breachCheckLoading");
       let breachCheckTimer = null;
 
       // Modal elements
       const passwordModal = document.getElementById("passwordModal");
-      const passwordModalClose = document.getElementById(
-        "passwordModalClose",
-      );
+      const passwordModalClose = document.getElementById("passwordModalClose");
       const dicewareBtn = document.getElementById("dicewareBtn");
       const randomBtn = document.getElementById("randomBtn");
-      const dicewareOptions = document.getElementById(
-        "dicewareOptions",
-      );
+      const dicewareOptions = document.getElementById("dicewareOptions");
       const randomOptions = document.getElementById("randomOptions");
       const passwordLength = document.getElementById("passwordLength");
       const lengthValue = document.getElementById("lengthValue");
@@ -787,9 +734,7 @@
       const generatedPasswordSection = document.getElementById(
         "generatedPasswordSection",
       );
-      const generatedPassword = document.getElementById(
-        "generatedPassword",
-      );
+      const generatedPassword = document.getElementById("generatedPassword");
       const toggleGeneratedPassword = document.getElementById(
         "toggleGeneratedPassword",
       );
@@ -802,15 +747,9 @@
       const modalStrengthIndicator = document.getElementById(
         "modalStrengthIndicator",
       );
-      const modalStrengthLabel = document.getElementById(
-        "modalStrengthLabel",
-      );
-      const modalStrengthBar = document.getElementById(
-        "modalStrengthBar",
-      );
-      const modalEntropyBits = document.getElementById(
-        "modalEntropyBits",
-      );
+      const modalStrengthLabel = document.getElementById("modalStrengthLabel");
+      const modalStrengthBar = document.getElementById("modalStrengthBar");
+      const modalEntropyBits = document.getElementById("modalEntropyBits");
       const modalCrackTime = document.getElementById("modalCrackTime");
 
       // QR Modal elements
@@ -822,43 +761,10 @@
 
       // i18n translations - using Vento variables
       const i18n = {
-        messages: {
-          "formReset": "Form has been reset.",
-          "operationError":
-            "Error: Unable to detect cipher. Paste a valid Salty cipher to decrypt or enter text to encrypt.",
-          "encryptionError": "Encryption error: ",
-          "decryptionError":
-            "Decryption error: Unable to decrypt the cipher with the provided key. Make sure you're using the correct key.",
-          "copied": "Copied to clipboard",
-          "failedToCopy": "Failed to copy",
-          "shareUrlCopied": "Share URL copied to clipboard",
-        },
-        passwordStrength: {
-          "veryWeak": "Very Weak",
-          "weak": "Weak",
-          "fair": "Fair",
-          "good": "Good",
-          "strong": "Strong",
-          "entropyBits": "entropy",
-          "crackTime": "Crack time",
-        },
-        breach: {
-          "checking": "Checking against known breaches...",
-          "warning": "Warning: This password has been compromised",
-          "warningText":
-            "This password appears in {{count}} data breaches. Choose a different password.",
-        },
-        results: {
-          "operation": "Operation",
-          "encrypted": "Encrypted",
-          "decrypted": "Decrypted",
-          "shareableLabel": "Shareable cipher",
-          "compressedLabel": "Compressed version",
-          "shareUrlLabel": "Share URL",
-          "shareUrlButton": "Copy URL",
-          "qrButton": "QR",
-          "copyButton": "Copy",
-        },
+        messages: {{- messages |> jsonStringify |> safe -}},
+        passwordStrength: {{- passwordStrength |> jsonStringify |> safe -}},
+        breach: {{- breach |> jsonStringify |> safe -}},
+        results: {{- results |> jsonStringify |> safe -}}
       };
 
       // Initialize diceware on page load
@@ -882,8 +788,7 @@
 
         // Check if it looks like a compressed basE91 cipher
         // Salty ciphers have specific basE91 characters and minimum length
-        const basE91Regex =
-          /^[A-Za-z0-9!#$%&()*+,./:;<=>?@\[\\\]^_`{|}~"-]+$/;
+        const basE91Regex = /^[A-Za-z0-9!#$%&()*+,./:;<=>?@\[\\\]^_`{|}~"-]+$/;
         const looksLikeBasE91 = basE91Regex.test(trimmedText) &&
           trimmedText.length >= 44; // Minimum for IV + tag + some ciphertext
 
@@ -922,15 +827,10 @@
         indicatorElements.label.textContent = i18n.passwordStrength[
           level.label.toLowerCase().replace(" ", "")
         ] || level.label;
-        indicatorElements.bar.style.width = `${
-          (strength.score + 1) * 20
-        }%`;
+        indicatorElements.bar.style.width = `${(strength.score + 1) * 20}%`;
         indicatorElements.bar.style.backgroundColor = level.color;
-        indicatorElements.entropy.textContent = Math.round(
-          strength.entropy,
-        );
-        indicatorElements.crackTime.textContent =
-          strength.crackTimeDisplay;
+        indicatorElements.entropy.textContent = Math.round(strength.entropy);
+        indicatorElements.crackTime.textContent = strength.crackTimeDisplay;
       }
 
       /**
@@ -960,7 +860,7 @@
 
             if (breachCount > 0) {
               const warningText = i18n.breach.warningText.replace(
-                "{{count}}",
+                "{{'{{'}}count}}",
                 breachCount.toLocaleString(),
               );
               breachText.textContent = warningText;
@@ -999,10 +899,7 @@
 
       // Password visibility toggle
       keyInput.addEventListener("input", () => {
-        togglePassword.classList.toggle(
-          "show",
-          keyInput.value.length > 0,
-        );
+        togglePassword.classList.toggle("show", keyInput.value.length > 0);
       });
 
       togglePassword.addEventListener("click", () => {
@@ -1144,16 +1041,13 @@
 
           if (isDiceware) {
             const wordCount = parseInt(dicewareWords.value);
-            password = await generatePassword("diceware", {
-              wordCount,
-            });
+            password = await generatePassword("diceware", { wordCount });
           } else {
             const options = {
               length: parseInt(passwordLength.value),
               includeNumbers: includeNumbers.checked,
               includeSymbols: includeSymbols.checked,
-              excludeSymbols: excludeSymbols.value ||
-                getExcludedSymbols(),
+              excludeSymbols: excludeSymbols.value || getExcludedSymbols(),
             };
             password = await generatePassword("random", options);
           }
@@ -1261,19 +1155,17 @@
             operationType = i18n.results.encrypted;
 
             // Create shareable URL
-            const shareUrl =
-              `${window.location.origin}${window.location.pathname}?payload=${
-                encodeURIComponent(result)
-              }`;
+            const shareUrl = `${window.location.origin}${
+              window.location.pathname
+            }?payload=${encodeURIComponent(result)}`;
             shareUrlInput.value = shareUrl;
             shareUrlSection.classList.remove("hidden");
           }
 
           // Format the result for display
-          const formattedResult =
-            operationType === i18n.results.encrypted
-              ? `-----BEGIN SALTY MESSAGE-----\n${result}\n-----END SALTY MESSAGE-----`
-              : result;
+          const formattedResult = operationType === i18n.results.encrypted
+            ? `-----BEGIN SALTY MESSAGE-----\n${result}\n-----END SALTY MESSAGE-----`
+            : result;
 
           operationTypeSpan.textContent = operationType;
           shareableCipherTextarea.value = formattedResult;

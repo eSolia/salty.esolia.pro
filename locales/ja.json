@@ -1,0 +1,118 @@
+{
+  "meta": {
+    "lang": "ja",
+    "title": "Salty: ブラウザネイティブな安全なテキスト暗号化",
+    "ogTitle": "Salty: Browser-Native Secure Text Encryption",
+    "ogDescription": "Salty: Browser-Native Secure Text Encryption"
+  },
+  "header": {
+    "title": "Salty",
+    "subtitle": "ブラウザネイティブな安全なテキスト暗号化",
+    "intro": "Saltyを使用すると、共有キーで強力に暗号化されたメッセージを簡単に送信できます。<br>ブラウザのWeb Crypto API を介して暗号化機能を提供し、結果のテキストはポータブル性のためにbasE91でエンコードされます。",
+    "helpButton": "Saltyについて",
+    "langSwitch": "English"
+  },
+  "form": {
+    "payloadLabel": "ペイロード",
+    "payloadPlaceholder": "暗号化するテキストまたは復号化するSalty暗号を貼り付けます...",
+    "keyLabel": "キー",
+    "keyPlaceholder": "共有キーを入力",
+    "generatePasswordButton": "パスワード生成",
+    "showPasswordButton": "パスワードを表示",
+    "submitButton": "実行",
+    "resetButton": "リセット"
+  },
+  "passwordGenerator": {
+    "modalTitle": "パスワード生成",
+    "typeLabel": "タイプ",
+    "dicewareTitle": "Diceware",
+    "dicewareDesc": "覚えやすい単語の組み合わせ",
+    "randomTitle": "ランダム",
+    "randomDesc": "完全にランダムな文字",
+    "dicewareOptions": {
+      "label": "単語数",
+      "option3": "3単語 (最小限のセキュリティ)",
+      "option4": "4単語 (推奨)",
+      "option5": "5単語 (高セキュリティ)",
+      "option6": "6単語 (非常に高い)"
+    },
+    "randomOptions": {
+      "lengthLabel": "長さ",
+      "lengthHelp": "8-128文字",
+      "includeNumbers": "数字を含む",
+      "includeSymbols": "記号を含む",
+      "excludeLabel": "除外する記号",
+      "excludePlaceholder": "例: <>{}[]",
+      "excludeHelp": "モバイルで入力しにくい記号を除外できます"
+    },
+    "generateButton": "生成",
+    "useButton": "使用",
+    "generatedPasswordLabel": "生成されたパスワード:",
+    "showButton": "表示"
+  },
+  "passwordStrength": {
+    "veryWeak": "非常に弱い",
+    "weak": "弱い",
+    "fair": "普通",
+    "good": "良い",
+    "strong": "強い",
+    "entropyBits": "エントロピー",
+    "crackTime": "解読時間"
+  },
+  "breach": {
+    "checking": "既知の情報漏えいを確認中...",
+    "warning": "警告: このパスワードは漏洩しています",
+    "warningText": "このパスワードは{{count}}件のデータ侵害で発見されています。別のパスワードを選択してください。"
+  },
+  "results": {
+    "operation": "操作",
+    "encrypted": "暗号化済み",
+    "decrypted": "復号化済み",
+    "shareableLabel": "共有可能な暗号",
+    "compressedLabel": "圧縮版",
+    "shareUrlLabel": "共有URL",
+    "shareUrlButton": "URLをコピー",
+    "qrButton": "QR",
+    "copyButton": "コピー"
+  },
+  "qrModal": {
+    "title": "共有URLのQRコード",
+    "instructions": "このQRコードをスキャンして、別のデバイスで暗号化されたメッセージを開きます。復号化にはキーが必要です。",
+    "closeButton": "閉じる"
+  },
+  "helpModal": {
+    "title": "Salty",
+    "subtitle": "ブラウザネイティブな安全なテキスト暗号化",
+    "intro": "Saltyを使用すると、共有キーで強力に暗号化されたメッセージを簡単に送信できます。ブラウザのWeb Crypto APIを介して暗号化機能を提供し、結果のテキストはポータブル性のためにbasE91でエンコードされます。",
+    "encryptTitle": "暗号化",
+    "encryptStep1": "「ペイロード」テキストエリアにメッセージを入力します。",
+    "encryptStep2": "「キー」フィールドにパスワードを入力します（または「パスワード生成」をクリックして強力なパスワードを作成します）。",
+    "encryptStep3": "「実行」をクリックします。",
+    "encryptStep4": "暗号化されたメッセージが下に表示されます。必要な形式でコピーするか、共有URLまたはQRコードを使用してください。",
+    "decryptTitle": "復号化",
+    "decryptStep1": "暗号化されたSalty暗号を「ペイロード」テキストエリアに貼り付けます。",
+    "decryptStep2": "暗号化に使用したのと同じキーを入力します。",
+    "decryptStep3": "「実行」をクリックします。",
+    "decryptStep4": "元のメッセージが表示されます。",
+    "securityTitle": "セキュリティ",
+    "securityDesc": "Saltyはサーバー上でメッセージを保存または処理しません。すべての暗号化と復号化はブラウザで行われ、送信されるのは暗号化されたテキストのみです。強力で一意のキーを使用し、安全なチャネルで共有してください。",
+    "techDetailsTitle": "技術詳細",
+    "techDetailsDesc": "Web Crypto API、AES-GCMアルゴリズム、PBKDF2を使用したキー派生、およびポータブル性のためのbasE91エンコーディングに基づいています。",
+    "ossTitle": "オープンソース",
+    "ossDesc": "SaltyはeSolia Inc.によって開発・維持されており、MITライセンスの下でGitHubでオープンソース化されています。",
+    "acknowledgement": "Concept, basE91 encoding/decoding and crypto functions adapted from Adam Newbold's Salty (<a href=\"https://salty.neatnik.net/\" target=\"_blank\" class=\"text-sky-600 underline hover:text-sky-700\">https://salty.neatnik.net/</a>)."
+  },
+  "messages": {
+    "formReset": "フォームをリセットしました。",
+    "operationError": "エラー: 暗号を検出できませんでした。復号化するには有効なSalty暗号を貼り付けるか、暗号化するテキストを入力してください。",
+    "encryptionError": "暗号化エラー: ",
+    "decryptionError": "復号化エラー: 指定されたキーで暗号を復号化できませんでした。正しいキーを使用していることを確認してください。",
+    "copied": "クリップボードにコピーされました",
+    "failedToCopy": "コピーに失敗しました",
+    "shareUrlCopied": "共有URLがクリップボードにコピーされました"
+  },
+  "footer": {
+    "copyright": "© 2025 eSolia Inc. All rights reserved.",
+    "logoAlt": "eSolia Logo"
+  }
+}
