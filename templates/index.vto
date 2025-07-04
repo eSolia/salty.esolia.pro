@@ -1220,26 +1220,24 @@
       }
 
       // Check for initial payload in URL
-      document.addEventListener("DOMContentLoaded", () => {
-        // Check for sharing UI mode
-        const suiParam = getQueryParam("sui");
-        if (suiParam === "1") {
-          sharingUIMode = true;
+      // Module scripts are deferred, so DOM is already loaded
+      const suiParam = getQueryParam("sui");
+      if (suiParam === "1") {
+        sharingUIMode = true;
 
-          // Hide password generator button
-          const generateBtn = document.getElementById(
-            "generatePasswordBtn",
-          );
-          if (generateBtn) generateBtn.style.display = "none";
+        // Hide password generator button
+        const generateBtn = document.getElementById(
+          "generatePasswordBtn",
+        );
+        if (generateBtn) generateBtn.style.display = "none";
 
-          // The strength indicator and breach warnings will be hidden by the flag checks
-        }
+        // The strength indicator and breach warnings will be hidden by the flag checks
+      }
 
-        const urlPayload = getQueryParam("payload");
-        if (urlPayload) {
-          payloadInput.value = decodeURIComponent(urlPayload);
-        }
-      });
+      const urlPayload = getQueryParam("payload");
+      if (urlPayload) {
+        payloadInput.value = decodeURIComponent(urlPayload);
+      }
     </script>
   </body>
 </html>
