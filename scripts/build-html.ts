@@ -80,8 +80,8 @@ async function build() {
         await ensureDir(outputDir);
       }
 
-      // Write output file
-      await Deno.writeTextFile(lang.path, html);
+      // Write output file with trailing newline
+      await Deno.writeTextFile(lang.path, html + "\n");
       console.log(`  ✅ Generated ${lang.path}`);
     }
 
