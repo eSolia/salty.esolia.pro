@@ -475,7 +475,7 @@
             : "status-error");
 
         document.getElementById("rateLimiting").textContent =
-          `${data.security.rateLimiting.maxRequests}/${data.security.rateLimiting.windowMs}ms`;
+          `${data.security.rateLimiting.maxRequests} per ${data.security.rateLimiting.window}`;
         document.getElementById("securityHeaders").textContent =
           data.security.headersApplied;
 
