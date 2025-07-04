@@ -48,8 +48,6 @@
         const div = document.createElement("div");
         div.className = "p-4 bg-gray-50 rounded";
 
-        const isDiceware = password.includes(" ");
-
         let html = `
                 <h3 class="font-semibold">${label}</h3>
                 <p class="font-mono text-sm mt-1">"${password}"</p>
@@ -78,7 +76,7 @@
                 </p>
             `;
 
-        // codeql[js/html-constructed-from-input]
+        // codeql[js/xss-through-dom]
         div.innerHTML = html; // Safe: test file with no user input
         return div;
       }
