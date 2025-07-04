@@ -77,7 +77,9 @@
     "proseWrap": "preserve",
     "exclude": [
       "docs/",
-      "scratch/"
+      "scratch/",
+      "*.html",
+      "en/*.html"
     ]
   },
   "test": {
