@@ -4,7 +4,13 @@
  */
 
 import { salty_decrypt, salty_encrypt, salty_key } from "./salty.ts";
-import { SECURITY_INFO, TECH_SPECS, VERSION, VersionUtils } from "./version.ts";
+import {
+  SECURITY_COMPLIANCE,
+  SECURITY_INFO,
+  TECH_SPECS,
+  VERSION,
+  VersionUtils,
+} from "./version.ts";
 import { LogCategory, logger, SecurityEvent } from "./logger.ts";
 import { tracer, TracingHelpers } from "./telemetry.ts";
 import { bundle } from "https://deno.land/x/emit@0.32.0/mod.ts";
@@ -1109,8 +1115,10 @@ async function handleRequest(request: Request): Promise<Response> {
       security: {
         rateLimiting: SECURITY_INFO?.rateLimiting || {},
         headersApplied: SECURITY_INFO?.securityHeaders?.length || 0,
+        headers: SECURITY_INFO?.securityHeaders || [],
         apiKeyRequired: !!Deno.env.get("API_KEY"),
         securityEvents: securitySummary || {},
+        compliance: SECURITY_COMPLIANCE || {},
       },
       environment: {
         saltConfigured: !!Deno.env.get("SALT_HEX"),

@@ -261,6 +261,27 @@
                 <!-- Populated dynamically -->
               </div>
             </div>
+
+            <!-- Security Headers -->
+            <div class="metric-card">
+              <h3 class="text-lg font-semibold mb-4">Security Headers</h3>
+              <div id="securityHeadersList" class="space-y-2">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <!-- OWASP Compliance -->
+            <div class="metric-card lg:col-span-2">
+              <h3 class="text-lg font-semibold mb-4">
+                OWASP Top 10 Compliance
+              </h3>
+              <div
+                id="owaspCompliance"
+                class="grid grid-cols-1 md:grid-cols-2 gap-3"
+              >
+                <!-- Populated dynamically -->
+              </div>
+            </div>
           </div>
         </div>
 
@@ -498,6 +519,54 @@
             }
           },
         );
+
+        // Security headers
+        if (data.security && data.security.headers) {
+          const headersEl = document.getElementById(
+            "securityHeadersList",
+          );
+          headersEl.innerHTML = "";
+          data.security.headers.forEach((header) => {
+            const div = document.createElement("div");
+            div.className = "flex items-center p-2 bg-green-50 rounded";
+            div.innerHTML = `
+              <i class="ph-duotone ph-check-circle text-green-600 mr-2"></i>
+              <span class="text-sm font-mono">${header}</span>
+            `;
+            headersEl.appendChild(div);
+          });
+        }
+
+        // OWASP compliance
+        if (
+          data.security && data.security.compliance &&
+          data.security.compliance.standards
+        ) {
+          const owaspEl = document.getElementById("owaspCompliance");
+          owaspEl.innerHTML = "";
+          Object.entries(data.security.compliance.standards.owasp)
+            .forEach(
+              ([key, value]) => {
+                const div = document.createElement("div");
+                const code = key.replace(/_.*/, "").toUpperCase();
+                const title = key.replace(/a\d+_/, "").replace(
+                  /([A-Z])/g,
+                  " $1",
+                ).trim();
+                div.className = "p-3 bg-gray-50 rounded";
+                div.innerHTML = `
+                <div class="flex items-start">
+                  <span class="text-xs font-bold text-blue-600 mr-2">${code}</span>
+                  <div class="flex-1">
+                    <p class="text-sm font-semibold capitalize">${title}</p>
+                    <p class="text-xs text-gray-600 mt-1">${value}</p>
+                  </div>
+                </div>
+              `;
+                owaspEl.appendChild(div);
+              },
+            );
+        }
 
         // Raw data
         document.getElementById("rawData").textContent = JSON.stringify(
