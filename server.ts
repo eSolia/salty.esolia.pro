@@ -930,6 +930,8 @@ async function serveFile(pathname: string): Promise<Response> {
       filePath = "./test-password-generator.html";
     } else if (pathname === "/test-diceware-entropy.html") {
       filePath = "./test-diceware-entropy.html";
+    } else if (pathname === "/dashboard.html") {
+      filePath = "./dashboard.html";
     } else {
       throw new Error("File not found");
     }
