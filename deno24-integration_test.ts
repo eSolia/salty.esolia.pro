@@ -8,13 +8,9 @@ import {
   assertEquals,
   assertExists,
 } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import {
-  getTracer,
-  isNativeOtelEnabled,
-  TracingHelpers,
-} from "./telemetry-native.ts";
+import { getTracer, TracingHelpers } from "./telemetry-native.ts";
 import { coverageTracker } from "./coverage-tracker.ts";
-import { LogCategory, logger, LogLevel } from "./logger.ts";
+import { LogCategory, logger } from "./logger.ts";
 
 // Store original environment values
 const originalOtelDeno = Deno.env.get("OTEL_DENO");
@@ -45,17 +41,17 @@ Deno.test("Deno 2.4 Integration - Telemetry with Coverage Tracking", async (t) =
     "should maintain coverage across multiple traced operations",
     async () => {
       // Execute multiple operations
-      await TracingHelpers.traceSecurity("rate-limit", async () => {
+      await TracingHelpers.traceSecurity("rate-limit", () => {
         coverageTracker.trackFunction("checkRateLimit");
         return { allowed: true };
       });
 
-      await TracingHelpers.traceValidation("request", async () => {
+      await TracingHelpers.traceValidation("request", () => {
         coverageTracker.trackFunction("validateApiKey");
         return { valid: true };
       });
 
-      await TracingHelpers.traceAPI("request-handler", async () => {
+      await TracingHelpers.traceAPI("request-handler", () => {
         coverageTracker.trackEndpoint("GET", "/health");
         coverageTracker.trackFunction("handleRequest");
         return new Response("OK");
@@ -141,7 +137,7 @@ Deno.test("Deno 2.4 Integration - Memory Monitoring with Telemetry", async (t) =
 
     const result = await tracer.trace(
       "memory.intensive-operation",
-      async () => {
+      () => {
         const memoryBefore = Deno.memoryUsage();
 
         // Simulate memory-intensive operation
@@ -172,7 +168,7 @@ Deno.test("Deno 2.4 Integration - Memory Monitoring with Telemetry", async (t) =
     assertEquals(result, 1000000);
   });
 
-  await t.step("should handle memory pressure scenarios", async () => {
+  await t.step("should handle memory pressure scenarios", () => {
     // Simulate checking memory before critical operations
     const memoryUsage = Deno.memoryUsage();
     const heapUsedMB = Math.round(memoryUsage.heapUsed / 1024 / 1024);
@@ -224,7 +220,7 @@ Deno.test("Deno 2.4 Integration - Full Feature Stack", async (t) => {
         // Validate request
         const validationResult = await TracingHelpers.traceValidation(
           "request",
-          async () => {
+          () => {
             coverageTracker.trackFunction("validateApiKey");
             return { valid: true, errors: [] };
           },
@@ -237,7 +233,7 @@ Deno.test("Deno 2.4 Integration - Full Feature Stack", async (t) => {
         // Check rate limit
         const rateLimitResult = await TracingHelpers.traceSecurity(
           "rate-limit",
-          async () => {
+          () => {
             coverageTracker.trackFunction("checkRateLimit");
             return { allowed: true, remaining: 19 };
           },
@@ -250,7 +246,7 @@ Deno.test("Deno 2.4 Integration - Full Feature Stack", async (t) => {
         // Perform crypto operation
         const encryptedData = await TracingHelpers.traceCrypto(
           "encrypt",
-          async () => {
+          () => {
             coverageTracker.trackFunction("salty_encrypt");
             // Record metrics
             tracer.recordMetric("crypto.operations", 1, {
@@ -345,7 +341,7 @@ Deno.test("Deno 2.4 Integration - Error Scenarios", async (t) => {
       let errorCaught = false;
 
       try {
-        await tracer.trace("error.test-operation", async () => {
+        await tracer.trace("error.test-operation", () => {
           coverageTracker.trackFunction("errorFunction");
           throw new Error("Simulated error");
         });
@@ -406,7 +402,7 @@ Deno.test("Deno 2.4 Integration - Performance Impact", async (t) => {
 
     // Measure with tracing
     const withTracingStart = performance.now();
-    await tracer.trace("performance.test", async () => {
+    await tracer.trace("performance.test", () => {
       for (let i = 0; i < 1000; i++) {
         const result = i * 2;
         assert(result >= 0);

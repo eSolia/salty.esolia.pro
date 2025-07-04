@@ -77,7 +77,7 @@ Deno.test("Native OpenTelemetry - Basic Tracing", async (t) => {
 
   await t.step("should create and complete a basic span", async () => {
     let spanExecuted = false;
-    const result = await tracer.trace("test.basic-span", async () => {
+    const result = await tracer.trace("test.basic-span", () => {
       spanExecuted = true;
       return "test-result";
     });
@@ -100,7 +100,7 @@ Deno.test("Native OpenTelemetry - Basic Tracing", async (t) => {
   await t.step("should propagate errors in async spans", async () => {
     let errorThrown = false;
     try {
-      await tracer.trace("test.error-span", async () => {
+      await tracer.trace("test.error-span", () => {
         throw new Error("Test error");
       });
     } catch (error) {
@@ -142,7 +142,7 @@ Deno.test("Native OpenTelemetry - Span Attributes", async (t) => {
       "test.boolean": true,
     };
 
-    await tracer.trace("test.attributes-span", async () => {
+    await tracer.trace("test.attributes-span", () => {
       // Attributes should be set on the span
       return "done";
     }, customAttributes);
@@ -153,22 +153,22 @@ Deno.test("Native OpenTelemetry - Span Attributes", async (t) => {
 
   await t.step("should determine service from span name", async () => {
     // Test crypto service
-    await tracer.trace(SPAN_NAMES.KEY_DERIVATION, async () => {
+    await tracer.trace(SPAN_NAMES.KEY_DERIVATION, () => {
       return "crypto";
     });
 
     // Test security service
-    await tracer.trace(SPAN_NAMES.RATE_LIMIT_CHECK, async () => {
+    await tracer.trace(SPAN_NAMES.RATE_LIMIT_CHECK, () => {
       return "security";
     });
 
     // Test validation service
-    await tracer.trace(SPAN_NAMES.REQUEST_VALIDATION, async () => {
+    await tracer.trace(SPAN_NAMES.REQUEST_VALIDATION, () => {
       return "validation";
     });
 
     // Test API service
-    await tracer.trace(SPAN_NAMES.API_REQUEST_HANDLER, async () => {
+    await tracer.trace(SPAN_NAMES.API_REQUEST_HANDLER, () => {
       return "api";
     });
 
@@ -208,7 +208,7 @@ Deno.test("Native OpenTelemetry - Metrics", async (t) => {
     });
 
     // Execute a security operation
-    await tracer.trace("security.rate-limit-check", async () => {
+    await tracer.trace("security.rate-limit-check", () => {
       return { allowed: true };
     });
 
@@ -308,7 +308,7 @@ Deno.test("Native OpenTelemetry - TracingHelpers", async (t) => {
   Deno.env.set("OTEL_DENO", "true");
 
   await t.step("should trace crypto operations", async () => {
-    const result = await TracingHelpers.traceCrypto("encrypt", async () => {
+    const result = await TracingHelpers.traceCrypto("encrypt", () => {
       return "encrypted-data";
     }, { payload_size: 100 });
 
@@ -318,7 +318,7 @@ Deno.test("Native OpenTelemetry - TracingHelpers", async (t) => {
   await t.step("should trace security operations", async () => {
     const result = await TracingHelpers.traceSecurity(
       "rate-limit",
-      async () => {
+      () => {
         return { allowed: true, remaining: 19 };
       },
       { client_ip: "127.0.0.1" },
@@ -329,7 +329,7 @@ Deno.test("Native OpenTelemetry - TracingHelpers", async (t) => {
   });
 
   await t.step("should trace validation operations", async () => {
-    const result = await TracingHelpers.traceValidation("request", async () => {
+    const result = await TracingHelpers.traceValidation("request", () => {
       return { valid: true, errors: [] };
     }, { content_type: "application/json" });
 
@@ -340,7 +340,7 @@ Deno.test("Native OpenTelemetry - TracingHelpers", async (t) => {
   await t.step("should trace API operations", async () => {
     const result = await TracingHelpers.traceAPI(
       "request-handler",
-      async () => {
+      () => {
         return new Response("OK", { status: 200 });
       },
       { method: "GET", path: "/health" },

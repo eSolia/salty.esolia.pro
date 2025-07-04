@@ -884,11 +884,12 @@ async function serveFile(pathname: string): Promise<Response> {
         headers.set("Content-Type", "text/javascript; charset=utf-8");
         return new Response(jsContent, { headers });
       } catch (error) {
-        logger.error(`Transpilation failed for ${pathname}`, {
-          category: LogCategory.SECURITY,
-          event: SecurityEvent.VALIDATION_FAILED,
-          error: error instanceof Error ? error.message : String(error),
-        });
+        logger.error(
+          `Transpilation failed for ${pathname}`,
+          error instanceof Error ? error : new Error(String(error)),
+          { pathname },
+          LogCategory.SECURITY,
+        );
         throw new Error("Transpilation failed");
       }
     } // Handle image files
