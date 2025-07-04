@@ -8,6 +8,7 @@ import { SECURITY_INFO, TECH_SPECS, VERSION, VersionUtils } from "./version.ts";
 import { LogCategory, logger, SecurityEvent } from "./logger.ts";
 import { tracer, TracingHelpers } from "./telemetry.ts";
 import { bundle } from "https://deno.land/x/emit@0.32.0/mod.ts";
+import { coverageTracker } from "./coverage-tracker.ts";
 
 /**
  * Security configuration constants
@@ -552,6 +553,11 @@ function handleApiRequest(
     const clientIP = SecurityUtils.getClientIP(request);
     const requestId = logger.generateRequestId();
 
+    // Track function coverage
+    coverageTracker.trackFunction(
+      operation === "encrypt" ? "handleEncrypt" : "handleDecrypt",
+    );
+
     // Add request context to tracing
     tracer.addSpanAttributes({
       "http.method": "POST",
@@ -858,7 +864,9 @@ async function serveFile(pathname: string): Promise<Response> {
         "/password-generator.ts",
       ].includes(pathname)
     ) {
-      console.log(`[DEBUG] Handling ${pathname} transpilation with Deno emit`);
+      logger.debug(`Handling ${pathname} transpilation with Deno emit`, {
+        category: LogCategory.HEALTH,
+      });
       try {
         const moduleName = pathname.slice(1); // Remove leading slash
         const result = await bundle(
@@ -866,15 +874,21 @@ async function serveFile(pathname: string): Promise<Response> {
         );
         const jsContent = result.code;
 
-        console.log(
-          `[DEBUG] Transpilation successful for ${moduleName}, length: ${jsContent.length}`,
-        );
+        logger.debug("Deno transpilation successful", {
+          category: LogCategory.HEALTH,
+          module: moduleName,
+          contentLength: jsContent.length,
+        });
 
         const headers = SecurityUtils.createSecurityHeaders();
         headers.set("Content-Type", "text/javascript; charset=utf-8");
         return new Response(jsContent, { headers });
       } catch (error) {
-        console.error(`[ERROR] Transpilation failed for ${pathname}:`, error);
+        logger.error(`Transpilation failed for ${pathname}`, {
+          category: LogCategory.SECURITY,
+          event: SecurityEvent.VALIDATION_FAILED,
+          error: error instanceof Error ? error.message : String(error),
+        });
         throw new Error("Transpilation failed");
       }
     } // Handle image files
@@ -931,20 +945,27 @@ async function serveFile(pathname: string): Promise<Response> {
       if (saltHex) {
         let htmlContent = new TextDecoder().decode(fileContent);
 
-        console.log(`[DEBUG] Processing HTML file: ${filePath}`);
-        console.log("[DEBUG] Attempting salt injection...");
+        logger.debug("Processing HTML file for salt injection", {
+          category: LogCategory.HEALTH,
+          filePath,
+        });
 
         // Simple, reliable replacement
         const placeholder = "SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER";
 
         if (htmlContent.includes(placeholder)) {
-          console.log(
-            `[DEBUG] Found salt placeholder, injecting salt: ${saltHex}`,
-          );
+          logger.debug("Found salt placeholder, injecting salt", {
+            category: LogCategory.HEALTH,
+            saltConfigured: true,
+          });
           htmlContent = htmlContent.replace(placeholder, saltHex);
-          console.log("[DEBUG] Salt injection completed successfully");
+          logger.debug("Salt injection completed successfully", {
+            category: LogCategory.HEALTH,
+          });
         } else {
-          console.log("[DEBUG] No salt placeholder found in this HTML file");
+          logger.debug("No salt placeholder found in HTML file", {
+            category: LogCategory.HEALTH,
+          });
         }
 
         fileContent = new Uint8Array(new TextEncoder().encode(htmlContent));
@@ -989,6 +1010,10 @@ async function serveFile(pathname: string): Promise<Response> {
 async function handleRequest(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const pathname = url.pathname;
+
+  // Track endpoint coverage
+  coverageTracker.trackEndpoint(request.method, pathname);
+  coverageTracker.trackFunction("handleRequest");
 
   // Handle CORS preflight requests for API endpoints
   if (
@@ -1116,6 +1141,7 @@ async function handleRequest(request: Request): Promise<Response> {
           : {},
         security: securitySummary || {},
       },
+      coverage: coverageTracker.getRuntimeCoverage(),
     };
 
     logger.apiRequest(
@@ -1151,6 +1177,7 @@ setInterval(() => {
  * @throws Process exit if critical environment variables are missing or invalid
  */
 function validateEnvironment(): void {
+  coverageTracker.trackFunction("validateEnvironment");
   const saltHex = Deno.env.get("SALT_HEX");
 
   if (!saltHex) {
@@ -1198,6 +1225,36 @@ logger.info(`Starting Salty v${VERSION} with enhanced security`, {
   securityFeatures: TECH_SPECS.securityFeatures.length,
   endpoints: TECH_SPECS.endpoints,
 });
+
+/**
+ * Register SIGUSR2 handler for low memory detection (Deno 2.4+)
+ * @description Logs critical alert when Deno detects low memory conditions
+ */
+try {
+  Deno.addSignalListener("SIGUSR2", () => {
+    const memoryUsage = Deno.memoryUsage();
+    logger.critical("Low memory condition detected by Deno runtime", {
+      category: LogCategory.SYSTEM,
+      memoryUsage: {
+        rss: `${Math.round(memoryUsage.rss / 1024 / 1024)}MB`,
+        heapTotal: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)}MB`,
+        heapUsed: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,
+        external: `${Math.round(memoryUsage.external / 1024 / 1024)}MB`,
+      },
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  logger.debug("SIGUSR2 handler registered for low memory monitoring", {
+    category: LogCategory.SYSTEM,
+  });
+} catch (error) {
+  // Gracefully handle if SIGUSR2 is not supported (e.g., on Windows)
+  logger.debug("Could not register SIGUSR2 handler", {
+    category: LogCategory.SYSTEM,
+    reason: error instanceof Error ? error.message : "Unknown error",
+  });
+}
 
 /**
  * Start the Deno HTTP server

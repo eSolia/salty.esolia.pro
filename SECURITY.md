@@ -262,7 +262,33 @@ Our application tracks and monitors:
 
 ## 📝 Security Changelog
 
-### Version 2.2.0 (In Development)
+### Version 2.3.0 (Deno 2.4 Security Enhancements)
+
+- Added native OpenTelemetry integration (telemetry-native.ts)
+  - Enhanced security observability with distributed tracing
+  - Automatic instrumentation of security operations
+  - Metrics collection for crypto operations, API requests, and security checks
+  - Supports OTLP export for integration with security monitoring platforms
+- Implemented SIGUSR2 handler for low memory detection
+  - Automatic critical alerts when Deno detects memory pressure
+  - Memory usage metrics included in alerts (RSS, heap, external)
+  - Webhook notifications for memory exhaustion attacks
+- Added runtime coverage tracking (coverage-tracker.ts)
+  - Real-time visibility into code execution paths
+  - Endpoint and function coverage metrics in health endpoint
+  - Helps identify untested security paths
+  - Supports Deno's native --coverage flag integration
+- Enhanced telemetry with security context
+  - Automatic span creation for all security operations
+  - Error tracking with full exception details
+  - Performance metrics for security checks
+  - Integration with existing security audit trail
+- Fixed information disclosure via console.log statements
+  - Replaced all console.log debug statements with proper logger calls
+  - Debug logs now respect LOG_LEVEL environment variable
+  - Prevents sensitive information leakage in production environments
+
+### Version 2.2.0
 
 - Added real-time password strength indicator
   - Client-side entropy calculation and feedback
