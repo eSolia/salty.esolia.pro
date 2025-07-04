@@ -78,7 +78,8 @@
                 </p>
             `;
 
-        div.innerHTML = html; // codeql[js/html-constructed-from-input] - Safe: test file with no user input
+        // codeql[js/html-constructed-from-input]
+        div.innerHTML = html; // Safe: test file with no user input
         return div;
       }
 
