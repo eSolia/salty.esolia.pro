@@ -691,13 +691,12 @@
       src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
     ></script>
 
-    <!-- Salt injection placeholder for server -->
-    <script>
+    <script type="module">
+      // Salt injection placeholder for server
+      // This will be replaced by the server upon serving the HTML file.
       window.INJECTED_SALT_HEX =
         "SALT_HEX_PLACEHOLDER_INJECTED_BY_SERVER";
-    </script>
 
-    <script type="module">
       // Import crypto functions
       import {
         salty_decrypt,
