@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.7] - 2025-07-04
+
+### Fixed
+
+- password modal eye icon position and result labels (4f8f682)
+- correct decryption result display (c986e7c)
+- password generator modal visual issues (7bc2ab0)
+- remove DOMContentLoaded wrapper for URL parameter loading (f246909)
+- correct password generator API call format (20e8abf)
+
 ## [2.2.6] - 2025-07-04
 
 ### Fixed
