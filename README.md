@@ -1,12 +1,12 @@
 <!-- VERSION_BADGE_START -->
 
-[![Version](https://img.shields.io/badge/version-2.2.0-blue.svg)](https://github.com/esolia/salty.esolia.pro/releases/tag/v2.2.0)
+[![Version](https://img.shields.io/badge/version-2.2.1-blue.svg)](https://github.com/esolia/salty.esolia.pro/releases/tag/v2.2.1)
 
 <!-- VERSION_BADGE_END -->
 
 <!-- BUILD_BADGE_START -->
 
-[![Build Date](https://img.shields.io/badge/build-2025--07--03-green.svg)](https://github.com/esolia/salty.esolia.pro)
+[![Build Date](https://img.shields.io/badge/build-2025--07--04-green.svg)](https://github.com/esolia/salty.esolia.pro)
 
 <!-- BUILD_BADGE_END -->
 
