@@ -1075,6 +1075,13 @@
         excludeSymbols.value = hasCustomExcludedSymbols()
           ? getExcludedSymbols()
           : "";
+        // Reset modal state
+        generatedPasswordSection.classList.add("hidden");
+        generatedPassword.value = "";
+        generatedPassword.type = "password";
+        const icon = toggleGeneratedPassword.querySelector("i");
+        icon.classList.remove("ph-eye-slash");
+        icon.classList.add("ph-eye");
         passwordModal.classList.remove("hidden");
       });
 
@@ -1111,8 +1118,8 @@
           icon.classList.add("ph-eye-slash");
         } else {
           generatedPassword.type = "password";
-          icon.classList.remove("ph-eye");
-          icon.classList.add("ph-eye-slash");
+          icon.classList.remove("ph-eye-slash");
+          icon.classList.add("ph-eye");
         }
       });
 
