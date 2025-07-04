@@ -38,6 +38,17 @@
       body {
         font-family: "IBM Plex Sans JP", sans-serif;
       }
+      /* Hide browser's native password reveal button */
+      input[type="password"]::-ms-reveal,
+      input[type="password"]::-ms-clear,
+      input[type="password"]::-webkit-textfield-decoration-container {
+        display: none;
+      }
+      /* For Edge specifically */
+      input::-ms-reveal,
+      input::-ms-clear {
+        display: none;
+      }
       /* Custom styles for the message box */
       .message-box {
         position: fixed;
