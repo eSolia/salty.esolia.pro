@@ -103,11 +103,11 @@ class SecurityUtils {
     // Content Security Policy - Secure configuration with necessary inline scripts allowed
     const cspDirectives = [
       "default-src 'self'",
-      "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com",
-      "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://kit.fontawesome.com https://cdn.usefathom.com https://cdn.jsdelivr.net",
+      "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://cdn.jsdelivr.net",
+      "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.usefathom.com https://cdn.jsdelivr.net",
       "img-src 'self' data: https:",
-      "connect-src 'self' https://cdn.usefathom.com https://api.pwnedpasswords.com https://ka-f.fontawesome.com",
-      "font-src 'self' https://fonts.gstatic.com https://kit.fontawesome.com https://ka-f.fontawesome.com",
+      "connect-src 'self' https://cdn.usefathom.com https://api.pwnedpasswords.com",
+      "font-src 'self' https://fonts.gstatic.com",
       "object-src 'none'",
       "base-uri 'self'",
       "frame-ancestors 'none'",
