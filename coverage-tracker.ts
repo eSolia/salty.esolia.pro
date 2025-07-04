@@ -152,16 +152,31 @@ export class EndpointCoverageTracker {
     const endpointCoverage = this.getEndpointCoverage();
     const functionCoverage = this.getFunctionCoverage();
 
+    // Mock security coverage for now - in a real system this would track security checks
+    const securityCoverage = {
+      totalChecks: 10,
+      executedChecks:
+        Array.from(this.functionsExecuted).filter((fn) =>
+          fn.includes("validate") || fn.includes("check") || fn.includes("auth")
+        ).length,
+      coveragePercentage: 0,
+    };
+    securityCoverage.coveragePercentage = Math.round(
+      (securityCoverage.executedChecks / securityCoverage.totalChecks) * 100,
+    );
+
     return {
       version: VERSION,
       uptime: `${uptime}s`,
       coverage: {
         endpoints: endpointCoverage,
         functions: functionCoverage,
+        security: securityCoverage,
         overall: {
           percentage: Math.round(
             ((endpointCoverage.coveragePercentage as number) +
-              (functionCoverage.coveragePercentage as number)) / 2,
+              (functionCoverage.coveragePercentage as number) +
+              securityCoverage.coveragePercentage) / 3,
           ),
         },
       },

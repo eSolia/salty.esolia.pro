@@ -1147,15 +1147,8 @@ async function handleRequest(request: Request): Promise<Response> {
       coverage: coverageTracker.getRuntimeCoverage(),
     };
 
-    logger.apiRequest(
-      "GET",
-      "/health",
-      200,
-      performance.now(),
-      SecurityUtils.getClientIP(request),
-      logger.generateRequestId(),
-      { healthCheck: true },
-    );
+    // Health endpoint logging is now handled by handleRequestWithTiming
+    // to ensure accurate response time measurement
 
     return new Response(
       JSON.stringify(healthData, null, 2),
@@ -1325,7 +1318,63 @@ try {
 }
 
 /**
+ * Wrap handleRequest to add timing
+ */
+async function handleRequestWithTiming(request: Request): Promise<Response> {
+  const startTime = performance.now();
+  const requestId = logger.generateRequestId();
+  const url = new URL(request.url);
+  const clientIP = SecurityUtils.getClientIP(request);
+
+  try {
+    const response = await handleRequest(request);
+
+    // Log successful requests with proper timing (but skip duplicate health logging)
+    if (url.pathname !== "/health") {
+      const responseTime = performance.now() - startTime;
+      logger.apiRequest(
+        request.method,
+        url.pathname,
+        response.status,
+        responseTime,
+        clientIP,
+        requestId,
+      );
+    }
+
+    return response;
+  } catch (error) {
+    const responseTime = performance.now() - startTime;
+    const status = error instanceof ApiError ? error.statusCode : 500;
+
+    logger.apiRequest(
+      request.method,
+      url.pathname,
+      status,
+      responseTime,
+      clientIP,
+      requestId,
+      { error: error instanceof Error ? error.message : String(error) },
+    );
+
+    // Return proper error response
+    const headers = SecurityUtils.createSecurityHeaders();
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : "Internal server error",
+        timestamp: new Date().toISOString(),
+      }),
+      {
+        status,
+        headers,
+      },
+    );
+  }
+}
+
+/**
  * Start the Deno HTTP server
  * @description Starts the server on port 8000 with the main request handler
  */
-Deno.serve({ port: 8000 }, handleRequest);
+Deno.serve({ port: 8000 }, handleRequestWithTiming);

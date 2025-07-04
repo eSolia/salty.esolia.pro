@@ -296,8 +296,9 @@
                 </div>
                 <button
                   id="generateBtn"
-                  class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+                  class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 inline-flex items-center justify-center"
                 >
+                  <i class="ph-duotone ph-key mr-2"></i>
                   Generate Password
                 </button>
                 <div
@@ -324,8 +325,9 @@
                 </div>
                 <button
                   id="analyzeBtn"
-                  class="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
+                  class="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 inline-flex items-center justify-center"
                 >
+                  <i class="ph-duotone ph-magnifying-glass mr-2"></i>
                   Analyze
                 </button>
                 <div id="entropyResult" class="space-y-2"></div>
@@ -409,9 +411,9 @@
 
         // Coverage
         if (data.coverage) {
-          const endpointPct = data.coverage.endpoints.percentage || 0;
-          const functionPct = data.coverage.functions.percentage || 0;
-          const securityPct = data.coverage.security.percentage || 0;
+          const endpointPct = data.coverage.endpoints?.percentage || 0;
+          const functionPct = data.coverage.functions?.percentage || 0;
+          const securityPct = data.coverage.security?.percentage || 0;
 
           document.getElementById("endpointCoverage").textContent =
             endpointPct + "%";
@@ -558,7 +560,9 @@
               ? "bg-yellow-50"
               : "bg-red-50"
           }">
-            <p class="font-semibold">${result.strength}</p>
+            <p class="font-semibold">${
+            result.strengthText || result.strength || "Unknown"
+          }</p>
             <p class="text-sm text-gray-600">Entropy: ${
             result.entropy.toFixed(1)
           } bits</p>
