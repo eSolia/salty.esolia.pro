@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Salty Admin Dashboard</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/duotone/style.css"
+    />
+    <style>
+      .metric-card {
+        @apply bg-white rounded-lg shadow p-6;
+      }
+      .metric-value {
+        @apply text-3xl font-bold;
+      }
+      .metric-label {
+        @apply text-gray-600 text-sm;
+      }
+      .status-badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs
+          font-medium;
+      }
+      .status-healthy {
+        @apply bg-green-100 text-green-800;
+      }
+      .status-warning {
+        @apply bg-yellow-100 text-yellow-800;
+      }
+      .status-error {
+        @apply bg-red-100 text-red-800;
+      }
+      .coverage-bar {
+        @apply h-4 bg-gray-200 rounded-full overflow-hidden;
+      }
+      .coverage-fill {
+        @apply h-full bg-blue-500 transition-all duration-500;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex justify-between items-center">
+          <h1 class="text-2xl font-bold text-gray-900">
+            Salty Admin Dashboard
+          </h1>
+          <button
+            id="refreshBtn"
+            class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <i class="ph-duotone ph-arrow-clockwise mr-2"></i>
+            Refresh
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Status Overview -->
+      <div class="mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">System Status</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="metric-card">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="metric-label">Health Status</p>
+                <p class="metric-value">
+                  <span id="healthStatus" class="status-badge">Loading...</span>
+                </p>
+              </div>
+              <i class="ph-duotone ph-heart-beat text-3xl text-gray-400"></i>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="metric-label">Uptime</p>
+                <p class="metric-value" id="uptime">--</p>
+              </div>
+              <i class="ph-duotone ph-clock text-3xl text-gray-400"></i>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="metric-label">Version</p>
+                <p class="metric-value" id="version">--</p>
+              </div>
+              <i class="ph-duotone ph-tag text-3xl text-gray-400"></i>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="metric-label">Success Rate</p>
+                <p class="metric-value" id="successRate">--%</p>
+              </div>
+              <i class="ph-duotone ph-chart-line text-3xl text-gray-400"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="border-b border-gray-200 mb-6">
+        <nav class="-mb-px flex space-x-8">
+          <button
+            class="tab-btn border-b-2 border-blue-500 text-blue-600 py-2 px-1 text-sm font-medium"
+            data-tab="metrics"
+          >
+            Metrics & Coverage
+          </button>
+          <button
+            class="tab-btn border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-2 px-1 text-sm font-medium"
+            data-tab="security"
+          >
+            Security
+          </button>
+          <button
+            class="tab-btn border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-2 px-1 text-sm font-medium"
+            data-tab="testing"
+          >
+            Testing Tools
+          </button>
+          <button
+            class="tab-btn border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-2 px-1 text-sm font-medium"
+            data-tab="raw"
+          >
+            Raw Data
+          </button>
+        </nav>
+      </div>
+
+      <!-- Tab Content -->
+      <div id="tabContent">
+        <!-- Metrics Tab -->
+        <div id="metrics-tab" class="tab-content">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Coverage Section -->
+            <div class="metric-card">
+              <h3 class="text-lg font-semibold mb-4">Code Coverage</h3>
+              <div class="space-y-4">
+                <div>
+                  <div class="flex justify-between mb-1">
+                    <span class="text-sm text-gray-600">Endpoints</span>
+                    <span class="text-sm font-medium" id="endpointCoverage"
+                    >0%</span>
+                  </div>
+                  <div class="coverage-bar">
+                    <div
+                      id="endpointCoverageBar"
+                      class="coverage-fill"
+                      style="width: 0%"
+                    >
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between mb-1">
+                    <span class="text-sm text-gray-600">Functions</span>
+                    <span class="text-sm font-medium" id="functionCoverage"
+                    >0%</span>
+                  </div>
+                  <div class="coverage-bar">
+                    <div
+                      id="functionCoverageBar"
+                      class="coverage-fill"
+                      style="width: 0%"
+                    >
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between mb-1">
+                    <span class="text-sm text-gray-600">Security Checks</span>
+                    <span class="text-sm font-medium" id="securityCoverage"
+                    >0%</span>
+                  </div>
+                  <div class="coverage-bar">
+                    <div
+                      id="securityCoverageBar"
+                      class="coverage-fill"
+                      style="width: 0%"
+                    >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Performance Metrics -->
+            <div class="metric-card">
+              <h3 class="text-lg font-semibold mb-4">Performance</h3>
+              <div class="space-y-3">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Total Requests</span>
+                  <span class="font-medium" id="totalRequests">0</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Avg Response Time</span>
+                  <span class="font-medium" id="avgResponseTime">0ms</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Failed Requests</span>
+                  <span class="font-medium text-red-600" id="failedRequests"
+                  >0</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Endpoint Usage -->
+            <div class="metric-card lg:col-span-2">
+              <h3 class="text-lg font-semibold mb-4">Endpoint Usage</h3>
+              <div
+                id="endpointUsage"
+                class="grid grid-cols-2 md:grid-cols-3 gap-3"
+              >
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security Tab -->
+        <div id="security-tab" class="tab-content hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="metric-card">
+              <h3 class="text-lg font-semibold mb-4">Security Configuration</h3>
+              <div class="space-y-3">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">API Key Required</span>
+                  <span id="apiKeyRequired" class="status-badge">--</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Salt Configured</span>
+                  <span id="saltConfigured" class="status-badge">--</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Rate Limiting</span>
+                  <span id="rateLimiting" class="font-medium">--</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Security Headers</span>
+                  <span id="securityHeaders" class="font-medium">0</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <h3 class="text-lg font-semibold mb-4">Security Events</h3>
+              <div
+                id="securityEvents"
+                class="space-y-2 max-h-64 overflow-y-auto"
+              >
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testing Tab -->
+        <div id="testing-tab" class="tab-content hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Password Generator Test -->
+            <div class="metric-card">
+              <h3 class="text-lg font-semibold mb-4">Password Generator</h3>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700"
+                  >Type</label>
+                  <select
+                    id="pwType"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  >
+                    <option value="diceware">Diceware</option>
+                    <option value="random">Random</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700"
+                  >Length</label>
+                  <input
+                    type="number"
+                    id="pwLength"
+                    value="4"
+                    min="1"
+                    max="10"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                  >
+                </div>
+                <button
+                  id="generateBtn"
+                  class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+                >
+                  Generate Password
+                </button>
+                <div
+                  id="generatedPassword"
+                  class="p-3 bg-gray-100 rounded font-mono text-sm break-all"
+                >
+                </div>
+              </div>
+            </div>
+
+            <!-- Entropy Analyzer -->
+            <div class="metric-card">
+              <h3 class="text-lg font-semibold mb-4">Entropy Analyzer</h3>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700"
+                  >Test Password</label>
+                  <input
+                    type="text"
+                    id="entropyInput"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                    placeholder="Enter password to analyze"
+                  >
+                </div>
+                <button
+                  id="analyzeBtn"
+                  class="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
+                >
+                  Analyze
+                </button>
+                <div id="entropyResult" class="space-y-2"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Raw Data Tab -->
+        <div id="raw-tab" class="tab-content hidden">
+          <div class="metric-card">
+            <h3 class="text-lg font-semibold mb-4">Raw Health Data</h3>
+            <pre
+              id="rawData"
+              class="bg-gray-900 text-gray-100 p-4 rounded overflow-x-auto text-sm"
+            ></pre>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module">
+      import { generatePassword } from "/password-generator.ts";
+      import { analyzePasswordStrength } from "/password-strength.ts";
+
+      let healthData = null;
+
+      // Tab switching
+      document.querySelectorAll(".tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          // Update button states
+          document.querySelectorAll(".tab-btn").forEach((b) => {
+            b.classList.remove("border-blue-500", "text-blue-600");
+            b.classList.add("border-transparent", "text-gray-500");
+          });
+          btn.classList.remove("border-transparent", "text-gray-500");
+          btn.classList.add("border-blue-500", "text-blue-600");
+
+          // Show/hide content
+          document.querySelectorAll(".tab-content").forEach(
+            (content) => {
+              content.classList.add("hidden");
+            },
+          );
+          document.getElementById(`${btn.dataset.tab}-tab`).classList
+            .remove("hidden");
+        });
+      });
+
+      // Format uptime
+      function formatUptime(seconds) {
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+
+        if (days > 0) {
+          return `${days}d ${hours}h`;
+        } else if (hours > 0) {
+          return `${hours}h ${minutes}m`;
+        } else {
+          return `${minutes}m`;
+        }
+      }
+
+      // Update dashboard with health data
+      function updateDashboard(data) {
+        healthData = data;
+
+        // Status
+        const statusEl = document.getElementById("healthStatus");
+        statusEl.textContent = data.status;
+        statusEl.className = "status-badge status-" + data.status;
+
+        // Basic metrics
+        document.getElementById("uptime").textContent = formatUptime(
+          data.server.uptime,
+        );
+        document.getElementById("version").textContent = data.version;
+        document.getElementById("successRate").textContent =
+          data.metrics.requests.successRate + "%";
+
+        // Coverage
+        if (data.coverage) {
+          const endpointPct = data.coverage.endpoints.percentage || 0;
+          const functionPct = data.coverage.functions.percentage || 0;
+          const securityPct = data.coverage.security.percentage || 0;
+
+          document.getElementById("endpointCoverage").textContent =
+            endpointPct + "%";
+          document.getElementById("endpointCoverageBar").style.width =
+            endpointPct + "%";
+
+          document.getElementById("functionCoverage").textContent =
+            functionPct + "%";
+          document.getElementById("functionCoverageBar").style.width =
+            functionPct + "%";
+
+          document.getElementById("securityCoverage").textContent =
+            securityPct + "%";
+          document.getElementById("securityCoverageBar").style.width =
+            securityPct + "%";
+        }
+
+        // Performance
+        document.getElementById("totalRequests").textContent =
+          data.metrics.requests.total;
+        document.getElementById("avgResponseTime").textContent =
+          data.metrics.performance.averageResponseTime + "ms";
+        document.getElementById("failedRequests").textContent =
+          data.metrics.requests.failed;
+
+        // Endpoint usage
+        const endpointUsageEl = document.getElementById(
+          "endpointUsage",
+        );
+        endpointUsageEl.innerHTML = "";
+        Object.entries(data.metrics.endpoints).forEach(
+          ([endpoint, count]) => {
+            const div = document.createElement("div");
+            div.className =
+              "flex justify-between p-2 bg-gray-50 rounded";
+            div.innerHTML = `
+            <span class="text-sm font-mono">${endpoint}</span>
+            <span class="text-sm font-medium">${count}</span>
+          `;
+            endpointUsageEl.appendChild(div);
+          },
+        );
+
+        // Security
+        document.getElementById("apiKeyRequired").textContent =
+          data.security.apiKeyRequired ? "Yes" : "No";
+        document.getElementById("apiKeyRequired").className =
+          "status-badge " +
+          (data.security.apiKeyRequired
+            ? "status-healthy"
+            : "status-warning");
+
+        document.getElementById("saltConfigured").textContent =
+          data.environment.saltConfigured ? "Yes" : "No";
+        document.getElementById("saltConfigured").className =
+          "status-badge " +
+          (data.environment.saltConfigured
+            ? "status-healthy"
+            : "status-error");
+
+        document.getElementById("rateLimiting").textContent =
+          `${data.security.rateLimiting.maxRequests}/${data.security.rateLimiting.windowMs}ms`;
+        document.getElementById("securityHeaders").textContent =
+          data.security.headersApplied;
+
+        // Security events
+        const securityEventsEl = document.getElementById(
+          "securityEvents",
+        );
+        securityEventsEl.innerHTML = "";
+        Object.entries(data.metrics.security).forEach(
+          ([event, count]) => {
+            if (count > 0) {
+              const div = document.createElement("div");
+              div.className =
+                "flex justify-between p-2 bg-red-50 rounded";
+              div.innerHTML = `
+              <span class="text-sm">${event}</span>
+              <span class="text-sm font-medium">${count}</span>
+            `;
+              securityEventsEl.appendChild(div);
+            }
+          },
+        );
+
+        // Raw data
+        document.getElementById("rawData").textContent = JSON.stringify(
+          data,
+          null,
+          2,
+        );
+      }
+
+      // Fetch health data
+      async function fetchHealth() {
+        try {
+          const response = await fetch("/health");
+          const data = await response.json();
+          updateDashboard(data);
+        } catch (error) {
+          console.error("Failed to fetch health data:", error);
+        }
+      }
+
+      // Password generator
+      document.getElementById("generateBtn").addEventListener(
+        "click",
+        async () => {
+          const type = document.getElementById("pwType").value;
+          const length = parseInt(
+            document.getElementById("pwLength").value,
+          );
+
+          try {
+            const password = await generatePassword({
+              type,
+              length,
+            });
+            document.getElementById("generatedPassword").textContent =
+              password;
+          } catch (error) {
+            document.getElementById("generatedPassword").textContent =
+              "Error: " + error.message;
+          }
+        },
+      );
+
+      // Password analyzer
+      document.getElementById("analyzeBtn").addEventListener(
+        "click",
+        () => {
+          const password =
+            document.getElementById("entropyInput").value;
+          if (!password) return;
+
+          const result = analyzePasswordStrength(password);
+          const resultEl = document.getElementById("entropyResult");
+
+          resultEl.innerHTML = `
+          <div class="p-3 rounded ${
+            result.score >= 3
+              ? "bg-green-50"
+              : result.score >= 2
+              ? "bg-yellow-50"
+              : "bg-red-50"
+          }">
+            <p class="font-semibold">${result.strength}</p>
+            <p class="text-sm text-gray-600">Entropy: ${
+            result.entropy.toFixed(1)
+          } bits</p>
+            <p class="text-sm text-gray-600">Time to crack: ${result.crackTimeDisplay}</p>
+            ${
+            result.warning
+              ? `<p class="text-sm text-red-600 mt-2">${result.warning}</p>`
+              : ""
+          }
+          </div>
+        `;
+        },
+      );
+
+      // Refresh button
+      document.getElementById("refreshBtn").addEventListener(
+        "click",
+        fetchHealth,
+      );
+
+      // Auto-refresh every 30 seconds
+      setInterval(fetchHealth, 30000);
+
+      // Initial load
+      fetchHealth();
+    </script>
+  </body>
+</html>

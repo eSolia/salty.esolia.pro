@@ -159,6 +159,8 @@ Optional:
 - `LOG_FORMAT`: json or text (default: json)
 - `WEBHOOK_URL`: For critical alert notifications
 - `NODE_ENV`: development, staging, or production
+- `DASH_USER`: Username for admin dashboard authentication
+- `DASH_PASS`: Password for admin dashboard authentication
 
 ### Key Implementation Details
 

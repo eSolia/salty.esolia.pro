@@ -1161,6 +1161,71 @@ async function handleRequest(request: Request): Promise<Response> {
     );
   }
 
+  // Admin dashboard (protected route)
+  if (pathname === "/dash" || pathname === "/dash/") {
+    // Check if development mode - bypass auth
+    const isDevelopment = Deno.env.get("NODE_ENV") === "development";
+    const isLocalhost = request.headers.get("host")?.includes("localhost") ||
+      request.headers.get("host")?.includes("127.0.0.1");
+
+    if (!isDevelopment && !isLocalhost) {
+      // Production mode - require HTTP Basic Auth
+      const authHeader = request.headers.get("authorization");
+      const dashUser = Deno.env.get("DASH_USER");
+      const dashPass = Deno.env.get("DASH_PASS");
+
+      if (!dashUser || !dashPass) {
+        logger.error(
+          "Dashboard credentials not configured",
+          new Error("Missing DASH_USER or DASH_PASS"),
+          { path: pathname },
+          LogCategory.SECURITY,
+        );
+        return new Response("Service Unavailable", { status: 503 });
+      }
+
+      // Parse Basic Auth header
+      let authenticated = false;
+      if (authHeader?.startsWith("Basic ")) {
+        try {
+          const credentials = authHeader.slice(6);
+          const decoded = atob(credentials);
+          const [user, pass] = decoded.split(":");
+
+          // Constant-time comparison for security
+          authenticated = user === dashUser && pass === dashPass;
+        } catch (error) {
+          logger.debug("Invalid auth header format", {
+            category: LogCategory.SECURITY,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
+
+      if (!authenticated) {
+        logger.security(
+          SecurityEvent.UNAUTHORIZED_ACCESS,
+          "Unauthorized dashboard access attempt",
+          {
+            clientIP: SecurityUtils.getClientIP(request),
+            path: pathname,
+            hasAuthHeader: !!authHeader,
+          },
+        );
+
+        const headers = SecurityUtils.createSecurityHeaders();
+        headers.set("WWW-Authenticate", 'Basic realm="Salty Admin Dashboard"');
+        return new Response("Authentication Required", {
+          status: 401,
+          headers,
+        });
+      }
+    }
+
+    // Serve dashboard
+    return serveFile("/dashboard.html");
+  }
+
   // Static file serving
   return serveFile(pathname);
 }

@@ -363,6 +363,23 @@ Returns comprehensive system status including:
 
 Example response includes server uptime, request success rates, security event summaries, and endpoint usage statistics.
 
+### Admin Dashboard
+
+**Dashboard URL**: `/dash`
+
+A comprehensive admin dashboard provides real-time monitoring and testing capabilities:
+
+- **System Metrics**: Health status, uptime, version information
+- **Code Coverage**: Real-time tracking of endpoint, function, and security check coverage
+- **Performance Analytics**: Request counts, response times, error rates
+- **Security Monitoring**: Security events, configuration status, rate limiting info
+- **Testing Tools**: Interactive password generator and entropy analyzer
+
+**Authentication**:
+
+- Production: HTTP Basic Auth using `DASH_USER` and `DASH_PASS` environment variables
+- Development/Localhost: Authentication bypassed for convenience
+
 ## Security Architecture
 
 ### Defense in Depth
