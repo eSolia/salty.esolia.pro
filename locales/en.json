@@ -69,6 +69,7 @@
     "encrypted": "Encrypted",
     "decrypted": "Decrypted",
     "shareableLabel": "Shareable cipher",
+    "decryptedLabel": "Decrypted text",
     "compressedLabel": "Compressed version",
     "shareUrlLabel": "Share URL",
     "shareUrlButton": "Copy URL",

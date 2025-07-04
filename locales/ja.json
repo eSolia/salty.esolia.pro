@@ -69,6 +69,7 @@
     "encrypted": "暗号化済み",
     "decrypted": "復号化済み",
     "shareableLabel": "共有可能な暗号",
+    "decryptedLabel": "復号化されたテキスト",
     "compressedLabel": "圧縮版",
     "shareUrlLabel": "共有URL",
     "shareUrlButton": "URLをコピー",
