@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Replace Font Awesome icons with Phosphor icons for consistency
+- Add icons to Go and Reset buttons for better visual clarity
+
+### Fixed
+
+- Fix Reset button to properly exit sharing UI mode (sui=1)
+- Fix duplicate password reveal icons when using sui=1
+
 ## [2.2.0] - 2025-07-03
 
 ### Added

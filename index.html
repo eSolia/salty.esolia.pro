@@ -15,12 +15,12 @@
     >
     <!-- Tailwind CSS - Note: Dynamic CDN doesn't support SRI, consider using a specific version -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Kit - Note: Kits don't support SRI, using crossorigin for CORS -->
-    <script
-      src="https://kit.fontawesome.com/a2929890a6.js"
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
+    <!-- Phosphor Icons -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/duotone/style.css"
+    />
     <!-- Fathom - beautiful, simple website analytics -->
     <script
       src="https://cdn.usefathom.com/script.js"
@@ -284,7 +284,9 @@
               id="dicewareBtn"
               class="password-type-btn active p-4 border-2 border-blue-500 bg-blue-50 rounded-lg text-center transition"
             >
-              <i class="fas fa-dice text-2xl mb-2 text-blue-600"></i>
+              <i
+                class="ph-duotone ph-dice-five text-2xl mb-2 text-blue-600"
+              ></i>
               <div class="font-semibold">Diceware</div>
               <div class="text-sm text-gray-600">
                 覚えやすい単語の組み合わせ
@@ -295,7 +297,7 @@
               id="randomBtn"
               class="password-type-btn p-4 border-2 border-gray-300 bg-white rounded-lg text-center transition hover:border-gray-400"
             >
-              <i class="fas fa-random text-2xl mb-2 text-gray-600"></i>
+              <i class="ph-duotone ph-shuffle text-2xl mb-2 text-gray-600"></i>
               <div class="font-semibold">ランダム</div>
               <div class="text-sm text-gray-600">完全にランダムな文字列</div>
             </button>
@@ -419,7 +421,7 @@
             id="generateBtn"
             class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-medium"
           >
-            <i class="fas fa-sync-alt mr-2"></i>生成
+            <i class="ph-duotone ph-arrows-clockwise mr-2"></i>生成
           </button>
           <button
             type="button"
@@ -427,7 +429,7 @@
             class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             disabled
           >
-            <i class="fas fa-check mr-2"></i>使用
+            <i class="ph-duotone ph-check-fat mr-2"></i>使用
           </button>
         </div>
       </div>
@@ -499,7 +501,7 @@
               id="generatePasswordBtn"
               class="text-sm text-blue-600 hover:text-blue-700 font-medium"
             >
-              <i class="fas fa-key mr-1"></i>パスワード生成
+              <i class="ph-duotone ph-key mr-1"></i>パスワード生成
             </button>
           </div>
           <div class="relative">
@@ -516,7 +518,7 @@
               class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
               aria-label="パスワードを表示/非表示"
             >
-              <i class="fas fa-eye" id="toggleIcon"></i>
+              <i class="ph-duotone ph-eye" id="toggleIcon"></i>
             </button>
           </div>
           <!-- Password strength indicator -->
@@ -537,7 +539,7 @@
           <!-- Breach warning -->
           <div id="breachWarning" class="breach-warning hidden">
             <div class="breach-warning-icon">
-              <i class="fas fa-exclamation-triangle"></i>
+              <i class="ph-duotone ph-warning-diamond"></i>
             </div>
             <div class="breach-warning-content">
               <div class="breach-warning-title" id="breachTitle"></div>
@@ -559,14 +561,14 @@
             type="submit"
             class="w-full sm:w-1/2 bg-emerald-500 text-white py-3 px-6 rounded-lg font-semibold text-xl shadow-md hover:bg-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-300 transition duration-300 ease-in-out transform hover:scale-105"
           >
-            実行
+            <i class="ph-duotone ph-fingerprint mr-2"></i>実行
           </button>
           <button
             type="button"
             id="resetFormBtn"
             class="w-full sm:w-1/2 bg-amber-500 text-white py-3 px-6 rounded-lg font-semibold text-xl shadow-md hover:bg-amber-600 focus:outline-none focus:ring-4 focus:ring-amber-300 transition duration-300 ease-in-out transform hover:scale-105"
           >
-            リセット
+            <i class="ph-duotone ph-broom mr-2"></i>リセット
           </button>
         </div>
       </form>
@@ -1177,11 +1179,11 @@
 
         // Toggle icon
         if (type === "password") {
-          toggleIcon.classList.remove("fa-eye-slash");
-          toggleIcon.classList.add("fa-eye");
+          toggleIcon.classList.remove("ph-eye-slash");
+          toggleIcon.classList.add("ph-eye");
         } else {
-          toggleIcon.classList.remove("fa-eye");
-          toggleIcon.classList.add("fa-eye-slash");
+          toggleIcon.classList.remove("ph-eye");
+          toggleIcon.classList.add("ph-eye-slash");
         }
       });
 
@@ -1198,6 +1200,15 @@
         // Clear breach check timer
         if (breachCheckTimer) {
           clearTimeout(breachCheckTimer);
+        }
+
+        // Reset sharing UI mode and restore normal UI
+        if (sharingUIMode) {
+          sharingUIMode = false;
+          const generateBtn = document.getElementById(
+            "generatePasswordBtn",
+          );
+          if (generateBtn) generateBtn.style.display = "";
         }
 
         // Clear URL parameters
@@ -1447,8 +1458,8 @@
       usePasswordBtn.addEventListener("click", () => {
         keyInput.value = generatedPassword.value;
         keyInput.type = "text"; // Show the password
-        toggleIcon.classList.remove("fa-eye");
-        toggleIcon.classList.add("fa-eye-slash");
+        toggleIcon.classList.remove("ph-eye");
+        toggleIcon.classList.add("ph-eye-slash");
         togglePassword.classList.add("show");
         passwordGeneratorModal.classList.add("hidden");
 
