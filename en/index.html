@@ -1148,18 +1148,19 @@
 
           if (isDiceware) {
             const wordCount = parseInt(dicewareWords.value);
-            password = await generatePassword("diceware", {
-              wordCount,
+            password = await generatePassword({
+              type: "diceware",
+              length: wordCount,
             });
           } else {
-            const options = {
+            password = await generatePassword({
+              type: "random",
               length: parseInt(passwordLength.value),
               includeNumbers: includeNumbers.checked,
               includeSymbols: includeSymbols.checked,
-              excludeSymbols: excludeSymbols.value ||
+              excludedSymbols: excludeSymbols.value ||
                 getExcludedSymbols(),
-            };
-            password = await generatePassword("random", options);
+            });
           }
 
           generatedPassword.value = password;
