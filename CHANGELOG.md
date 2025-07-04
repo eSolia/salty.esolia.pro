@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.3] - 2025-07-04
+
+### Changed
+
+- bump nagare version and prepare for release (694c2bc)
+
+### Fixed
+
+- resolve remaining CodeQL alerts in test file (f7a54aa)
+- correct CodeQL suppression syntax in test file (7f93d5c)
+- resolve code scanning security alerts (27e4692)
+
 ## [2.2.2] - 2025-07-04
 
 ### Added
