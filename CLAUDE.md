@@ -164,7 +164,9 @@ Optional:
 
 - **TypeScript transpilation**: Server automatically transpiles salty.ts for browser ES6 modules
 - **Multi-language support**: Japanese (/) and English (/en/) with IBM Plex Sans JP font
-- **URL pre-population**: Supports ?payload= parameter for database integration workflows
+- **URL pre-population**: Supports URL parameters for database integration workflows
+  - `?payload=` - Pre-populate encrypted payload field
+  - `?sui=1` - Activate sharing UI mode (hides password generator and strength assessment)
 - **Health endpoint**: GET /health provides comprehensive system metrics
 - **Static asset serving**: Images served with appropriate MIME types from /img/
 

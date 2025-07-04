@@ -23,6 +23,7 @@ Salty (<https://salty.esolia.pro>) is a comprehensive, web-based application des
 - **Automatic Detection**: Intelligently detects whether the input payload is plaintext (to be encrypted) or a Salty-encrypted cipher (to be decrypted)
 - **basE91 Encoding**: Encrypted output is encoded using basE91, providing a compact and portable format
 - **URL Parameter Support**: Pre-populate payload via URL parameters for database integration workflows
+- **Sharing UI Mode**: Clean interface option (`sui=1`) for shared encrypted content
 
 ### Security Features
 
@@ -328,6 +329,19 @@ Salty supports workflow integration where encrypted payloads can be pre-populate
 
 ```
 https://your-deployment.deno.dev/en/?payload=ENCODED_CIPHER_TEXT
+```
+
+**URL Parameters:**
+
+- `payload` - Pre-populate the encrypted payload field with URL-encoded ciphertext
+- `sui` - Sharing UI mode (optional)
+  - `sui=1` - Hide password generator and strength assessment for cleaner sharing interface
+  - `sui=0` or omitted - Show normal interface with all features
+
+**Example with Sharing UI:**
+
+```
+https://your-deployment.deno.dev/en/?payload=ENCODED_CIPHER_TEXT&sui=1
 ```
 
 **Example Database Formula** (for proper URL encoding):
