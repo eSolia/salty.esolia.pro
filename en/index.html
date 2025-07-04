@@ -645,6 +645,9 @@
       const togglePassword = document.getElementById("togglePassword");
       const toggleIcon = document.getElementById("toggleIcon");
 
+      // Flag for sharing UI mode
+      let sharingUIMode = false;
+
       // Password strength indicator elements
       const strengthIndicator = document.getElementById(
         "strengthIndicator",
@@ -729,7 +732,7 @@
        * Update password strength indicator
        */
       function updateStrengthIndicator(password) {
-        if (!password) {
+        if (!password || sharingUIMode) {
           strengthIndicator.classList.add("hidden");
           return;
         }
@@ -1040,7 +1043,7 @@
           clearTimeout(breachCheckTimer);
         }
 
-        if (password.length >= 8) {
+        if (password.length >= 8 && !sharingUIMode) {
           breachCheckTimer = setTimeout(() => {
             checkBreachStatus(password);
           }, 500);
@@ -1335,6 +1338,21 @@
       document.addEventListener("DOMContentLoaded", async () => {
         // Initialize diceware wordlist
         await initializeDiceware();
+
+        // Check for sharing UI mode
+        const suiParam = getQueryParam("sui");
+        if (suiParam === "1") {
+          sharingUIMode = true;
+
+          // Hide password generator button
+          const generateBtn = document.getElementById(
+            "generatePasswordBtn",
+          );
+          if (generateBtn) generateBtn.style.display = "none";
+
+          // The strength indicator and breach warnings will be hidden by the flag checks
+        }
+
         const urlPayload = getQueryParam("payload");
         if (urlPayload) {
           try {
