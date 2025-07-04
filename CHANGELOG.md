@@ -5,6 +5,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.2] - 2025-07-04
+
+### Added
+
+- add Vento templating system for maintainable HTML generation (236ac24)
+- replace Font Awesome with Phosphor icons and improve UI (c34a204)
+- add sui parameter for cleaner sharing UI (bb4b5af)
+- make 3-word diceware passphrases rank as 'Good' (0a209d8)
+- add excluded symbols feature and dynamic wordlist loading (7f7e0f8)
+- add password generator with visibility toggle (efccbb9)
+
+### Changed
+
+- bump version to 2.2.1 (30174ec)
+- update documentation for sui parameter (e6f9a0b)
+- add comprehensive password generator test suite (5839cea)
+
+### Fixed
+
+- format HTML output from build script to prevent release issues (22ed72d)
+- exclude HTML files from deno fmt to prevent release issues (c5120e9)
+- ensure HTML files have trailing newlines after build (1968a31)
+- add cdn.jsdelivr.net to font-src CSP for Phosphor fonts (90bfbdc)
+- update CSP to allow Phosphor icons and add planning doc (4dd3e38)
+- hide browser's native password reveal button to prevent duplicates (732902f)
+- simplify strength indicator to always use analyzePasswordStrength (bb58445)
+- make password generator modal use same strength analyzer as main form (df5d7ec)
+- correct entropy calculation for diceware passphrases (7da3f16)
+- respect user's excluded symbols preferences (537cb09)
+- add test-password-generator.html to allowed static files (e043a48)
+- add CodeQL/LGTM suppression comments for false positives (77ecc1f)
+- update DevSkim suppression comments to inline format (a5ab155)
+- address code scanning security alerts (442f62f)
+- replace deprecated window with globalThis for Deno 2.0 compatibility (13f8181)
+- improve diceware entropy with proper 10k+ word list (7e6422d)
+- improve password generator UX and entropy calculation consistency (253d18f)
+- correct favicon.ico path check to include leading slash (dfe4246)
+- update CSP to allow Font Awesome kit domains (e8e0db3)
+- update Font Awesome kit ID to correct value (96e995b)
+- add POST method to forms to prevent key exposure in URL (dc5a4a5)
+- add transpilation handlers for password-strength and hibp-checker modules (6bebddd)
+
 ## [2.2.1] - 2025-07-04
 
 ### Added
