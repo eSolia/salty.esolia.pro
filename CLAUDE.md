@@ -456,3 +456,5 @@ You have access to the Shape Up methodology in the .claude/ directory:
 ### Artifacts
 
 All generated documents should be created in the docs/ directory.
+
+**Note**: Consider moving Shape Up artifacts to `.claude/artifacts/` in the future to keep `docs/` available for API documentation.

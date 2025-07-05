@@ -1049,8 +1049,17 @@ async function forwardToDbflex(
     const parsedUserAgent = parseUserAgent(userAgent || "unknown");
 
     // Prepare payload - dbFLEX will handle access count via trigger
+    // Note: § Id might be handled by the match parameter in URL, not in payload
     const payload = [{
-      "§ Id": reconstructedId,
+      "§ Id": reconstructedId, // Try with ID first
+      "Last Accessed": timestamp,
+      "Last User Agent": userAgent || "unknown",
+      "Last User-Agent": parsedUserAgent,
+      "Last Referrer": referrer || "direct",
+    }];
+
+    // Alternative payload without § Id if needed
+    const payloadWithoutId = [{
       "Last Accessed": timestamp,
       "Last User Agent": userAgent || "unknown",
       "Last User-Agent": parsedUserAgent,
