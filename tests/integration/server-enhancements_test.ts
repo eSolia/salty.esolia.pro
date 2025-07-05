@@ -9,8 +9,8 @@ import {
   assertExists,
   assertStringIncludes,
 } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { coverageTracker } from "./coverage-tracker.ts";
-import { logger, LogLevel } from "./logger.ts";
+import { coverageTracker } from "../../coverage-tracker.ts";
+import { logger, LogLevel } from "../../logger.ts";
 
 // Note: Some tests require manual verification or CI environment considerations
 // as signal handling and server startup are system-dependent

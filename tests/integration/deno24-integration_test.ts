@@ -8,9 +8,9 @@ import {
   assertEquals,
   assertExists,
 } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { getTracer, TracingHelpers } from "./telemetry-native.ts";
-import { coverageTracker } from "./coverage-tracker.ts";
-import { LogCategory, logger } from "./logger.ts";
+import { getTracer, TracingHelpers } from "../../telemetry-native.ts";
+import { coverageTracker } from "../../coverage-tracker.ts";
+import { LogCategory, logger } from "../../logger.ts";
 
 // Store original environment values
 const originalOtelDeno = Deno.env.get("OTEL_DENO");

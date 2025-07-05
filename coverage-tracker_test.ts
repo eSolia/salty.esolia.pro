@@ -183,16 +183,20 @@ Deno.test("Coverage Tracker - Runtime Coverage Summary", async (t) => {
     const coverage = summary.coverage as Record<string, unknown>;
     const endpoints = coverage.endpoints as Record<string, unknown>;
     const functions = coverage.functions as Record<string, unknown>;
+    const security = coverage.security as Record<string, unknown>;
     const overall = coverage.overall as Record<string, unknown>;
 
     const endpointPercentage = endpoints.coveragePercentage as number;
     const functionPercentage = functions.coveragePercentage as number;
+    const securityPercentage = security.coveragePercentage as number;
     const overallPercentage = overall.percentage as number;
 
-    // Overall should be average of endpoint and function coverage
+    // Overall should be average of endpoint, function, and security coverage
     assertEquals(
       overallPercentage,
-      Math.round((endpointPercentage + functionPercentage) / 2),
+      Math.round(
+        (endpointPercentage + functionPercentage + securityPercentage) / 3,
+      ),
     );
   });
 });
