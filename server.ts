@@ -12,9 +12,12 @@ import {
   VersionUtils,
 } from "./version.ts";
 import { LogCategory, logger, SecurityEvent } from "./logger.ts";
-import { tracer, TracingHelpers } from "./telemetry.ts";
+import { getTracer, TracingHelpers } from "./telemetry-native.ts";
 import { bundle } from "https://deno.land/x/emit@0.32.0/mod.ts";
 import { coverageTracker } from "./coverage-tracker.ts";
+
+// Initialize tracer (native telemetry when available)
+const tracer = await getTracer();
 
 /**
  * Security configuration constants

@@ -16,9 +16,14 @@ import { SPAN_NAMES, TELEMETRY_SERVICE } from "./telemetry.ts";
 
 /**
  * Check if native OpenTelemetry is enabled
+ * Note: Deno Deploy EA has OTEL enabled by default
  */
 export const isNativeOtelEnabled = (): boolean => {
-  return Deno.env.get("OTEL_DENO") === "true" ||
+  // In Deno Deploy EA, OTEL is always enabled
+  // Keep the check for local development
+  const isDenoDeployEA = Deno.env.get("DENO_DEPLOYMENT_ID") !== undefined;
+  return isDenoDeployEA ||
+    Deno.env.get("OTEL_DENO") === "true" ||
     Deno.env.get("OTEL_DENO") === "1";
 };
 
@@ -34,7 +39,8 @@ export class NativeSaltyTracer {
   private histograms = new Map<string, Histogram>();
 
   private constructor() {
-    const serviceName = Deno.env.get("OTEL_SERVICE_NAME") || "salty";
+    // Use "salty" as service name - Deno Deploy EA doesn't need OTEL_SERVICE_NAME
+    const serviceName = "salty";
     this.tracer = trace.getTracer(serviceName, VERSION);
     this.meter = metrics.getMeter(serviceName, VERSION);
 
