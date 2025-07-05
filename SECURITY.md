@@ -262,6 +262,24 @@ Our application tracks and monitors:
 
 ## 📝 Security Changelog
 
+### 2025-01-05 - Security Fixes for Code Scanning Alerts
+
+**Security Issues Fixed**:
+
+1. **Incomplete URL substring sanitization (High severity)**
+   - Fixed in: `docs/integrations/cloudflare-worker-proxy.js`
+   - Issue: Using `startsWith()` for URL validation was vulnerable to bypass attacks
+   - Fix: Now properly parsing URLs with `new URL()` to validate origin
+   - Impact: Prevents attackers from bypassing origin checks with malicious URLs
+
+2. **Information exposure through stack traces (Medium severity)**
+   - Fixed in: `server.ts` (handleTrackAccess function)
+   - Issue: Error messages could expose internal implementation details
+   - Fix: Now returning generic error messages to users while logging full details server-side
+   - Impact: Prevents information disclosure that could aid attackers
+
+**InfoSec**: Addresses GitHub Security Code Scanning alerts #77 and #78
+
 ### 2025-01-05 - dbFLEX Link Tracking Integration
 
 **Feature**: Added optional link tracking for dbFLEX-generated URLs

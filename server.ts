@@ -944,18 +944,19 @@ async function handleTrackAccess(req: Request): Promise<Response> {
         },
       );
     } catch (error) {
-      const errorMessage = error instanceof Error
-        ? error.message
-        : String(error);
       const statusCode = error instanceof ApiError ? error.statusCode : 500;
       logger.error(
         "Track access error:",
         error instanceof Error ? error : new Error(String(error)),
       );
+      // Don't expose internal error details to users
+      const safeErrorMessage = statusCode === 400
+        ? "Invalid request parameters"
+        : "An error occurred while processing your request";
       return new Response(
         JSON.stringify({
           success: false,
-          error: errorMessage,
+          error: safeErrorMessage,
         }),
         {
           status: statusCode,

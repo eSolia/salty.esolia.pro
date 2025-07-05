@@ -28,8 +28,17 @@ export default {
     
     // Check both origin header and referer for security
     const referer = request.headers.get('referer');
-    const isAllowed = origin === allowedOrigin || 
-                     (referer && referer.startsWith(allowedOrigin));
+    // Parse URLs properly to avoid substring matching vulnerabilities
+    let isAllowed = origin === allowedOrigin;
+    if (!isAllowed && referer) {
+      try {
+        const refererUrl = new URL(referer);
+        isAllowed = refererUrl.origin === allowedOrigin;
+      } catch (e) {
+        // Invalid URL in referer
+        isAllowed = false;
+      }
+    }
     
     if (!isAllowed) {
       return new Response('Forbidden', { 
