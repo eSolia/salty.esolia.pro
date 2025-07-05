@@ -74,6 +74,7 @@ interface DbflexConfig {
   baseUrl?: string;
   tableUrl?: string;
   upsertUrl?: string;
+  proxySecret?: string;
 }
 
 /**
@@ -94,6 +95,7 @@ function getDbflexConfig(): DbflexConfig {
     baseUrl: Deno.env.get("DBFLEX_BASE_URL"),
     tableUrl: Deno.env.get("DBFLEX_TABLE_URL"),
     upsertUrl: Deno.env.get("DBFLEX_UPSERT_URL"),
+    proxySecret: Deno.env.get("DBFLEX_PROXY_SECRET"),
   };
 }
 
@@ -1063,6 +1065,10 @@ async function forwardToDbflex(
         // Don't send auth header if using proxy (proxy handles it)
         ...(config.apiKey && config.tableUrl
           ? { "Authorization": `Bearer ${config.apiKey}` }
+          : {}),
+        // Add proxy secret if in proxy mode
+        ...(isProxyMode && config.proxySecret
+          ? { "X-Proxy-Secret": config.proxySecret }
           : {}),
         "Content-Type": "application/json",
       },
