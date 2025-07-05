@@ -1025,8 +1025,10 @@ async function forwardToDbflex(
   }
 
   try {
-    // Construct the full URL
-    const url = `${config.baseUrl}/${config.tableUrl}/${config.upsertUrl}`;
+    // Construct the URL - if using proxy, baseUrl is the full proxy URL
+    const url = config.tableUrl || config.upsertUrl
+      ? `${config.baseUrl}/${config.tableUrl}/${config.upsertUrl}`
+      : config.baseUrl; // For Cloudflare proxy, just use baseUrl
 
     // Reconstruct the full ID with SALTY- prefix
     const reconstructedId = `SALTY-${id}`;
@@ -1043,12 +1045,15 @@ async function forwardToDbflex(
       "Last Referrer": referrer || "direct",
     }];
 
-    logger.debug("Sending to dbFLEX", { url, payload });
+    logger.debug("Sending to dbFLEX proxy", { url, payload });
 
     const response = await fetch(url, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${config.apiKey}`,
+        // Don't send auth header if using proxy (proxy handles it)
+        ...(config.apiKey && config.tableUrl
+          ? { "Authorization": `Bearer ${config.apiKey}` }
+          : {}),
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
