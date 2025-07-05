@@ -437,3 +437,22 @@ async function processRequest(req: Request): Promise<Response> {
 - Group related types/interfaces at the top
 - Use named exports over default exports
 - Keep files focused on a single responsibility
+
+## Claude Forge - Shape Up Methodology
+
+You have access to the Shape Up methodology in the .claude/ directory:
+
+- **methods/** - Shape Up methodology documentation
+- **personas/** - Role-based AI behaviors
+- **templates/** - Document templates
+- **commands/** - Slash commands for quick access
+
+### Quick Start
+
+- "Let's shape a feature for AI execution" - Begin a new project
+- "Ready to execute?" - Get guidance on next steps
+- Check .claude/methods/ for detailed methodology information
+
+### Artifacts
+
+All generated documents should be created in the docs/ directory.
