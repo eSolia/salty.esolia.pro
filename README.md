@@ -23,6 +23,7 @@ Salty (<https://salty.esolia.pro>) is a comprehensive, web-based application des
 - **API Authentication**: Optional API key protection for server endpoints
 - **Structured Logging**: Security event tracking and performance monitoring
 - **Request Size Limits**: Protection against oversized payloads
+- **dbFLEX Integration**: Optional link tracking for database-generated URLs
 
 ### User Experience Features
 
@@ -175,6 +176,13 @@ deno eval "console.log(btoa(String.fromCharCode(...crypto.getRandomValues(new Ui
    - `API_KEY`: Your generated base64 API key (enables API authentication; if not set, API endpoints are unprotected)
    - `LOG_LEVEL`: Logging verbosity level (defaults to INFO)
      - Available options: `DEBUG`, `INFO`, `WARN`, `ERROR`, `SECURITY`, `CRITICAL`
+
+   **dbFLEX Integration (Optional):**
+   - `DBFLEX_TRACKING_ENABLED`: Set to "true" to enable link tracking
+   - `DBFLEX_API_KEY`: Bearer token for dbFLEX authentication
+   - `DBFLEX_BASE_URL`: Base URL for dbFLEX API (e.g., https://pro.dbflex.net/secure/api/v2/15331)
+   - `DBFLEX_TABLE_URL`: URL-encoded table name (e.g., PS%20Secure%20Share)
+   - `DBFLEX_UPSERT_URL`: Upsert endpoint with match parameter (e.g., upsert.json?match=%CE%B5%20Id)
      - Recommended: `INFO` for production, `DEBUG` for development
    - `LOG_FORMAT`: Output format for logs (defaults to JSON)
      - Available options: `json`, `text`
@@ -442,6 +450,16 @@ Comprehensive security headers implemented:
 - **Unique per Deployment**: Each Salty instance must use a unique SALT_HEX
 - **Cryptographically Secure**: Generate salt using proper random number generators
 - **Environment Protection**: Store salt securely in environment variables
+
+### dbFLEX Integration
+
+When enabled, Salty can track access to URLs containing `?id=` parameters and update corresponding records in dbFLEX:
+
+- **Link Format**: `https://salty.esolia.pro/?payload=ENCRYPTED_DATA&id=20250105-001`
+- **ID Format**: Must be `YYYYMMDD-NNN` (e.g., 20250105-001)
+- **Tracked Data**: Last access timestamp, user agent, and referrer
+- **Automatic Processing**: Tracking occurs transparently without affecting decryption
+- **Fail-Safe Design**: Tracking failures don't interrupt the user experience
 
 ### Client-Side Processing
 

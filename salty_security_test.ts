@@ -366,3 +366,64 @@ Deno.test("Crypto Security - Compliance Checks", async (t) => {
     assertEquals(decoded!.length >= 12 + 16, true); // IV + tag minimum
   });
 });
+
+Deno.test("Track Access Security", async (t) => {
+  // Mock validation function for testing
+  const isValidDbflexId = (id: string): boolean => {
+    const pattern = /^(\d{4})(\d{2})(\d{2})-(\d{3})$/;
+    const match = id.match(pattern);
+    if (!match) return false;
+    const year = parseInt(match[1]);
+    const month = parseInt(match[2]);
+    const day = parseInt(match[3]);
+    if (year < 2020 || year > 2030) return false;
+    if (month < 1 || month > 12) return false;
+    if (day < 1 || day > 31) return false;
+    return true;
+  };
+
+  await t.step("should validate ID format to prevent injection", () => {
+    // Valid IDs
+    assertEquals(isValidDbflexId("20250105-001"), true);
+
+    // Invalid IDs that could be injection attempts
+    assertEquals(isValidDbflexId("'; DROP TABLE--"), false);
+    assertEquals(isValidDbflexId("<script>alert(1)</script>"), false);
+    assertEquals(isValidDbflexId("../../etc/passwd"), false);
+    assertEquals(isValidDbflexId("SALTY-20250105-001"), false); // With prefix
+    assertEquals(isValidDbflexId("20250105-001; DELETE"), false);
+  });
+
+  await t.step("should enforce strict date validation", () => {
+    // Edge cases for date validation
+    assertEquals(isValidDbflexId("20250000-001"), false); // Invalid month 0
+    assertEquals(isValidDbflexId("20250013-001"), false); // Invalid month 13
+    assertEquals(isValidDbflexId("20250100-001"), false); // Invalid day 0
+    assertEquals(isValidDbflexId("20250140-001"), false); // Invalid day 40
+    assertEquals(isValidDbflexId("20190101-001"), false); // Too old (before 2020)
+    assertEquals(isValidDbflexId("20310101-001"), false); // Too future (after 2030)
+  });
+
+  await t.step("should handle malformed input safely", () => {
+    // Various malformed inputs
+    assertEquals(isValidDbflexId(""), false);
+    assertEquals(isValidDbflexId("null"), false);
+    assertEquals(isValidDbflexId("undefined"), false);
+    assertEquals(isValidDbflexId("NaN"), false);
+    assertEquals(isValidDbflexId("Infinity"), false);
+    assertEquals(isValidDbflexId(" 20250105-001"), false); // Leading space
+    assertEquals(isValidDbflexId("20250105-001 "), false); // Trailing space
+    assertEquals(isValidDbflexId("20250105_001"), false); // Wrong separator
+    assertEquals(isValidDbflexId("2025-01-05-001"), false); // Wrong format
+  });
+
+  await t.step("should prevent oversized input", () => {
+    // Create an oversized ID
+    const oversizedId = "20250105-001" + "x".repeat(1000);
+    assertEquals(isValidDbflexId(oversizedId), false);
+
+    // Very long numeric strings
+    const longNumeric = "9".repeat(100) + "-999";
+    assertEquals(isValidDbflexId(longNumeric), false);
+  });
+});

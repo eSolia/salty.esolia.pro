@@ -66,11 +66,36 @@ interface RateLimitEntry {
 }
 
 /**
+ * dbFLEX tracking configuration interface
+ */
+interface DbflexConfig {
+  enabled: boolean;
+  apiKey?: string;
+  baseUrl?: string;
+  tableUrl?: string;
+  upsertUrl?: string;
+}
+
+/**
  * In-memory rate limiting store
  * @description Maps client IP addresses to their rate limit data
  * @todo Consider using Redis for production scaling across multiple instances
  */
 const rateLimitStore = new Map<string, RateLimitEntry>();
+
+/**
+ * Gets the dbFLEX configuration from environment variables
+ * @returns The dbFLEX configuration object
+ */
+function getDbflexConfig(): DbflexConfig {
+  return {
+    enabled: Deno.env.get("DBFLEX_TRACKING_ENABLED") === "true",
+    apiKey: Deno.env.get("DBFLEX_API_KEY"),
+    baseUrl: Deno.env.get("DBFLEX_BASE_URL"),
+    tableUrl: Deno.env.get("DBFLEX_TABLE_URL"),
+    upsertUrl: Deno.env.get("DBFLEX_UPSERT_URL"),
+  };
+}
 
 /**
  * Security utility class providing various security-related helper functions
@@ -233,6 +258,30 @@ class SecurityUtils {
       details,
     );
   }
+}
+
+/**
+ * Validates dbFLEX ID format (YYYYMMDD-NNN)
+ * @param id - The ID to validate
+ * @returns True if the ID format is valid, false otherwise
+ */
+function isValidDbflexId(id: string): boolean {
+  // Format: YYYYMMDD-NNN where NNN is 3 digits
+  const pattern = /^(\d{4})(\d{2})(\d{2})-(\d{3})$/;
+  const match = id.match(pattern);
+
+  if (!match) return false;
+
+  // Basic date validation
+  const year = parseInt(match[1]);
+  const month = parseInt(match[2]);
+  const day = parseInt(match[3]);
+
+  if (year < 2020 || year > 2030) return false;
+  if (month < 1 || month > 12) return false;
+  if (day < 1 || day > 31) return false;
+
+  return true;
 }
 
 /**
@@ -849,6 +898,180 @@ function handleApiRequest(
 }
 
 /**
+ * Handles the track access API endpoint for dbFLEX integration
+ * @param request - The incoming HTTP request
+ * @returns HTTP Response with tracking result
+ */
+async function handleTrackAccess(req: Request): Promise<Response> {
+  return await TracingHelpers.traceAPI("request-handler", async () => {
+    const dbflexConfig = getDbflexConfig();
+
+    if (!dbflexConfig.enabled) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Tracking not enabled",
+        }),
+        {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    try {
+      const data = await req.json();
+      const { id, timestamp, userAgent, referrer } = data;
+
+      // Validate ID format
+      if (!id || !isValidDbflexId(id)) {
+        throw new ApiError("Invalid ID format", 400, "INVALID_ID");
+      }
+
+      // Forward to dbFLEX with telemetry
+      const result = await forwardToDbflex(id, timestamp, userAgent, referrer);
+
+      return new Response(
+        JSON.stringify({
+          success: result.success,
+          timestamp: new Date().toISOString(),
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    } catch (error) {
+      const errorMessage = error instanceof Error
+        ? error.message
+        : String(error);
+      const statusCode = error instanceof ApiError ? error.statusCode : 500;
+      logger.error(
+        "Track access error:",
+        error instanceof Error ? error : new Error(String(error)),
+      );
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: errorMessage,
+        }),
+        {
+          status: statusCode,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+  }, {
+    "client.ip": SecurityUtils.getClientIP(req),
+    "http.route": "/api/track-access",
+  });
+}
+
+/**
+ * Parses user agent string into human-readable format
+ * @param userAgent - The user agent string to parse
+ * @returns Human-readable description of the user agent
+ */
+function parseUserAgent(userAgent: string): string {
+  // Basic parsing - can be enhanced with a proper UA parser library
+  const lines: string[] = [];
+
+  // Try to extract browser
+  const chromeMatch = userAgent.match(/Chrome\/([\d.]+)/);
+  const safariMatch = userAgent.match(/Safari\/([\d.]+)/);
+  const firefoxMatch = userAgent.match(/Firefox\/([\d.]+)/);
+
+  if (chromeMatch) lines.push(`Browser: Chrome ${chromeMatch[1]}`);
+  else if (firefoxMatch) lines.push(`Browser: Firefox ${firefoxMatch[1]}`);
+  else if (safariMatch) lines.push(`Browser: Safari ${safariMatch[1]}`);
+
+  // Extract OS
+  if (userAgent.includes("Windows NT")) lines.push("OS: Windows");
+  else if (userAgent.includes("Mac OS X")) {
+    const osMatch = userAgent.match(/Mac OS X ([\d_]+)/);
+    if (osMatch) lines.push(`OS: macOS ${osMatch[1].replace(/_/g, ".")}`);
+  } else if (userAgent.includes("Linux")) lines.push("OS: Linux");
+  else if (userAgent.includes("Android")) lines.push("OS: Android");
+  else if (userAgent.includes("iOS")) lines.push("OS: iOS");
+
+  // Platform
+  if (userAgent.includes("Mobile")) lines.push("Platform: Mobile");
+  else lines.push("Platform: Desktop");
+
+  return lines.join("\n");
+}
+
+/**
+ * Forwards tracking data to dbFLEX API
+ * @param id - The dbFLEX record ID (without SALTY- prefix)
+ * @param timestamp - The access timestamp
+ * @param userAgent - The user agent string
+ * @param referrer - The referrer URL
+ * @returns Success indicator
+ */
+async function forwardToDbflex(
+  id: string,
+  timestamp: string,
+  userAgent: string,
+  referrer: string,
+): Promise<{ success: boolean }> {
+  const config = getDbflexConfig();
+
+  if (
+    !config.baseUrl || !config.apiKey || !config.tableUrl || !config.upsertUrl
+  ) {
+    logger.error("dbFLEX configuration incomplete");
+    return { success: false };
+  }
+
+  try {
+    // Construct the full URL
+    const url = `${config.baseUrl}/${config.tableUrl}/${config.upsertUrl}`;
+
+    // Reconstruct the full ID with SALTY- prefix
+    const reconstructedId = `SALTY-${id}`;
+
+    // Parse user agent for human-readable format
+    const parsedUserAgent = parseUserAgent(userAgent || "unknown");
+
+    // Prepare payload - dbFLEX will handle access count via trigger
+    const payload = [{
+      "§ Id": reconstructedId,
+      "Last Accessed": timestamp,
+      "Last User Agent": userAgent || "unknown",
+      "Last User-Agent": parsedUserAgent,
+      "Last Referrer": referrer || "direct",
+    }];
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${config.apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      logger.error(
+        `dbFLEX API error: ${response.status} ${response.statusText} - ${errorText}`,
+      );
+      return { success: false };
+    }
+
+    logger.info(`Successfully tracked access for ID: ${reconstructedId}`);
+    return { success: true };
+  } catch (error) {
+    logger.error(
+      "dbFLEX API request failed:",
+      error instanceof Error ? error : new Error(String(error)),
+    );
+    return { success: false };
+  }
+}
+
+/**
  * Serves static files with appropriate security headers
  * @param pathname - The requested file path
  * @returns HTTP Response with the file contents or 404 error
@@ -1030,7 +1253,8 @@ async function handleRequest(request: Request): Promise<Response> {
   // Handle CORS preflight requests for API endpoints
   if (
     request.method === "OPTIONS" &&
-    (pathname === "/api/encrypt" || pathname === "/api/decrypt")
+    (pathname === "/api/encrypt" || pathname === "/api/decrypt" ||
+      pathname === "/api/track-access")
   ) {
     const headers = SecurityUtils.createSecurityHeaders();
     const corsHeaders = SecurityUtils.createCorsHeaders(request);
@@ -1054,6 +1278,10 @@ async function handleRequest(request: Request): Promise<Response> {
 
   if (pathname === "/api/decrypt") {
     return handleApiRequest(request, "decrypt");
+  }
+
+  if (pathname === "/api/track-access") {
+    return await handleTrackAccess(request);
   }
 
   // CSP violation reporting endpoint
@@ -1275,10 +1503,30 @@ function validateEnvironment(): void {
     });
   }
 
+  // Check dbFLEX tracking configuration
+  const dbflexTracking = Deno.env.get("DBFLEX_TRACKING_ENABLED") === "true";
+  if (dbflexTracking) {
+    const dbflexVars = [
+      "DBFLEX_API_KEY",
+      "DBFLEX_BASE_URL",
+      "DBFLEX_TABLE_URL",
+      "DBFLEX_UPSERT_URL",
+    ];
+    const missingDbflex = dbflexVars.filter((v) => !Deno.env.get(v));
+    if (missingDbflex.length > 0) {
+      logger.warn(
+        `dbFLEX tracking enabled but missing: ${missingDbflex.join(", ")}`,
+      );
+    } else {
+      logger.info("dbFLEX tracking configured and enabled");
+    }
+  }
+
   logger.info("Environment validation passed", {
     saltHexConfigured: true,
     apiKeyConfigured: !!apiKey,
     apiKeyLength: apiKey?.length || 0,
+    dbflexTrackingEnabled: dbflexTracking,
   });
 }
 

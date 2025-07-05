@@ -1386,6 +1386,60 @@
       if (urlPayload) {
         payloadInput.value = decodeURIComponent(urlPayload);
       }
+
+      // Extract tracking ID from URL
+      function getTrackingId() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("id");
+      }
+
+      // Send tracking beacon to server
+      async function trackLinkAccess() {
+        const trackingId = getTrackingId();
+        if (!trackingId) return;
+
+        try {
+          await fetch("/api/track-access", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: trackingId,
+              timestamp: new Date().toISOString(),
+              userAgent: navigator.userAgent,
+              referrer: document.referrer,
+            }),
+          });
+        } catch (error) {
+          // Silently fail - don't interrupt user experience
+          console.debug("Tracking request failed:", error);
+        }
+      }
+
+      // Track access if ID present
+      trackLinkAccess();
+
+      // Preserve URL parameters when switching languages
+      function preserveUrlParameters() {
+        const params = window.location.search;
+        if (params) {
+          // Update language switch links
+          const langLinks = document.querySelectorAll('a[href*="/"]');
+          langLinks.forEach((link) => {
+            const href = link.getAttribute("href");
+            // Check if this is a language switch link (ends with / or is en/ or ../)
+            if (
+              href &&
+              (href === "../" || href.endsWith("/") || href === "../" ||
+                href === "en/")
+            ) {
+              link.setAttribute("href", href + params);
+            }
+          });
+        }
+      }
+
+      // Call preserve URL parameters
+      preserveUrlParameters();
     </script>
   </body>
 </html>

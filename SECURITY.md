@@ -262,6 +262,21 @@ Our application tracks and monitors:
 
 ## 📝 Security Changelog
 
+### 2025-01-05 - dbFLEX Link Tracking Integration
+
+**Feature**: Added optional link tracking for dbFLEX-generated URLs
+
+**Security Measures**:
+
+- Input validation: Strict ID format validation (YYYYMMDD-NNN)
+- Rate limiting: Applied to /api/track-access endpoint
+- Authentication: Requires valid API key for dbFLEX communication
+- Fail-safe: Tracking failures don't affect core functionality
+- No data storage: All tracking data forwarded to dbFLEX only
+- CORS configured for API endpoint
+
+**InfoSec**: Maintains zero-knowledge architecture, no sensitive data logged
+
 ### Version 2.3.0 (Deno 2.4 Security Enhancements)
 
 - Added native OpenTelemetry integration (telemetry-native.ts)
