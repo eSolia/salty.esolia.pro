@@ -12,12 +12,14 @@
 **Pitch**: [dbflex-link-tracking.md](../pitches/dbflex-link-tracking.md)
 
 **Why we're betting on this**:
+
 - Clients need visibility into link access for compliance and confirmation
 - Admin team needs audit trails for support and troubleshooting
 - Clear technical approach with bounded scope
 - Enables enterprise adoption of Salty + dbFLEX workflow
 
 **Success looks like**:
+
 - [ ] Links with `?id=` parameter trigger tracking to dbFLEX
 - [ ] Server endpoint validates and forwards tracking data
 - [ ] dbFLEX records update with access timestamps
@@ -26,6 +28,7 @@
 - [ ] Environment-based configuration for easy deployment
 
 **Key Deliverables**:
+
 1. Client-side tracking detection and beacon
 2. Server `/api/track-access` endpoint
 3. dbFLEX API integration with auth
@@ -63,6 +66,7 @@ These were considered but didn't make the cut:
 ## Implementation Approach
 
 Given this is an AI-optimized Shape Up cycle:
+
 1. **Translate** the pitch into explicit tasks (30 min)
 2. **Execute** the implementation in one run
 3. **Fix** any issues in 2-5 iterations if needed

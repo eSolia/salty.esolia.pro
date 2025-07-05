@@ -4,19 +4,22 @@
 
 **The Problem**: Organizations using dbFLEX to share encrypted Salty links have no visibility into whether recipients actually accessed the shared information.
 
-**When it happens**: 
+**When it happens**:
+
 - HR shares encrypted salary information with an employee
-- Legal shares confidential documents with external parties  
+- Legal shares confidential documents with external parties
 - IT shares credentials with contractors
 - Anyone needs confirmation that sensitive information was received
 
-**Who it affects**: 
+**Who it affects**:
+
 - dbFLEX users who generate Salty links from their database
 - Managers who need audit trails for compliance
 - Senders who need delivery confirmation
 - Security teams tracking access to sensitive data
 
-**Current workaround**: 
+**Current workaround**:
+
 - Manual follow-up emails/calls asking "Did you get it?"
 - No way to know if links are being accessed by intended recipients
 - Creating separate tracking spreadsheets

@@ -5,17 +5,20 @@
 **The Problem**: Users need to manually determine which field to paste content into when using Salty, slowing down their workflow and creating friction.
 
 **When it happens**: Every time a user wants to decrypt a message they've received or encrypt a response. Users copy content from emails, messages, or documents and then must:
+
 1. Click into the payload field
 2. Paste their content
 3. If it's the wrong field, clear it and paste into the correct field
 
 **Who it affects**: All Salty users, but especially:
+
 - Power users who encrypt/decrypt frequently throughout the day
 - Mobile users where field selection requires precise tapping
 - Users switching between multiple encrypted conversations
 - Database integration users who receive pre-populated URLs
 
 **Current workaround**: Users must manually:
+
 1. Analyze what they copied (is it encrypted text or plain text?)
 2. Click the appropriate field
 3. Paste the content
@@ -70,14 +73,14 @@ Flow:
 
 ### Key Flows
 
-1. **Encrypted Text Flow**: 
-   - User copies Salty cipher (basE91 format) 
-   - Pastes anywhere on page 
-   - System detects basE91 pattern 
-   - Populates payload field 
+1. **Encrypted Text Flow**:
+   - User copies Salty cipher (basE91 format)
+   - Pastes anywhere on page
+   - System detects basE91 pattern
+   - Populates payload field
    - Shows "Encrypted message detected" feedback
 
-2. **Plain Text Flow**: 
+2. **Plain Text Flow**:
    - User copies plain text to encrypt
    - Pastes anywhere on page
    - System detects non-basE91 content
