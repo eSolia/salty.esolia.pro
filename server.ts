@@ -1043,6 +1043,8 @@ async function forwardToDbflex(
       "Last Referrer": referrer || "direct",
     }];
 
+    logger.debug("Sending to dbFLEX", { url, payload });
+
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -1063,9 +1065,18 @@ async function forwardToDbflex(
     logger.info(`Successfully tracked access for ID: ${reconstructedId}`);
     return { success: true };
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+
     logger.error(
       "dbFLEX API request failed:",
       error instanceof Error ? error : new Error(String(error)),
+      {
+        errorMessage,
+        errorStack,
+        errorType: error?.constructor?.name || "Unknown",
+        url: `${config.baseUrl}/${config.tableUrl}/${config.upsertUrl}`,
+      },
     );
     return { success: false };
   }
