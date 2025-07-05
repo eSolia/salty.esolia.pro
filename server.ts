@@ -1017,11 +1017,21 @@ async function forwardToDbflex(
 ): Promise<{ success: boolean }> {
   const config = getDbflexConfig();
 
-  if (
-    !config.baseUrl || !config.apiKey || !config.tableUrl || !config.upsertUrl
-  ) {
-    logger.error("dbFLEX configuration incomplete");
-    return { success: false };
+  // For proxy mode, we only need baseUrl. For direct mode, we need all fields.
+  const isProxyMode = config.baseUrl && !config.tableUrl && !config.upsertUrl;
+
+  if (isProxyMode) {
+    if (!config.baseUrl) {
+      logger.error("dbFLEX proxy URL not configured");
+      return { success: false };
+    }
+  } else {
+    if (
+      !config.baseUrl || !config.apiKey || !config.tableUrl || !config.upsertUrl
+    ) {
+      logger.error("dbFLEX configuration incomplete for direct mode");
+      return { success: false };
+    }
   }
 
   try {
