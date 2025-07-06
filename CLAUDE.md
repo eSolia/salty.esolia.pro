@@ -438,22 +438,26 @@ async function processRequest(req: Request): Promise<Response> {
 - Use named exports over default exports
 - Keep files focused on a single responsibility
 
-## Claude Forge - Shape Up Methodology
+## Methodologies
 
-You have access to the Shape Up methodology in the .claude/ directory:
+This project uses the globally installed Aichaku adaptive methodology system. Claude Code will automatically blend methodologies based on natural language:
 
-- **methods/** - Shape Up methodology documentation
-- **personas/** - Role-based AI behaviors
-- **templates/** - Document templates
-- **commands/** - Slash commands for quick access
+- Say "sprint" for Scrum practices
+- Say "shape" for Shape Up principles
+- Say "kanban board" for flow visualization
+- Say "MVP" for Lean approaches
 
-### Quick Start
+The methodologies are installed globally in ~/.claude/methodologies/ and will adapt to how you naturally talk about work.
 
-- "Let's shape a feature for AI execution" - Begin a new project
-- "Ready to execute?" - Get guidance on next steps
-- Check .claude/methods/ for detailed methodology information
+### Output Organization
 
-### Artifacts
+All methodology outputs should be created in the .claude/output/ directory using this structure:
 
-All Shape Up artifacts (pitches, bets, cycles, execution plans) should be created in the .claude/artifacts/ directory.
+- **status-YYYYMM-project-name/** format
+- Status prefixes: `planned-`, `active-`, `paused-`, `done-`
+- Date format: YYYYMM (completion date for done, start date for others)
+- Example: `done-202501-dbflex-tracking/`
+
+Each project folder should contain relevant artifacts based on the methodology used.
+
 Technical documentation (API docs, integration guides) should remain in the docs/ directory.

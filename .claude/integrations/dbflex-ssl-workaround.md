@@ -3,6 +3,7 @@
 ## Problem
 
 Deno's built-in fetch is very strict about SSL/TLS configurations and rejects connections to dbFLEX's IIS server with the error:
+
 ```
 Connection reset by peer (os error 104)
 ```
@@ -23,49 +24,55 @@ Create a proxy service on a platform with more forgiving SSL handling:
 export default {
   async fetch(request, env) {
     // Only accept POST requests
-    if (request.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405 });
+    if (request.method !== "POST") {
+      return new Response("Method not allowed", { status: 405 });
     }
 
     // Verify the request is from your Salty instance
-    const origin = request.headers.get('origin');
-    if (origin !== 'https://salty.esolia.pro') {
-      return new Response('Forbidden', { status: 403 });
+    const origin = request.headers.get("origin");
+    if (origin !== "https://salty.esolia.pro") {
+      return new Response("Forbidden", { status: 403 });
     }
 
     try {
       const data = await request.json();
-      
+
       // Forward to dbFLEX
       const response = await fetch(env.DBFLEX_URL, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${env.DBFLEX_API_KEY}`,
-          'Content-Type': 'application/json',
+          "Authorization": `Bearer ${env.DBFLEX_API_KEY}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
 
       const result = await response.text();
-      
-      return new Response(JSON.stringify({ 
-        success: response.ok,
-        status: response.status,
-        data: result 
-      }), {
-        headers: { 
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': 'https://salty.esolia.pro',
+
+      return new Response(
+        JSON.stringify({
+          success: response.ok,
+          status: response.status,
+          data: result,
+        }),
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "https://salty.esolia.pro",
+          },
         },
-      });
+      );
     } catch (error) {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        error: error.message 
-      }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: error.message,
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
   },
 };
@@ -94,20 +101,23 @@ async function trackLinkAccess() {
 
   try {
     // Send directly to dbFLEX from browser
-    const response = await fetch('https://pro.dbflex.net/secure/api/v2/15331/PS%20Secure%20Share/upsert.json?match=%CE%B5%20Id', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer YOUR_API_KEY', // Security risk!
-        'Content-Type': 'application/json',
+    const response = await fetch(
+      "https://pro.dbflex.net/secure/api/v2/15331/PS%20Secure%20Share/upsert.json?match=%CE%B5%20Id",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer YOUR_API_KEY", // Security risk!
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify([{
+          "§ Id": `SALTY-${trackingId}`,
+          "Last Accessed": new Date().toISOString(),
+          "Last User Agent": navigator.userAgent,
+          "Last User-Agent": parseUserAgent(navigator.userAgent),
+          "Last Referrer": document.referrer || "direct",
+        }]),
       },
-      body: JSON.stringify([{
-        "§ Id": `SALTY-${trackingId}`,
-        "Last Accessed": new Date().toISOString(),
-        "Last User Agent": navigator.userAgent,
-        "Last User-Agent": parseUserAgent(navigator.userAgent),
-        "Last Referrer": document.referrer || "direct"
-      }]),
-    });
+    );
   } catch (error) {
     console.debug("Tracking failed:", error);
   }
@@ -131,6 +141,7 @@ Add a Node.js microservice that Salty can call, which then forwards to dbFLEX us
 ## Recommendation
 
 **Use Option 1 (Cloudflare Worker)** because:
+
 - Keeps API key secure on server-side
 - Minimal latency (Cloudflare's edge network)
 - Easy to implement and maintain

@@ -1,5 +1,9 @@
 # Paste Detection Pitch
 
+**Start Date**: July 2025 (Planned)\
+**Completion Date**: TBD\
+**Status**: Planned 📋
+
 ## 1. Problem
 
 **The Problem**: Users need to manually determine which field to paste content into when using Salty, slowing down their workflow and creating friction.

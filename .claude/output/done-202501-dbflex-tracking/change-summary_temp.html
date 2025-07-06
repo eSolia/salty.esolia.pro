@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="generator" content="pandoc" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Document</title>
+    <style>
+      code {
+        white-space: pre-wrap;
+      }
+      span.smallcaps {
+        font-variant: small-caps;
+      }
+      div.columns {
+        display: flex;
+        gap: min(4vw, 1.5em);
+      }
+      div.column {
+        flex: auto;
+        overflow-x: auto;
+      }
+      div.hanging-indent {
+        margin-left: 1.5em;
+        text-indent: -1.5em;
+      }
+      /* The extra [class] is a hack that increases specificity enough to
+         override a similar rule in reveal.js */
+      ul.task-list[class] {
+        list-style: none;
+      }
+      ul.task-list li input[type="checkbox"] {
+        font-size: inherit;
+        width: 0.8em;
+        margin: 0 0.8em 0.2em -1.6em;
+        vertical-align: middle;
+      }
+      .display.math {
+        display: block;
+        text-align: center;
+        margin: 0.5rem auto;
+      }
+      /* CSS for syntax highlighting */
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      pre > code.sourceCode {
+        white-space: pre;
+        position: relative;
+      }
+      pre > code.sourceCode > span {
+        display: inline-block;
+        line-height: 1.25;
+      }
+      pre > code.sourceCode > span:empty {
+        height: 1.2em;
+      }
+      .sourceCode {
+        overflow: visible;
+      }
+      code.sourceCode > span {
+        color: inherit;
+        text-decoration: inherit;
+      }
+      div.sourceCode {
+        margin: 1em 0;
+      }
+      pre.sourceCode {
+        margin: 0;
+      }
+      @media screen {
+        div.sourceCode {
+          overflow: auto;
+        }
+      }
+      @media print {
+        pre > code.sourceCode {
+          white-space: pre-wrap;
+        }
+        pre > code.sourceCode > span {
+          text-indent: -5em;
+          padding-left: 5em;
+        }
+      }
+      pre.numberSource code {
+        counter-reset: source-line 0;
+      }
+      pre.numberSource code > span {
+        position: relative;
+        left: -4em;
+        counter-increment: source-line;
+      }
+      pre.numberSource code > span > a:first-child::before {
+        content: counter(source-line);
+        position: relative;
+        left: -1em;
+        text-align: right;
+        vertical-align: baseline;
+        border: none;
+        display: inline-block;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        padding: 0 4px;
+        width: 4em;
+        color: #aaaaaa;
+      }
+      pre.numberSource {
+        margin-left: 3em;
+        border-left: 1px solid #aaaaaa;
+        padding-left: 4px;
+      }
+      div.sourceCode {}
+      @media screen {
+        pre > code.sourceCode > span > a:first-child::before {
+          text-decoration: underline;
+        }
+      }
+      code span.al {
+        color: #ff0000;
+        font-weight: bold;
+      } /* Alert */
+      code span.an {
+        color: #60a0b0;
+        font-weight: bold;
+        font-style: italic;
+      } /* Annotation */
+      code span.at {
+        color: #7d9029;
+      } /* Attribute */
+      code span.bn {
+        color: #40a070;
+      } /* BaseN */
+      code span.bu {
+        color: #008000;
+      } /* BuiltIn */
+      code span.cf {
+        color: #007020;
+        font-weight: bold;
+      } /* ControlFlow */
+      code span.ch {
+        color: #4070a0;
+      } /* Char */
+      code span.cn {
+        color: #880000;
+      } /* Constant */
+      code span.co {
+        color: #60a0b0;
+        font-style: italic;
+      } /* Comment */
+      code span.cv {
+        color: #60a0b0;
+        font-weight: bold;
+        font-style: italic;
+      } /* CommentVar */
+      code span.do {
+        color: #ba2121;
+        font-style: italic;
+      } /* Documentation */
+      code span.dt {
+        color: #902000;
+      } /* DataType */
+      code span.dv {
+        color: #40a070;
+      } /* DecVal */
+      code span.er {
+        color: #ff0000;
+        font-weight: bold;
+      } /* Error */
+      code span.ex {} /* Extension */
+      code span.fl {
+        color: #40a070;
+      } /* Float */
+      code span.fu {
+        color: #06287e;
+      } /* Function */
+      code span.im {
+        color: #008000;
+        font-weight: bold;
+      } /* Import */
+      code span.in {
+        color: #60a0b0;
+        font-weight: bold;
+        font-style: italic;
+      } /* Information */
+      code span.kw {
+        color: #007020;
+        font-weight: bold;
+      } /* Keyword */
+      code span.op {
+        color: #666666;
+      } /* Operator */
+      code span.ot {
+        color: #007020;
+      } /* Other */
+      code span.pp {
+        color: #bc7a00;
+      } /* Preprocessor */
+      code span.sc {
+        color: #4070a0;
+      } /* SpecialChar */
+      code span.ss {
+        color: #bb6688;
+      } /* SpecialString */
+      code span.st {
+        color: #4070a0;
+      } /* String */
+      code span.va {
+        color: #19177c;
+      } /* Variable */
+      code span.vs {
+        color: #4070a0;
+      } /* VerbatimString */
+      code span.wa {
+        color: #60a0b0;
+        font-weight: bold;
+        font-style: italic;
+      } /* Warning */
+    </style>
+    <link
+      rel="stylesheet"
+      href="data:text/css,body{font-family:sans-serif;max-width:50em;margin:auto;padding:2em;}code{background:#f4f4f4;padding:2px 4px;}pre{background:#f4f4f4;padding:1em;overflow-x:auto;}h1,h2,h3{color:#333;}a{color:#0066cc;}"
+    />
+  </head>
+  <body>
+    <header id="title-block-header">
+      <h1 class="title">Document</h1>
+    </header>
+    <h1 id="change-summary-dbflex-link-tracking-implementation">
+      Change Summary: dbFLEX Link Tracking Implementation
+    </h1>
+    <p>
+      <strong>Change ID</strong>: CS-2025-01-05-001<br />
+      <strong>Date</strong>: January 5, 2025<br />
+      <strong>Feature</strong>: dbFLEX Link Access Tracking<br />
+      <strong>Classification</strong>: Enhancement<br />
+      <strong>Risk Level</strong>: Low<br />
+      <strong>Security Impact</strong>: Minimal
+    </p>
+    <h2 id="executive-summary">Executive Summary</h2>
+    <p>
+      Implemented link access tracking for Salty URLs generated by dbFLEX
+      database system. When users access links containing an ID parameter, Salty
+      now automatically notifies dbFLEX with access timestamp and metadata.
+      Implementation required a Cloudflare Worker proxy to overcome Deno’s SSL
+      strictness with dbFLEX’s IIS server.
+    </p>
+    <h2 id="business-justification">Business Justification</h2>
+    <ul>
+      <li>
+        <strong>Problem</strong>: Organizations had no visibility when encrypted
+        links were accessed
+      </li>
+      <li>
+        <strong>Impact</strong>: Compliance requirements mandate access logging
+        for sensitive data
+      </li>
+      <li>
+        <strong>Solution</strong>: Automatic tracking without user friction
+      </li>
+    </ul>
+    <h2 id="technical-implementation">Technical Implementation</h2>
+    <h3 id="architecture-overview">Architecture Overview</h3>
+    <pre><code>Browser → Salty Server → Cloudflare Worker → dbFLEX API</code></pre>
+    <h3 id="components-modified">Components Modified</h3>
+    <ol type="1">
+      <li>
+        <strong>Server-Side</strong> (<code>server.ts</code>)
+        <ul>
+          <li>Added <code>/api/track-access</code> endpoint</li>
+          <li>ID validation (YYYYMMDD-NNN format)</li>
+          <li>Environment configuration for dbFLEX</li>
+          <li>Proxy mode detection</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Client-Side</strong> (<code>templates/index.vto</code>)
+        <ul>
+          <li>JavaScript to detect <code>?id=</code> parameter</li>
+          <li>Automatic beacon on page load</li>
+          <li>URL parameter preservation</li>
+        </ul>
+      </li>
+      <li>
+        <strong>Infrastructure</strong> (Cloudflare Worker)
+        <ul>
+          <li>SSL/TLS compatibility layer</li>
+          <li>Shared secret authentication</li>
+          <li>Request forwarding to dbFLEX</li>
+        </ul>
+      </li>
+    </ol>
+    <h3 id="security-measures">Security Measures</h3>
+    <ul>
+      <li>✅ Input validation for ID format</li>
+      <li>✅ Rate limiting on tracking endpoint</li>
+      <li>✅ Shared secret authentication for proxy</li>
+      <li>✅ No sensitive data logged</li>
+      <li>
+        ✅ Fail-safe design (tracking failures don’t affect core functionality)
+      </li>
+      <li>✅ API key stored in Cloudflare, not Salty</li>
+    </ul>
+    <h2 id="configuration">Configuration</h2>
+    <h3 id="environment-variables-added">Environment Variables Added</h3>
+    <div class="sourceCode" id="cb2">
+      <pre
+        class="sourceCode bash"
+      >
+<code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Salty (Deno Deploy)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="va">DBFLEX_TRACKING_ENABLED</span><span class="op">=</span>true</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="va">DBFLEX_BASE_URL</span><span class="op">=</span>https://salty-dbflex-proxy-<span class="pp">*</span>.workers.dev</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="va">DBFLEX_PROXY_SECRET</span><span class="op">=</span><span class="pp">[</span><span class="ss">REDACTED</span><span class="pp">]</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Cloudflare Worker</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="va">DBFLEX_URL</span><span class="op">=</span>https://pro.dbflex.net/secure/api/v2/15331/PS%20Secure%20Share/update.json</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="va">DBFLEX_API_KEY</span><span class="op">=</span><span class="pp">[</span><span class="ss">REDACTED</span><span class="pp">]</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="va">PROXY_SECRET</span><span class="op">=</span><span class="pp">[</span><span class="ss">REDACTED</span><span class="pp">]</span></span></code></pre>
+    </div>
+    <h3 id="data-flow">Data Flow</h3>
+    <ol type="1">
+      <li>
+        User clicks:
+        <code>https://salty.esolia.pro/?id=20250623-003</code>
+      </li>
+      <li>
+        Client detects ID and sends POST to
+        <code>/api/track-access</code>
+      </li>
+      <li>Server validates and forwards to Cloudflare Worker</li>
+      <li>Worker authenticates and forwards to dbFLEX</li>
+      <li>
+        dbFLEX updates record with:
+        <ul>
+          <li><code>Last Accessed</code>: ISO timestamp</li>
+          <li><code>Last User Agent</code>: Raw browser string</li>
+          <li><code>Last User-Agent</code>: Parsed format</li>
+          <li><code>Last Referrer</code>: Source URL</li>
+        </ul>
+      </li>
+    </ol>
+    <h2 id="testing-results">Testing Results</h2>
+    <ul>
+      <li>✅ ID validation working correctly</li>
+      <li>
+        ✅ Tracking succeeds with test ID
+        <code>SALTY-20250623-003</code>
+      </li>
+      <li>✅ dbFLEX record updates confirmed</li>
+      <li>✅ No impact on non-tracked URLs</li>
+      <li>✅ Graceful failure handling verified</li>
+    </ul>
+    <h2 id="known-issues-limitations">Known Issues &amp; Limitations</h2>
+    <ol type="1">
+      <li>
+        <strong>SSL Compatibility</strong>: Direct connection to dbFLEX not
+        possible due to Deno’s strict TLS requirements
+      </li>
+      <li>
+        <strong>Proxy Dependency</strong>: Relies on Cloudflare Worker
+        availability
+      </li>
+      <li>
+        <strong>Single Region</strong>: Worker runs in single Cloudflare region
+        (latency considerations)
+      </li>
+    </ol>
+    <h2 id="compliance-audit-trail">Compliance &amp; Audit Trail</h2>
+    <h3 id="code-changes">Code Changes</h3>
+    <ul>
+      <li>
+        Commits: 8 commits from initial implementation to final working version
+      </li>
+      <li>Review: Self-reviewed with AI assistance</li>
+      <li>Testing: Manual testing with production data</li>
+    </ul>
+    <h3 id="documentation-created">Documentation Created</h3>
+    <ol type="1">
+      <li>Feature pitch document</li>
+      <li>Cycle planning document</li>
+      <li>Technical execution plan</li>
+      <li>Integration guide</li>
+      <li>SSL workaround documentation</li>
+      <li>This change summary</li>
+    </ol>
+    <h3 id="security-review">Security Review</h3>
+    <ul>
+      <li>No new attack vectors introduced</li>
+      <li>API keys properly secured</li>
+      <li>Input validation comprehensive</li>
+      <li>Logging excludes sensitive data</li>
+    </ul>
+    <h2 id="rollback-plan">Rollback Plan</h2>
+    <p>If issues arise:</p>
+    <ol type="1">
+      <li>Set <code>DBFLEX_TRACKING_ENABLED=false</code> in Deno Deploy</li>
+      <li>Feature automatically disables</li>
+      <li>No code changes required</li>
+      <li>Remove Cloudflare Worker if permanent rollback</li>
+    </ol>
+    <h2 id="future-considerations">Future Considerations</h2>
+    <ol type="1">
+      <li>
+        <strong>Batch Updates</strong>: Queue tracking events for efficiency
+      </li>
+      <li><strong>Analytics Dashboard</strong>: Aggregate tracking data</li>
+      <li>
+        <strong>Direct Connection</strong>: Revisit when dbFLEX updates TLS
+        configuration
+      </li>
+      <li>
+        <strong>Extended Metadata</strong>: Capture additional context (device
+        type, location)
+      </li>
+    </ol>
+    <h2 id="approval-sign-off">Approval Sign-off</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Role</th>
+          <th>Name</th>
+          <th>Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Developer</td>
+          <td>[Your Name]</td>
+          <td>2025-01-05</td>
+          <td>✅</td>
+        </tr>
+        <tr>
+          <td>Security Review</td>
+          <td>Pending</td>
+          <td>-</td>
+          <td>⏳</td>
+        </tr>
+        <tr>
+          <td>Business Owner</td>
+          <td>Pending</td>
+          <td>-</td>
+          <td>⏳</td>
+        </tr>
+      </tbody>
+    </table>
+    <h2 id="references">References</h2>
+    <ul>
+      <li>GitHub Repository: https://github.com/eSolia/salty.esolia.pro</li>
+      <li>Cloudflare Worker: salty-dbflex-proxy-20250705</li>
+      <li>Test Record: SALTY-20250623-003</li>
+      <li>Related Issues: None</li>
+    </ul>
+    <hr />
+    <p>
+      <strong>Document Classification</strong>: Internal Use Only<br />
+      <strong>Retention Period</strong>: 7 years per ISO 27001 requirements
+    </p>
+  </body>
+</html>

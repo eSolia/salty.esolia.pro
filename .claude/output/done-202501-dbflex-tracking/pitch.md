@@ -1,5 +1,9 @@
 # dbFLEX Link Tracking Pitch
 
+**Start Date**: January 2025\
+**Completion Date**: January 2025\
+**Status**: Done ✅
+
 ## 1. Problem
 
 **The Problem**: Organizations using dbFLEX to share encrypted Salty links have no visibility into whether recipients actually accessed the shared information.

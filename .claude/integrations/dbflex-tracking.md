@@ -38,14 +38,14 @@ Note: When using the proxy, you don't need `DBFLEX_TABLE_URL` or `DBFLEX_UPSERT_
 
 Create these columns in your dbFLEX table:
 
-| Column Name | Type | Size/Format | Purpose |
-|-------------|------|-------------|----------|
-| § Id | Text | Primary Key | Record identifier (SALTY-YYYYMMDD-NNN) |
-| Last Accessed | DateTime | ISO 8601 | Timestamp of last access |
-| Access Count | Integer | N/A | Number of accesses (use trigger to increment) |
-| Last User Agent | Text | 1000 chars | Raw user agent string |
-| Last User-Agent | Multi-line Text | Variable | Parsed user agent (human-readable) |
-| Last Referrer | Text | 500 chars | Source URL or "direct" |
+| Column Name     | Type            | Size/Format | Purpose                                       |
+| --------------- | --------------- | ----------- | --------------------------------------------- |
+| § Id            | Text            | Primary Key | Record identifier (SALTY-YYYYMMDD-NNN)        |
+| Last Accessed   | DateTime        | ISO 8601    | Timestamp of last access                      |
+| Access Count    | Integer         | N/A         | Number of accesses (use trigger to increment) |
+| Last User Agent | Text            | 1000 chars  | Raw user agent string                         |
+| Last User-Agent | Multi-line Text | Variable    | Parsed user agent (human-readable)            |
+| Last Referrer   | Text            | 500 chars   | Source URL or "direct"                        |
 
 ### 4. URL Generation
 
@@ -124,6 +124,7 @@ When a user accesses the link, the Worker sends this payload to dbFLEX:
 **Decision**: Implement a Cloudflare Worker as a proxy layer
 
 **Consequences**:
+
 - ✅ Overcomes SSL compatibility issues
 - ✅ Keeps API key secure (not in Salty)
 - ❌ Adds external dependency
