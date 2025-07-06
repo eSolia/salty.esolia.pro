@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2025-07-06
+
+### Added
+
+- add Cloudflare Worker proxy support for dbFLEX (bc3c21b)
+- add dbFLEX link tracking integration (8cb88b8)
+- switch to native OpenTelemetry for Deno Deploy EA (fa5af24)
+- integrate Claude Forge Shape Up methodology (944e78b)
+- add security headers and OWASP compliance display to dashboard (032a5e0)
+- add protected admin dashboard at /dash with HTTP Basic Auth (ad84747)
+- add Deno 2.4 security enhancements (pending Deploy EA support) (1ac4549)
+
+### Changed
+
+- reorganize project structure for better clarity (0a01835)
+- relocate Shape Up artifacts to .claude/artifacts directory (660a786)
+- complete dbFLEX tracking documentation and add change summary (78d4fc2)
+- organize project file structure for better maintainability (76fb62f)
+- add test coverage summary for Deno 2.4 features (107b9f4)
+- add comprehensive test coverage for Deno 2.4 features (1364b1e)
+
+### Fixed
+
+- resolve test failures in CI (2ab7ffb)
+- address security code scanning alerts (41e7bcd)
+- add shared secret authentication for Cloudflare proxy (3a99c44)
+- allow proxy mode without all dbFLEX config variables (e23b4ba)
+- add detailed error logging for dbFLEX API calls (085e037)
+- correct rate limiting display format in dashboard (2181bd7)
+- resolve multiple dashboard issues and improve request timing (1455d6d)
+- add dashboard.html to allowed static files for /dash route (52a204f)
+- resolve lint and type errors in Deno 2.4 merged code (a4e1084)
+- replace console.log with proper logger calls (26dc378)
+
 ## [2.2.7] - 2025-07-04
 
 ### Fixed
