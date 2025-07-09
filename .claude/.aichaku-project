@@ -1,8 +1,6 @@
 {
-  "version": "0.6.0",
-  "globalVersion": "0.6.0",
-  "createdAt": "2025-07-07T09:14:12.369Z",
-  "customizations": {
-    "userDir": "./user"
-  }
+  "version": "0.16.0",
+  "installedAt": "2025-07-07T09:14:12.369Z",
+  "installationType": "local",
+  "lastUpgrade": "2025-07-09T10:04:07.212Z"
 }
