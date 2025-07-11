@@ -441,6 +441,7 @@ async function processRequest(req: Request): Promise<Response> {
 <!-- AICHAKU:START -->
 
 <!-- AICHAKU:METHODOLOGY:START -->
+
 ## 🎯 MANDATORY: Aichaku Integration Rules
 
 YOU ARE REQUIRED TO FOLLOW THESE RULES WITHOUT EXCEPTION:
@@ -456,6 +457,7 @@ YOU ARE REQUIRED TO FOLLOW THESE RULES WITHOUT EXCEPTION:
 
 **Phase 2: WAIT FOR EXPLICIT READINESS**
 Only create documents when user says:
+
 - "Let's create a project for this"
 - "I'm ready to start"
 - "Set up the project"
@@ -497,12 +499,14 @@ Only create documents when user says:
 When you hear these keywords, ENTER DISCUSSION MODE:
 
 **Planning Keywords** → Will create in `.claude/output/active-*/` (when ready):
+
 - "shape"/"pitch" → Discuss Shape Up approach → Later: pitch.md
 - "sprint"/"scrum" → Discuss Scrum planning → Later: sprint-planning.md
 - "kanban"/"board" → Discuss Kanban flow → Later: kanban-board.md
 - "mvp"/"lean" → Discuss Lean experiments → Later: experiment-plan.md
 
 **Discussion Mode Actions:**
+
 1. Acknowledge: "🪴 Aichaku: I see you're interested in [methodology]"
 2. Read the appropriate guide SILENTLY:
    - `~/.claude/methodologies/[methodology]/[METHODOLOGY]-AICHAKU-GUIDE.md`
@@ -517,9 +521,10 @@ When you hear these keywords, ENTER DISCUSSION MODE:
 ✅ ALWAYS prefix Aichaku messages with: 🪴 Aichaku:
 ✅ Use growth phase indicators: 🌱 (new) → 🌿 (active) → 🌳 (mature) → 🍃 (complete)
 ✅ Show current phase in status updates with **bold** text and arrow: [Planning] → [**Executing**] → [Complete]
-                                                                                    ▲
+▲
 
 **Example Status Display:**
+
 ```
 🪴 Aichaku: Shape Up Progress
 [Shaping] → [**Betting**] → [Building] → [Cool-down]
@@ -528,6 +533,7 @@ Week 2/6 ████████░░░░░░░░░░░░ 33% 🌿
 ```
 
 **Methodology Icons:**
+
 - Shape Up: Use 🎯 for betting, 🔨 for building
 - Scrum: Use 🏃 for sprints, 📋 for backlog
 - Kanban: Use 📍 for cards, 🌊 for flow
@@ -548,6 +554,7 @@ Week 2/6 ████████░░░░░░░░░░░░ 33% 🌿
 **Required Diagrams by Document:**
 
 **In STATUS.md:**
+
 ```mermaid
 graph LR
     A[🌱 Started] --> B[🌿 Active]
@@ -557,6 +564,7 @@ graph LR
 ```
 
 **In Shape Up pitch.md:**
+
 ```mermaid
 graph TD
     A[Problem] --> B[Appetite: 6 weeks]
@@ -566,6 +574,7 @@ graph TD
 ```
 
 **In Scrum sprint-planning.md:**
+
 ```mermaid
 gantt
     title Sprint 15 Timeline
@@ -584,6 +593,7 @@ gantt
 ### 6. Project Lifecycle Management
 
 **Starting Work:**
+
 1. ⚠️ **CHECK TODAY'S DATE**: Look for "Today's date:" in the environment info
 2. Create: `.claude/output/active-YYYY-MM-DD-{descriptive-name}/`
    - YYYY-MM-DD must be TODAY'S actual date from environment
@@ -595,11 +605,13 @@ gantt
 6. WAIT for human approval before coding
 
 **During Work:**
+
 - Update STATUS.md regularly (including diagram state)
 - Create supporting documents freely
 - Start responses with: "🪴 Aichaku: Currently in [mode] working on [task]"
 
 **Completing Work:**
+
 1. Create YYYY-MM-DD-{Project-Name}-CHANGE-LOG.md summarizing all changes
    - ⚠️ Use TODAY'S date from environment info (not example dates!)
    - Example format: 2025-07-10-Fix-Security-Tests-CHANGE-LOG.md
@@ -613,6 +625,7 @@ gantt
 ### 7. Git Automation
 
 When work is confirmed complete:
+
 ```bash
 git add .claude/output/[current-project]/
 git commit -m "[type]: [description]
@@ -625,6 +638,7 @@ git push origin [current-branch]
 ### 8. Error Recovery
 
 If you accidentally create a file in the wrong location:
+
 1. Move it immediately: `mv [file] .claude/output/active-*/`
 2. Update STATUS.md noting the correction
 3. Continue without asking
@@ -637,6 +651,7 @@ Learn more: https://github.com/RickCogley/aichaku
 <!-- AICHAKU:METHODOLOGY:END -->
 
 <!-- AICHAKU:DOC-STANDARDS:START -->
+
 ## 📝 Selected Documentation Standards
 
 🪴 Aichaku: Based on your project configuration, follow these documentation standards:
@@ -659,10 +674,12 @@ The Diátaxis framework organizes documentation into four distinct modes, each s
 ## Tutorial Guidelines
 
 ### Purpose
+
 Tutorials are lessons that take the reader through a series of steps to complete a project. They are learning-oriented.
 
 ### Structure
-```markdown
+
+````markdown
 # Getting Started with [Product Name]
 
 In this tutorial, you'll learn how to [main outcome]. By the end, you'll have [specific achievement].
@@ -686,8 +703,10 @@ In this tutorial, you'll learn how to [main outcome]. By the end, you'll have [s
 # Example command
 example-command --flag value
 ```
+````
 
 **Expected output:**
+
 ```
 [Show what success looks like]
 ```
@@ -699,6 +718,7 @@ example-command --flag value
 ## Summary
 
 You've successfully [what they achieved]. You learned how to:
+
 - [Accomplishment 1]
 - [Accomplishment 2]
 
@@ -706,8 +726,8 @@ You've successfully [what they achieved]. You learned how to:
 
 - Try [related tutorial]
 - Explore [related concept]
-```
 
+````
 ### Google Style Notes for Tutorials
 
 - **Use second person**: "You'll create a service" not "We'll create a service"
@@ -742,7 +762,7 @@ Use this approach when [specific condition].
 1. [First step]
    ```bash
    command --example
-   ```
+````
 
 2. [Second step]
    ```yaml
@@ -759,6 +779,7 @@ Use this approach when [different condition].
 ## Verify your configuration
 
 Test your setup:
+
 ```bash
 test-command
 ```
@@ -772,8 +793,8 @@ test-command
 
 - [Related how-to 1]
 - [Related how-to 2]
-```
 
+````
 ### Google Style Notes for How-to Guides
 
 - **Start with the goal**: Lead with what the user wants to accomplish
@@ -796,11 +817,11 @@ Reference guides are technical descriptions of the machinery and how to operate 
 [Brief description of what this component does]
 
 ## Synopsis
+````
 
-```
 command [options] [arguments]
-```
 
+````
 ## Description
 
 [Detailed explanation of the component's purpose and behavior]
@@ -818,7 +839,7 @@ command [options] [arguments]
 **Example**:
 ```bash
 command --option-name=value
-```
+````
 
 ### `--another-option` {#another-option}
 
@@ -828,8 +849,8 @@ command --option-name=value
 
 ### `argument-name`
 
-**Required**: Yes | No  
-**Type**: `string`  
+**Required**: Yes | No\
+**Type**: `string`\
 **Valid values**: `value1`, `value2`, `value3`
 
 [Description]
@@ -850,18 +871,18 @@ command --option1=value --option2 complex-argument
 
 ## Exit codes
 
-| Code | Description |
-|------|-------------|
-| 0    | Success |
-| 1    | General error |
+| Code | Description       |
+| ---- | ----------------- |
+| 0    | Success           |
+| 1    | General error     |
 | 2    | Invalid arguments |
 
 ## See also
 
 - [`related-command`](link) - Brief description
 - [Configuration guide](link)
-```
 
+````
 ### Google Style Notes for References
 
 - **Be complete**: Document every option, parameter, and return value
@@ -895,7 +916,7 @@ Explanations are understanding-oriented discussions that clarify and illuminate 
 graph TD
     A[Input] --> B[Process]
     B --> C[Output]
-```
+````
 
 ## Design decisions
 
@@ -904,10 +925,12 @@ graph TD
 [Reasoning and trade-offs]
 
 **Advantages**:
+
 - [Benefit 1]
 - [Benefit 2]
 
 **Trade-offs**:
+
 - [Limitation 1]
 - [Limitation 2]
 
@@ -923,9 +946,9 @@ graph TD
 
 ## Comparison with alternatives
 
-| Approach | Pros | Cons | Best for |
-|----------|------|------|----------|
-| Our approach | [List] | [List] | [Use case] |
+| Approach      | Pros   | Cons   | Best for   |
+| ------------- | ------ | ------ | ---------- |
+| Our approach  | [List] | [List] | [Use case] |
 | Alternative 1 | [List] | [List] | [Use case] |
 
 ## Further reading
@@ -933,8 +956,8 @@ graph TD
 - [Academic paper or specification]
 - [Related explanation in docs]
 - [External resource]
-```
 
+````
 ### Google Style Notes for Explanations
 
 - **Start with why**: Explain why this concept matters to the reader
@@ -978,13 +1001,14 @@ graph TD
 ```language
 # Include a comment explaining what the code does
 actual --code --here
-```
+````
 
 - Test all code samples
 - Show both input and output when relevant
 - Use consistent placeholder names: `YOUR_PROJECT_ID`, `REGION`
 
 #### Links
+
 - Use descriptive link text: "See the [configuration guide]" not "See [here]"
 - Link to the specific section when possible
 - Check links regularly for accuracy
@@ -992,12 +1016,14 @@ actual --code --here
 ### Voice and Tone
 
 #### Do
+
 - ✅ "To create a user, run the following command"
 - ✅ "If the build fails, check your configuration"
 - ✅ "This feature requires version 2.0 or later"
 - ✅ "You can configure multiple options"
 
 #### Don't
+
 - ❌ "We need to create a user" (use "you" not "we")
 - ❌ "The build might fail" (be specific about conditions)
 - ❌ "This feature requires a recent version" (be precise)
@@ -1023,8 +1049,8 @@ Remember: Good documentation serves the reader's needs at their moment of need. 
 
 ---
 
-
 <!-- AICHAKU:DOC-STANDARDS:END -->
+
 ### 1. Discussion-First Document Creation
 
 **Phase 1: DISCUSSION MODE (Default when methodology keywords detected)**
@@ -1223,5 +1249,3 @@ Methodologies: Shape Up, Scrum, Kanban, Lean, XP, Scrumban
 Learn more: https://github.com/RickCogley/aichaku
 
 <!-- AICHAKU:END -->
-
-
