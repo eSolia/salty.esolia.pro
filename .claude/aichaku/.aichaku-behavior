@@ -1,0 +1,21 @@
+# Aichaku Behavioral Guidelines
+
+This project uses Aichaku v0.28.0 for adaptive methodology support.
+
+## Key Rules
+
+1. Documents will be created in: docs/projects/
+2. Use existing folders when continuing work
+3. Create descriptive folder names with dates
+4. Always create STATUS.md first in new projects
+
+## Available Methodologies
+
+- Shape Up (use "shape" or "pitch")
+- Scrum (use "sprint" or "scrum")
+- Kanban (use "kanban" or "board")
+- Lean (use "experiment" or "lean")
+- XP (use "pair" or "test-driven")
+- Scrumban (hybrid approach)
+
+Just use natural language and Aichaku will adapt!
