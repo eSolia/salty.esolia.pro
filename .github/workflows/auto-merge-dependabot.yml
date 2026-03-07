@@ -16,13 +16,13 @@ jobs:
 
     steps:
       - name: Checkout PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Setup Deno
-        uses: denoland/setup-deno@v2
+        uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2
         with:
           deno-version: v1.x
 
@@ -31,14 +31,11 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-          # Fetch and merge main
           git fetch origin main
           git merge origin/main --no-edit || exit 0
 
-          # Format code
           deno fmt
 
-          # Commit if there are changes
           if [[ -n $(git diff --name-only) ]]; then
             git add -A
             git commit -m "chore: auto-format code and merge main"
