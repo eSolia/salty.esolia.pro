@@ -6,8 +6,7 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    # Run at 4:30 AM UTC on Tuesdays (after CodeQL on Mondays)
-    - cron: "30 4 * * 2"
+    - cron: '30 4 * * 2'
   workflow_dispatch:
 
 permissions:
@@ -21,27 +20,26 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Run DevSkim scanner
-        uses: microsoft/DevSkim-Action@v1
+        uses: microsoft/DevSkim-Action@4b5047945a44163b94642a1cecc0d93a3f428cc6 # v1
         with:
           directory-to-scan: .
-          # Exclude paths
           should-scan-archives: false
           output-filename: devskim-results.sarif
-          # Customize rules if needed
-          # rules-path: .devskim/rules
 
       - name: Upload DevSkim results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@9792ccaef0455e446c567163589397e8c3ac2e0d # v3
         if: always()
         with:
           sarif_file: devskim-results.sarif
           category: devskim
 
       - name: Upload DevSkim results as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
           name: devskim-results
