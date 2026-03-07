@@ -1,11 +1,10 @@
-name: "CodeQL Analysis"
+name: CodeQL Analysis
 
 on:
   push:
     branches: [main]
   schedule:
-    # Run weekly on Monday at 3 AM UTC
-    - cron: "0 3 * * 1"
+    - cron: '0 3 * * 1'
   workflow_dispatch:
 
 permissions:
@@ -22,43 +21,38 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: ["javascript"]
-        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
+        language: ['javascript']
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@9792ccaef0455e446c567163589397e8c3ac2e0d # v3
         with:
           languages: ${{ matrix.language }}
-          # Specify queries to run
           queries: security-extended,security-and-quality
 
       - name: Setup Deno
-        uses: denoland/setup-deno@v2
+        uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2
         with:
           deno-version: v1.x
 
-      # Autobuild attempts to build any compiled languages
-      # For TypeScript/JavaScript, this step is not strictly necessary
-      # but helps CodeQL understand the project structure
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@9792ccaef0455e446c567163589397e8c3ac2e0d # v3
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@9792ccaef0455e446c567163589397e8c3ac2e0d # v3
         with:
-          category: "/language:${{matrix.language}}"
-          # Upload results to GitHub Security tab
+          category: '/language:${{matrix.language}}'
           upload: true
-          # Also output results as SARIF
           output: codeql-results.sarif
 
       - name: Upload CodeQL results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: codeql-results
           path: codeql-results.sarif
